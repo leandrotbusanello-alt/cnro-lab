@@ -1,0 +1,2747 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CNRO Lab Control — Sistema Operacional</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ============================================================
+   DESIGN TOKENS — PALETA NOVA ROTA
+   ============================================================ */
+:root {
+  --navy:       #283272;
+  --navy-mid:   #2F509F;
+  --navy-light: #3869B1;
+  --teal:       #13B2AC;
+  --teal-light: #4AC5BB;
+  --teal-dark:  #0D8F8A;
+
+  --asfalto:    #B8A000;
+  --asfalto-bg: #FDFAE5;
+  --solos:      #2E7D1F;
+  --solos-bg:   #F0FAF0;
+  --concreto:   #1A6A9A;
+  --concreto-bg:#EBF5FB;
+  --ligante:    #7B3FA0;
+  --ligante-bg: #F8F0FF;
+  --cp-asf:     #9A3412;
+  --cp-asf-bg:  #FFF7ED;
+
+  --ok:         #166534;
+  --ok-bg:      #DCFCE7;
+  --warn:       #92400E;
+  --warn-bg:    #FEF3C7;
+  --danger:     #991B1B;
+  --danger-bg:  #FEE2E2;
+  --info:       #1E3A8A;
+  --info-bg:    #DBEAFE;
+
+  --bg:         #F0F2F7;
+  --surface:    #FFFFFF;
+  --surface-2:  #F7F9FC;
+  --border:     #DDE3EE;
+  --border-2:   #C8D1E0;
+
+  --text:       #1A2340;
+  --text-2:     #3D4F6B;
+  --text-3:     #64748B;
+  --text-inv:   #FFFFFF;
+
+  --r-sm:  6px;
+  --r-md:  10px;
+  --r-lg:  14px;
+  --r-xl:  18px;
+
+  --shadow-sm: 0 1px 3px rgba(40,50,114,.07);
+  --shadow-md: 0 4px 16px rgba(40,50,114,.11);
+  --shadow-lg: 0 8px 32px rgba(40,50,114,.16);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { font-size: 14px; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overscroll-behavior: none;
+}
+
+/* ============================================================
+   TELA DE LOGIN
+   ============================================================ */
+#login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, var(--navy) 0%, #1a2255 60%, #0f1535 100%);
+  padding: 20px;
+}
+.login-card {
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  padding: 40px 36px 36px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: var(--shadow-lg);
+}
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+.login-logo-icon {
+  width: 48px; height: 48px;
+  background: var(--navy);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.login-logo-icon svg { width: 26px; height: 26px; }
+.login-logo-text { line-height: 1.2; }
+.login-logo-text strong { display: block; font-size: 17px; font-weight: 800; color: var(--navy); letter-spacing: -.01em; }
+.login-logo-text span { font-size: 11px; color: var(--text-3); font-weight: 500; }
+.login-divider { width: 40px; height: 3px; background: var(--teal); border-radius: 2px; margin-bottom: 28px; }
+.login-title { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.login-sub { font-size: 12.5px; color: var(--text-3); margin-bottom: 28px; }
+
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 11.5px; font-weight: 600; color: var(--text-2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .04em; }
+.form-input {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 11px 14px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--surface);
+  transition: border-color .15s;
+  outline: none;
+}
+.form-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(19,178,172,.12); }
+.form-input::placeholder { color: var(--text-3); }
+
+.btn-primary {
+  width: 100%;
+  padding: 13px;
+  background: var(--navy);
+  color: var(--text-inv);
+  border: none;
+  border-radius: var(--r-md);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+  margin-top: 8px;
+  letter-spacing: .01em;
+}
+.btn-primary:hover { background: var(--navy-mid); }
+.btn-primary:active { transform: scale(.98); }
+.btn-primary:disabled { background: var(--border-2); color: var(--text-3); cursor: not-allowed; transform: none; }
+
+.login-error {
+  background: var(--danger-bg);
+  border: 1px solid #FCA5A5;
+  color: var(--danger);
+  border-radius: var(--r-md);
+  padding: 10px 14px;
+  font-size: 12.5px;
+  margin-top: 14px;
+  display: none;
+}
+.login-spinner {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.login-footer {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+/* ============================================================
+   APP SHELL (pós-login)
+   ============================================================ */
+#app-shell { display: none; min-height: 100vh; flex-direction: column; }
+
+/* TOPBAR */
+.topbar {
+  background: var(--navy);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  box-shadow: 0 2px 12px rgba(40,50,114,.3);
+}
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+}
+.topbar-brand { display: flex; align-items: center; gap: 10px; }
+.topbar-icon {
+  width: 32px; height: 32px;
+  background: var(--teal);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.topbar-icon svg { width: 18px; height: 18px; }
+.topbar-name { color: #fff; font-size: 13.5px; font-weight: 800; letter-spacing: -.01em; }
+.topbar-env  { color: rgba(255,255,255,.45); font-size: 9px; display: block; margin-top: 1px; font-weight: 500; }
+
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.conn-badge {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 10px;
+  color: rgba(255,255,255,.7);
+}
+.conn-dot { width: 5px; height: 5px; border-radius: 50%; background: #4ADE80; flex-shrink: 0; }
+.conn-dot.off { background: #FC8181; }
+.user-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--navy-light);
+  border: 2px solid rgba(255,255,255,.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* NAV TABS */
+.nav-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 12px 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.nav-tabs::-webkit-scrollbar { display: none; }
+.nav-tab {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--r-md);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: rgba(255,255,255,.6);
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+  border: none;
+  background: transparent;
+  letter-spacing: .01em;
+}
+.nav-tab:hover  { background: rgba(255,255,255,.1); color: rgba(255,255,255,.85); }
+.nav-tab.active { background: rgba(255,255,255,.15); color: #fff; }
+.nav-tab svg { width: 14px; height: 14px; flex-shrink: 0; }
+.nav-badge {
+  background: var(--teal);
+  color: var(--navy);
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 8px;
+  min-width: 16px;
+  text-align: center;
+}
+
+/* ============================================================
+   CONTENT AREA
+   ============================================================ */
+.content-area { flex: 1; padding: 16px; max-width: 1200px; margin: 0 auto; width: 100%; }
+
+/* PERFIL BADGE (dentro das páginas) */
+.perfil-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px 3px 6px;
+  border-radius: 20px;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.perfil-CAMPO  { background: #E0F2FE; color: #075985; }
+.perfil-LAB    { background: #EDE9FE; color: #5B21B6; }
+.perfil-ASSIST { background: #DCFCE7; color: #166534; }
+.perfil-GESTOR { background: #FEF3C7; color: #92400E; }
+.perfil-DEV    { background: #FEE2E2; color: #991B1B; }
+
+/* CARDS GERAIS */
+.card {
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+.card-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-title { font-size: 13px; font-weight: 700; color: var(--text); }
+.card-body  { padding: 16px; }
+
+/* STATUS BADGES */
+.status {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+.status::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.status-aguardando-lab  { background: #E0F2FE; color: #0369A1; }
+.status-em-analise      { background: #EDE9FE; color: #7C3AED; }
+.status-em-andamento    { background: #FEF3C7; color: #B45309; }
+.status-aguardando-rev  { background: #FFE4E6; color: #BE123C; }
+.status-concluido       { background: var(--ok-bg); color: var(--ok); }
+.status-devolvido-campo { background: #FFF7ED; color: #C2410C; }
+.status-devolvido-assist{ background: #F3F4F6; color: #374151; }
+.status-cancelado       { background: #F3F4F6; color: #6B7280; }
+
+/* SECTION TITLE */
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* KPI GRID */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+}
+.kpi-label { font-size: 10px; color: var(--text-3); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+.kpi-value { font-size: 28px; font-weight: 800; color: var(--navy); line-height: 1; }
+.kpi-sub   { font-size: 10px; color: var(--text-3); margin-top: 4px; }
+.kpi-accent { border-top: 3px solid var(--teal); }
+
+/* BUTTONS */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 16px;
+  border-radius: var(--r-md);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all .15s;
+  letter-spacing: .01em;
+}
+.btn:active { transform: scale(.97); }
+.btn-teal    { background: var(--teal);      color: #fff; }
+.btn-teal:hover { background: var(--teal-dark); }
+.btn-navy    { background: var(--navy);      color: #fff; }
+.btn-navy:hover { background: var(--navy-mid); }
+.btn-ghost   { background: transparent;      color: var(--text-2); border: 1.5px solid var(--border); }
+.btn-ghost:hover { border-color: var(--border-2); background: var(--surface-2); }
+.btn-danger  { background: var(--danger-bg); color: var(--danger); border: 1px solid #FCA5A5; }
+.btn-sm { padding: 6px 11px; font-size: 11px; }
+.btn svg { width: 14px; height: 14px; }
+
+/* TOAST */
+.toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  background: var(--text);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: var(--r-md);
+  font-size: 12.5px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  animation: slide-in .2s ease;
+  max-width: 320px;
+}
+.toast.ok      { background: var(--ok); }
+.toast.warn    { background: var(--warn); }
+.toast.danger  { background: var(--danger); }
+@keyframes slide-in { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
+
+/* DROPDOWN MENU */
+.dropdown { position: relative; }
+.dropdown-menu {
+  position: absolute;
+  right: 0; top: calc(100% + 6px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
+  min-width: 200px;
+  z-index: 500;
+  overflow: hidden;
+  display: none;
+}
+.dropdown-menu.open { display: block; }
+.dropdown-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px;
+  font-size: 13px;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background .1s;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+.dropdown-item:hover { background: var(--surface-2); }
+.dropdown-item svg { width: 15px; height: 15px; color: var(--text-3); }
+.dropdown-sep { height: 1px; background: var(--border); margin: 4px 0; }
+.dropdown-header { padding: 10px 14px 6px; font-size: 10px; color: var(--text-3); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 800;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(2px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: modal-in .2s ease;
+}
+@keyframes modal-in { from { transform: scale(.95) translateY(10px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+.modal-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.modal-close { width: 28px; height: 28px; border: none; background: var(--surface-2); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-3); }
+.modal-close:hover { background: var(--border); }
+.modal-body { padding: 20px; }
+.modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+
+/* FORM ROWS */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.form-row.single { grid-template-columns: 1fr; }
+.form-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+.field-label { display: block; font-size: 11px; font-weight: 600; color: var(--text-2); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .04em; }
+.field-input, .field-select, .field-textarea {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 9px 11px;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface);
+  transition: border-color .15s;
+  outline: none;
+  font-family: inherit;
+}
+.field-input:focus, .field-select:focus, .field-textarea:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(19,178,172,.1);
+}
+.field-textarea { resize: vertical; min-height: 80px; }
+.field-select { cursor: pointer; }
+.field-hint { font-size: 10.5px; color: var(--text-3); margin-top: 4px; }
+
+/* TABLE */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+}
+.data-table td {
+  padding: 12px 12px;
+  font-size: 12.5px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--surface-2); }
+
+/* COLLAPSIBLE CARDS */
+.os-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  margin-bottom: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.os-card-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: background .1s;
+  user-select: none;
+}
+.os-card-header:hover { background: var(--surface-2); }
+.os-card-num { font-size: 11px; font-weight: 800; color: var(--navy); font-family: 'Courier New', monospace; flex-shrink: 0; }
+.os-card-info { flex: 1; min-width: 0; }
+.os-card-title { font-size: 12.5px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.os-card-meta  { font-size: 10.5px; color: var(--text-3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.os-card-chevron { color: var(--text-3); flex-shrink: 0; transition: transform .2s; }
+.os-card-chevron.open { transform: rotate(180deg); }
+.os-card-body { display: none; padding: 0 14px 14px; border-top: 1px solid var(--border); }
+.os-card-body.open { display: block; }
+
+/* TOGGLE */
+.toggle-group { display: flex; align-items: center; gap: 8px; }
+.toggle { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: var(--border-2);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background .2s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 14px; height: 14px;
+  left: 3px; top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform .2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.toggle input:checked + .toggle-slider { background: var(--teal); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(16px); }
+.toggle-label { font-size: 12px; color: var(--text-2); }
+
+/* UPLOAD AREA */
+.upload-area {
+  border: 2px dashed var(--border-2);
+  border-radius: var(--r-md);
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .15s;
+  color: var(--text-3);
+  font-size: 12.5px;
+}
+.upload-area:hover { border-color: var(--teal); color: var(--teal); background: rgba(19,178,172,.04); }
+.upload-area svg { width: 28px; height: 28px; margin-bottom: 8px; display: block; margin-inline: auto; }
+
+/* EMPTY STATE */
+.empty-state { text-align: center; padding: 48px 24px; color: var(--text-3); }
+.empty-state svg { width: 48px; height: 48px; margin-bottom: 12px; display: block; margin-inline: auto; opacity: .4; }
+.empty-state strong { display: block; font-size: 14px; color: var(--text-2); margin-bottom: 6px; }
+.empty-state span { font-size: 12.5px; }
+
+/* LOADING OVERLAY */
+.loading-overlay {
+  position: fixed; inset: 0;
+  background: rgba(255,255,255,.85);
+  z-index: 999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+}
+.loading-overlay.active { display: flex; }
+.loading-spin {
+  width: 40px; height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--teal);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+.loading-text { font-size: 13px; color: var(--text-3); }
+
+/* MOBILE ADJUSTMENTS */
+@media (max-width: 600px) {
+  .form-row { grid-template-columns: 1fr; }
+  .form-row.triple { grid-template-columns: 1fr 1fr; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .content-area { padding: 12px; }
+  .card-body { padding: 12px; }
+  .modal { max-width: 100%; border-radius: var(--r-lg) var(--r-lg) 0 0; align-self: flex-end; max-height: 95vh; }
+  .modal-overlay.open { align-items: flex-end; padding: 0; }
+}
+
+/* TAG DISCIPLINA */
+.tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+.tag-solos    { background: var(--solos-bg);    color: var(--solos);   }
+.tag-asfalto  { background: var(--asfalto-bg);  color: var(--asfalto); }
+.tag-concreto { background: var(--concreto-bg); color: var(--concreto); }
+.tag-ligante  { background: var(--ligante-bg);  color: var(--ligante); }
+.tag-cp       { background: var(--cp-asf-bg);   color: var(--cp-asf);  }
+
+/* AVATAR INITIALS */
+.avatar-sm {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* SEARCH / FILTER BAR */
+.filter-bar {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.filter-bar .field-input { max-width: 220px; }
+.filter-bar .field-select { max-width: 160px; }
+
+/* SIGN BOX */
+.sign-box {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 10px;
+  background: var(--surface-2);
+  display: flex; align-items: center; gap: 10px;
+}
+.sign-box img { height: 36px; object-fit: contain; }
+.sign-box-label { font-size: 10px; color: var(--text-3); }
+.sign-box-name  { font-size: 12px; font-weight: 600; color: var(--text); }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     LOADING OVERLAY
+     ============================================================ -->
+<div class="loading-overlay active" id="app-loader">
+  <div class="loading-spin"></div>
+  <div class="loading-text">Carregando CNRO Lab Control…</div>
+</div>
+
+<!-- ============================================================
+     TELA DE LOGIN
+     ============================================================ -->
+<div id="login-screen" style="display:none">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#13B2AC" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
+        </svg>
+      </div>
+      <div class="login-logo-text">
+        <strong>CNRO Lab Control</strong>
+        <span>Concessionária Nova Rota do Oeste</span>
+      </div>
+    </div>
+    <div class="login-divider"></div>
+    <div class="login-title">Acesso ao Sistema</div>
+    <div class="login-sub">Entre com seu e-mail e senha cadastrados</div>
+    <div class="form-group">
+      <label class="form-label">E-mail</label>
+      <input type="email" class="form-input" id="login-email" placeholder="seu@email.com" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Senha</label>
+      <input type="password" class="form-input" id="login-password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn-primary" id="login-btn" onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="login-error"></div>
+    <div class="login-footer">Sistema restrito — acesso somente a usuários cadastrados pela CNRO</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     APP SHELL
+     ============================================================ -->
+<div id="app-shell" style="display:none; flex-direction:column; min-height:100vh;">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-brand">
+        <div class="topbar-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
+          </svg>
+        </div>
+        <div>
+          <div class="topbar-name">CNRO Lab Control</div>
+          <span class="topbar-env" id="topbar-perfil-label">carregando…</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="conn-badge" id="conn-badge">
+          <div class="conn-dot" id="conn-dot"></div>
+          <span id="conn-text">Online</span>
+        </div>
+        <div class="dropdown">
+          <div class="user-avatar" id="user-avatar-btn" onclick="toggleUserMenu()">
+            <span id="user-initials">??</span>
+          </div>
+          <div class="dropdown-menu" id="user-menu">
+            <div class="dropdown-header" id="menu-user-name">Usuário</div>
+            <div class="dropdown-item" onclick="openPerfilModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Meu Perfil
+            </div>
+            <div class="dropdown-sep"></div>
+            <div class="dropdown-item" onclick="doLogout()" style="color:var(--danger)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Sair
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <nav class="nav-tabs" id="nav-tabs-container">
+      <!-- tabs renderizados por JS -->
+    </nav>
+  </div>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <div class="content-area" id="main-content">
+    <!-- renderizado por JS -->
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- MODAL: DEVOLVER AO CAMPO -->
+<div class="modal-overlay" id="modal-devolver-campo">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <span class="modal-title">Devolver ao Campo</span>
+      <button class="modal-close" onclick="closeModal('modal-devolver-campo')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12.5px;color:var(--text-2);margin-bottom:14px">Informe o motivo da devolução. O inspetor verá esta mensagem e poderá corrigir o pedido.</p>
+      <label class="field-label">Motivo da devolução</label>
+      <textarea class="field-textarea" id="devolver-campo-motivo" placeholder="Descreva o que precisa ser corrigido…" rows="4"></textarea>
+      <input type="hidden" id="devolver-campo-id">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-devolver-campo')">Cancelar</button>
+      <button class="btn btn-danger" onclick="executarDevolverCampo(document.getElementById('devolver-campo-id').value, document.getElementById('devolver-campo-motivo').value)">Devolver</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ATRIBUIR ENSAIOS -->
+<div class="modal-overlay" id="modal-atribuir">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <span class="modal-title">Atribuir Ensaios</span>
+      <button class="modal-close" onclick="closeModal('modal-atribuir')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-atribuir-body">carregando…</div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-atribuir')">Cancelar</button>
+      <button class="btn btn-teal" onclick="salvarAtribuicoes()">Salvar Atribuições</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: FINALIZAR OS -->
+<div class="modal-overlay" id="modal-finalizar">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-header">
+      <span class="modal-title">Finalizar O.S.</span>
+      <button class="modal-close" onclick="closeModal('modal-finalizar')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-finalizar-body">carregando…</div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-finalizar')">Cancelar</button>
+      <button class="btn btn-teal" onclick="confirmarFinalizar()">Confirmar Finalização</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: EDITAR PEDIDO DEVOLVIDO -->
+<div class="modal-overlay" id="modal-editar-pedido">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <span class="modal-title">Corrigir Pedido</span>
+      <button class="modal-close" onclick="closeModal('modal-editar-pedido')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-editar-pedido-body">carregando…</div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-editar-pedido')">Cancelar</button>
+      <button class="btn btn-teal" onclick="salvarEdicaoPedido()">Corrigir e Reenviar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PERFIL -->
+<div class="modal-overlay" id="modal-perfil">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <span class="modal-title">Meu Perfil</span>
+      <button class="modal-close" onclick="closeModal('modal-perfil')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="perfil-modal-body">carregando…</div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-perfil')">Fechar</button>
+      <button class="btn btn-teal" onclick="savePerfilChanges()">Salvar alterações</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SUPABASE + APP LOGIC
+     ============================================================ -->
+<script>
+/* ──────────────────────────────────────────────────────────────
+   CONFIGURAÇÃO SUPABASE
+   ────────────────────────────────────────────────────────────── */
+const SUPABASE_URL  = 'https://xydmajjwfnfvzwlugzlk.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_zfJiVD1XveHwNa63_72nLw_zMirfcNt';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+/* ──────────────────────────────────────────────────────────────
+   ESTADO GLOBAL
+   ────────────────────────────────────────────────────────────── */
+let APP = {
+  user: null,       // auth user (Supabase)
+  profile: null,    // dados da tabela usuarios
+  currentTab: null,
+  online: true,
+};
+
+/* ──────────────────────────────────────────────────────────────
+   INICIALIZAÇÃO
+   ────────────────────────────────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', async () => {
+  // Verificar conexão
+  window.addEventListener('online',  () => setConn(true));
+  window.addEventListener('offline', () => setConn(false));
+
+  // Verificar sessão existente
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    await loadUserProfile(session.user);
+    showApp();
+  } else {
+    showLogin();
+  }
+
+  // Listener de mudança de auth
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      await loadUserProfile(session.user);
+      showApp();
+    } else if (event === 'SIGNED_OUT') {
+      showLogin();
+    }
+  });
+});
+
+function setConn(online) {
+  APP.online = online;
+  document.getElementById('conn-dot').className = 'conn-dot' + (online ? '' : ' off');
+  document.getElementById('conn-text').textContent = online ? 'Online' : 'Offline';
+}
+
+/* ──────────────────────────────────────────────────────────────
+   AUTH — LOGIN / LOGOUT
+   ────────────────────────────────────────────────────────────── */
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  const btn   = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+
+  if (!email || !pass) { showLoginError('Preencha e-mail e senha.'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="login-spinner"></span>Entrando…';
+  errEl.style.display = 'none';
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    showLoginError('E-mail ou senha incorretos.');
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+    return;
+  }
+  // onAuthStateChange cuida do resto
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  APP.user = null;
+  APP.profile = null;
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+/* ──────────────────────────────────────────────────────────────
+   PERFIL DO USUÁRIO
+   ────────────────────────────────────────────────────────────── */
+async function loadUserProfile(authUser) {
+  APP.user = authUser;
+  // Buscar perfil na tabela usuarios
+  const { data, error } = await sb
+    .from('usuarios')
+    .select('*')
+    .eq('auth_id', authUser.id)
+    .single();
+
+  if (error || !data) {
+    // Primeira vez (ex: DEV): criar perfil básico
+    APP.profile = {
+      auth_id: authUser.id,
+      nome: authUser.email.split('@')[0],
+      email: authUser.email,
+      perfil: 'DEV',
+      cargo: 'Desenvolvedor',
+      empresa: 'CNRO',
+      lote: null,
+      status: 'Ativo',
+    };
+  } else {
+    APP.profile = data;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   TRANSIÇÕES DE TELA
+   ────────────────────────────────────────────────────────────── */
+function showLogin() {
+  document.getElementById('app-loader').classList.remove('active');
+  document.getElementById('login-screen').style.display  = 'flex';
+  document.getElementById('app-shell').style.display = 'none';
+}
+
+function showApp() {
+  document.getElementById('app-loader').classList.remove('active');
+  document.getElementById('login-screen').style.display  = 'none';
+  const shell = document.getElementById('app-shell');
+  shell.style.display = 'flex';
+  shell.style.flexDirection = 'column';
+  renderAppForPerfil();
+}
+
+/* ──────────────────────────────────────────────────────────────
+   RENDERIZAÇÃO POR PERFIL
+   ────────────────────────────────────────────────────────────── */
+const PERFIL_TABS = {
+  DEV: [
+    { id: 'dashboard', label: 'Dashboard', icon: 'grid' },
+    { id: 'campo',     label: 'Campo',     icon: 'map-pin' },
+    { id: 'laboratorio', label: 'Laboratório', icon: 'flask' },
+    { id: 'assistente',  label: 'Assistente',  icon: 'clipboard' },
+    { id: 'gestor',      label: 'Gestor',      icon: 'settings' },
+    { id: 'admin',       label: 'Admin',       icon: 'shield' },
+  ],
+  GESTOR: [
+    { id: 'dashboard',   label: 'Dashboard',   icon: 'grid' },
+    { id: 'laboratorio', label: 'Laboratório',  icon: 'flask' },
+    { id: 'gestor',      label: 'Configurações', icon: 'settings' },
+  ],
+  LAB: [
+    { id: 'laboratorio', label: 'Laboratório', icon: 'flask' },
+    { id: 'historico',   label: 'Histórico',   icon: 'clock' },
+  ],
+  ASSIST: [
+    { id: 'assistente', label: 'Meus Ensaios', icon: 'clipboard' },
+    { id: 'historico',  label: 'Histórico',    icon: 'clock' },
+  ],
+  CAMPO: [
+    { id: 'campo',    label: 'Novo Pedido',  icon: 'plus-circle' },
+    { id: 'historico',label: 'Meus Pedidos', icon: 'list' },
+  ],
+};
+
+const TAB_ICONS = {
+  'grid':        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>',
+  'map-pin':     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+  'flask':       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6m-6 0v5l-4 6a5 5 0 0 0 .9 5.6A5 5 0 0 0 9 21h6a5 5 0 0 0 3.1-1.4A5 5 0 0 0 19 14l-4-6V3"/></svg>',
+  'clipboard':   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>',
+  'settings':    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  'shield':      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  'clock':       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  'list':        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>',
+  'plus-circle': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
+};
+
+function renderAppForPerfil() {
+  const p = APP.profile;
+  const tabs = PERFIL_TABS[p.perfil] || PERFIL_TABS['CAMPO'];
+
+  // Atualizar topbar
+  document.getElementById('topbar-perfil-label').textContent =
+    p.nome + ' · ' + p.perfil + (p.lote ? ' · Lote ' + p.lote : '');
+  const initials = p.nome.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('user-initials').textContent = initials;
+  document.getElementById('menu-user-name').textContent = p.nome;
+
+  // Render tabs
+  const nav = document.getElementById('nav-tabs-container');
+  nav.innerHTML = tabs.map(t => `
+    <button class="nav-tab${APP.currentTab === t.id ? ' active' : ''}" onclick="switchTab('${t.id}')">
+      ${TAB_ICONS[t.icon] || ''} ${t.label}
+    </button>
+  `).join('');
+
+  // Carregar primeira tab
+  if (!APP.currentTab || !tabs.find(t=>t.id===APP.currentTab)) {
+    switchTab(tabs[0].id);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   NAVEGAÇÃO ENTRE TABS
+   ────────────────────────────────────────────────────────────── */
+function switchTab(tabId) {
+  APP.currentTab = tabId;
+  // Atualizar nav
+  document.querySelectorAll('.nav-tab').forEach(el => {
+    el.classList.toggle('active', el.textContent.trim().toLowerCase().includes(tabId) || el.onclick?.toString().includes(`'${tabId}'`));
+  });
+  // Re-render nav (simples)
+  renderNavTabs();
+
+  // Renderizar conteúdo
+  const content = document.getElementById('main-content');
+  const renderers = {
+    dashboard:   renderDashboard,
+    campo:       renderCampo,
+    laboratorio: renderLaboratorio,
+    assistente:  renderAssistente,
+    gestor:      renderGestor,
+    admin:       renderAdmin,
+    historico:   renderHistorico,
+  };
+  if (renderers[tabId]) {
+    renderers[tabId](content);
+  } else {
+    content.innerHTML = `<div class="empty-state"><strong>Em desenvolvimento</strong><span>Módulo ${tabId} em breve.</span></div>`;
+  }
+}
+
+function renderNavTabs() {
+  const p = APP.profile;
+  const tabs = PERFIL_TABS[p.perfil] || PERFIL_TABS['CAMPO'];
+  const nav = document.getElementById('nav-tabs-container');
+  nav.innerHTML = tabs.map(t => `
+    <button class="nav-tab${APP.currentTab === t.id ? ' active' : ''}" onclick="switchTab('${t.id}')">
+      ${TAB_ICONS[t.icon] || ''} ${t.label}
+    </button>
+  `).join('');
+}
+
+/* ──────────────────────────────────────────────────────────────
+   NUMERAÇÃO DE DOCUMENTOS
+   ────────────────────────────────────────────────────────────── */
+async function gerarNumeroPE() {
+  const ano = new Date().getFullYear();
+  const { data } = await sb
+    .from('pedidos_ensaio')
+    .select('sequencial')
+    .eq('ano', ano)
+    .order('sequencial', { ascending: false })
+    .limit(1);
+  const seq = data && data.length > 0 ? data[0].sequencial + 1 : 1;
+  return { seq, num: String(seq).padStart(4, '0'), ano };
+}
+
+function gerarNumeroOS({ ano, mes, dia, lote, seq }) {
+  const m = String(mes).padStart(2,'0');
+  const d = String(dia).padStart(2,'0');
+  const l = String(lote).padStart(2,'0');
+  const s = String(seq).padStart(4,'0');
+  return `O.S. ${ano}.${m}.${d}.${l}.${s}`;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MÓDULO DASHBOARD
+   ────────────────────────────────────────────────────────────── */
+async function renderDashboard(el) {
+  el.innerHTML = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+    <div style="flex:1">
+      <h2 style="font-size:17px;font-weight:800;color:var(--navy)">Dashboard Geral</h2>
+      <p style="font-size:11.5px;color:var(--text-3);margin-top:2px">Visão consolidada das ordens de serviço</p>
+    </div>
+    <span class="perfil-badge perfil-${APP.profile.perfil}">${APP.profile.perfil}</span>
+  </div>
+  <div class="kpi-grid" id="kpi-grid">
+    <div class="kpi-card kpi-accent"><div class="kpi-label">Pedidos hoje</div><div class="kpi-value" id="kpi-hoje">—</div><div class="kpi-sub">aguardando lab</div></div>
+    <div class="kpi-card"><div class="kpi-label">Em andamento</div><div class="kpi-value" id="kpi-andamento">—</div><div class="kpi-sub">O.S. ativas</div></div>
+    <div class="kpi-card"><div class="kpi-label">Concluídos</div><div class="kpi-value" id="kpi-concluidos">—</div><div class="kpi-sub">este mês</div></div>
+    <div class="kpi-card"><div class="kpi-label">Usuários ativos</div><div class="kpi-value" id="kpi-usuarios">—</div><div class="kpi-sub">cadastrados</div></div>
+  </div>
+  <div class="section-title">O.S. Recentes</div>
+  <div id="os-recentes-list"><div class="empty-state">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-4"/><rect x="9" y="1" width="6" height="4" rx="1"/></svg>
+    <strong>Nenhuma O.S. ainda</strong>
+    <span>Os pedidos aparecerão aqui após criação no Módulo Campo</span>
+  </div></div>`;
+
+  // Carregar KPIs
+  loadDashboardKPIs();
+}
+
+async function loadDashboardKPIs() {
+  try {
+    const hoje = new Date().toISOString().slice(0,10);
+    const mesInicio = hoje.slice(0,7) + '-01';
+
+    const [rHoje, rAndamento, rMes, rUsuarios] = await Promise.all([
+      sb.from('pedidos_ensaio').select('id', {count:'exact'}).eq('status','aguardando_lab').gte('created_at', hoje),
+      sb.from('pedidos_ensaio').select('id', {count:'exact'}).in('status',['em_andamento','em_analise','aguardando_revisao']),
+      sb.from('pedidos_ensaio').select('id', {count:'exact'}).eq('status','concluido').gte('created_at', mesInicio),
+      sb.from('usuarios').select('id', {count:'exact'}).eq('status','Ativo'),
+    ]);
+
+    setKPI('kpi-hoje',      rHoje.count ?? 0);
+    setKPI('kpi-andamento', rAndamento.count ?? 0);
+    setKPI('kpi-concluidos',rMes.count ?? 0);
+    setKPI('kpi-usuarios',  rUsuarios.count ?? 0);
+
+    // Carregar OS recentes
+    const { data: osData } = await sb
+      .from('pedidos_ensaio')
+      .select('*, usuarios(nome)')
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (osData && osData.length > 0) {
+      document.getElementById('os-recentes-list').innerHTML = osData.map(renderOSCard).join('');
+    }
+  } catch(e) {
+    console.warn('KPIs:', e.message);
+  }
+}
+
+function setKPI(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MÓDULO CAMPO
+   ────────────────────────────────────────────────────────────── */
+async function renderCampo(el) {
+  // Carregar ensaios do banco primeiro
+  window._campoSelecionados = new Set();
+  window._campoMaterial = null;
+  const { data } = await sb.from('ensaios').select('*').eq('ativo', true).order('ordem');
+  window._todosEnsaios = data || [];
+
+  // Definição dos 6 tipos de material
+  const MATERIAIS = [
+    { id: 'Solos',            label: 'Solos',              icon: '🪨', cor: 'var(--solos)',    catEnsaio: 'Solos e Agregados' },
+    { id: 'Agregados',        label: 'Agregados',          icon: '⛏️', cor: 'var(--solos)',    catEnsaio: 'Solos e Agregados' },
+    { id: 'Massa Asfáltica',  label: 'Massa Asfáltica',    icon: '🛣️', cor: 'var(--asfalto)',  catEnsaio: 'Asfalto' },
+    { id: 'Ligante Asfáltico',label: 'Ligante Asfáltico',  icon: '🛢️', cor: 'var(--asfalto)',  catEnsaio: 'Asfalto' },
+    { id: 'CPs / Extração',   label: 'CPs / Extração',     icon: '🔬', cor: 'var(--asfalto)',  catEnsaio: 'Asfalto' },
+    { id: 'Concreto',         label: 'Concreto',           icon: '🏗️', cor: 'var(--concreto)', catEnsaio: 'Concreto' },
+  ];
+  window._MATERIAIS = MATERIAIS;
+
+  el.innerHTML = `
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+    <div>
+      <h2 style="font-size:17px;font-weight:800;color:var(--navy)">Novo Pedido de Ensaio</h2>
+      <p style="font-size:11.5px;color:var(--text-3);margin-top:2px">Cada pedido corresponde a um tipo de material. Materiais diferentes = pedidos separados.</p>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="switchTab('historico')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Meus pedidos
+    </button>
+  </div>
+
+  <!-- STEP 1: TIPO DE MATERIAL -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-header">
+      <span class="card-title">1. Tipo de Material</span>
+      <span style="font-size:10.5px;color:var(--text-3)">Selecione um tipo por pedido</span>
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px" id="material-grid">
+        ${MATERIAIS.map(m => `
+          <button class="material-btn" data-mat="${m.id}" onclick="selecionarMaterial('${m.id}')" style="
+            border: 2px solid var(--border);
+            background: var(--surface);
+            border-radius: var(--r-md);
+            padding: 14px 10px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-2);
+            transition: all .15s;
+            text-align: center;
+            line-height: 1.4;
+          ">
+            <span style="font-size:24px;display:block;margin-bottom:6px">${m.icon}</span>
+            ${m.label}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: DADOS DA AMOSTRA (dinâmico) -->
+  <div id="campo-dados-amostra" style="display:none"></div>
+
+  <!-- STEP 3: ENSAIOS -->
+  <div id="campo-ensaios-section" style="display:none">
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-header">
+        <span class="card-title">2. Ensaios Solicitados</span>
+        <span style="font-size:10.5px;color:var(--text-3)" id="ensaios-count">0 selecionados</span>
+      </div>
+      <div class="card-body" id="ensaios-checklist" style="display:flex;flex-direction:column;gap:2px;padding:8px 16px"></div>
+    </div>
+  </div>
+
+  <!-- STEP 3b: AMOSTRAS ADICIONAIS -->
+  <div id="campo-amostras-extras" style="display:none"></div>
+
+  <!-- STEP 4: OBSERVAÇÕES + ENVIO -->
+  <div id="campo-obs-section" style="display:none">
+    <div style="margin-bottom:10px">
+      <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="adicionarAmostra()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Adicionar outra amostra (mesmo material)
+      </button>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-header"><span class="card-title">3. Observações</span></div>
+      <div class="card-body">
+        <textarea class="field-textarea" id="campo-obs" placeholder="Informações adicionais, ensaios 'Outros', especificações complementares…" rows="3"></textarea>
+      </div>
+    </div>
+    <button class="btn btn-teal" style="width:100%;justify-content:center;padding:14px;font-size:14px" onclick="enviarPedido()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Enviar Pedido de Ensaio
+    </button>
+  </div>
+  `;
+}
+
+function selecionarMaterial(mat) {
+  window._campoMaterial = mat;
+  window._campoSelecionados = new Set();
+
+  // Visual feedback nos botões
+  document.querySelectorAll('.material-btn').forEach(b => {
+    const isActive = b.dataset.mat === mat;
+    const m = window._MATERIAIS.find(x => x.id === mat);
+    b.style.borderColor = isActive ? (m?.cor || 'var(--teal)') : 'var(--border)';
+    b.style.background  = isActive ? `rgba(${isActive ? '19,178,172' : '0,0,0'},.08)` : 'var(--surface)';
+    b.style.color       = isActive ? (m?.cor || 'var(--teal-dark)') : 'var(--text-2)';
+    if (isActive) {
+      b.style.background = 'rgba(19,178,172,.08)';
+      b.style.color = 'var(--teal-dark)';
+    }
+  });
+
+  // Montar campos específicos da amostra
+  const dadosEl = document.getElementById('campo-dados-amostra');
+  dadosEl.style.display = 'block';
+  dadosEl.innerHTML = `
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-header">
+        <span class="card-title">📋 Dados da Amostra — ${mat}</span>
+      </div>
+      <div class="card-body">
+        ${campoFieldsPorMaterial(mat)}
+      </div>
+    </div>
+  `;
+
+  // Filtrar ensaios pela categoria correta
+  const matObj = window._MATERIAIS.find(m => m.id === mat);
+  const catEnsaio = matObj?.catEnsaio || '';
+  const filtrados = window._todosEnsaios.filter(e => e.categoria === catEnsaio);
+
+  renderEnsaiosChecklist(filtrados);
+  document.getElementById('campo-ensaios-section').style.display = 'block';
+  document.getElementById('campo-obs-section').style.display = 'block';
+  document.getElementById('ensaios-count').textContent = '0 selecionados';
+}
+
+function campoFieldsPorMaterial(mat) {
+  const hoje = new Date().toISOString().slice(0, 10);
+
+  // SOLOS e AGREGADOS — mesmos campos
+  if (mat === 'Solos' || mat === 'Agregados') return `
+    <div class="form-row">
+      <div><label class="field-label">Jazida</label><input class="field-input" id="f-jazida" placeholder="Ex: Jazida KM 150"></div>
+      <div><label class="field-label">KM da Jazida</label><input class="field-input" id="f-km-jazida" placeholder="0+000"></div>
+    </div>
+    <div class="form-row">
+      <div><label class="field-label">Data de Coleta</label><input type="date" class="field-input" id="f-data-coleta" value="${hoje}"></div>
+      <div><label class="field-label">Furo / Registro</label><input class="field-input" id="f-furo" placeholder="Nº do furo"></div>
+    </div>
+    <div class="form-row single">
+      <div><label class="field-label">Profundidade (m)</label><input class="field-input" id="f-profundidade" placeholder="Ex: 0,00 – 1,50 m"></div>
+    </div>`;
+
+  // CONCRETO
+  if (mat === 'Concreto') return `
+    <div class="form-row">
+      <div><label class="field-label">Data de Concretagem</label><input type="date" class="field-input" id="f-data-conc" value="${hoje}"></div>
+      <div><label class="field-label">KM</label><input class="field-input" id="f-km" placeholder="0+000"></div>
+    </div>
+    <div class="form-row">
+      <div><label class="field-label">Peça Concretada</label><input class="field-input" id="f-peca" placeholder="Ex: Viga, Pilar, Laje…"></div>
+      <div><label class="field-label">Código CP</label><input class="field-input" id="f-cod-cp" placeholder="CP-001"></div>
+    </div>
+    <div class="form-row triple">
+      <div><label class="field-label">fck Projeto (MPa)</label><input class="field-input" id="f-mpa-proj" placeholder="25"></div>
+      <div><label class="field-label">Slump Projeto (cm)</label><input class="field-input" id="f-slump-proj" placeholder="0"></div>
+      <div><label class="field-label">Slump do Dia (cm)</label><input class="field-input" id="f-slump-dia" placeholder="0"></div>
+    </div>
+    <div class="form-row">
+      <div><label class="field-label">Temperatura (°C)</label><input class="field-input" id="f-temp" placeholder="0"></div>
+      <div><label class="field-label">Idade de Ruptura</label>
+        <select class="field-select" id="f-idade">
+          <option>7 dias</option>
+          <option>14 dias</option>
+          <option selected>28 dias</option>
+          <option>Personalizado</option>
+        </select>
+      </div>
+    </div>`;
+
+  // MASSA ASFÁLTICA
+  if (mat === 'Massa Asfáltica') return `
+    <div class="form-row">
+      <div><label class="field-label">Data de Usinagem</label><input type="date" class="field-input" id="f-data-usin" value="${hoje}"></div>
+      <div><label class="field-label">Traço / Faixa</label><input class="field-input" id="f-traco" placeholder="Ex: CBUQ Faixa C"></div>
+    </div>
+    <div class="form-row single">
+      <div><label class="field-label">Anexo (foto / PDF — opcional)</label>
+        <div class="upload-area" onclick="document.getElementById('f-anexo-massa').click()" id="upload-massa-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Toque para selecionar arquivo
+          <input type="file" id="f-anexo-massa" accept="image/*,.pdf" style="display:none" onchange="mostrarAnexo('f-anexo-massa','upload-massa-label')">
+        </div>
+      </div>
+    </div>`;
+
+  // LIGANTE ASFÁLTICO
+  if (mat === 'Ligante Asfáltico') return `
+    <div class="form-row">
+      <div><label class="field-label">Data de Coleta</label><input type="date" class="field-input" id="f-data-col-lig" value="${hoje}"></div>
+      <div><label class="field-label">Fornecedor / Tipo CAP</label><input class="field-input" id="f-cap" placeholder="Ex: CAP 50/70 — Petrobras"></div>
+    </div>
+    <div class="form-row single">
+      <div><label class="field-label">Certificado (PDF — opcional)</label>
+        <div class="upload-area" onclick="document.getElementById('f-cert-lig').click()" id="upload-lig-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Anexar certificado
+          <input type="file" id="f-cert-lig" accept=".pdf,image/*" style="display:none" onchange="mostrarAnexo('f-cert-lig','upload-lig-label')">
+        </div>
+      </div>
+    </div>`;
+
+  // CPs / EXTRAÇÃO DE PISTA
+  if (mat === 'CPs / Extração') return `
+    <div class="form-row">
+      <div><label class="field-label">Código CP</label><input class="field-input" id="f-cod-cp-ext" placeholder="CP-001"></div>
+      <div><label class="field-label">KM</label><input class="field-input" id="f-km-ext" placeholder="0+000"></div>
+    </div>
+    <div class="form-row triple">
+      <div><label class="field-label">Faixa</label>
+        <select class="field-select" id="f-faixa">
+          <option>F1</option><option>F2</option><option>F3</option><option>Acostamento</option>
+        </select>
+      </div>
+      <div><label class="field-label">Lado</label>
+        <select class="field-select" id="f-lado">
+          <option>LD</option><option>LE</option><option>EX</option>
+        </select>
+      </div>
+      <div><label class="field-label">Camada</label>
+        <select class="field-select" id="f-camada">
+          <option>CBUQ</option><option>BGTC</option><option>BG</option><option>Sub-base</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row single">
+      <div><label class="field-label">Data de Extração</label><input type="date" class="field-input" id="f-data-ext" value="${hoje}"></div>
+    </div>`;
+
+  return '';
+}
+
+/* ── MÚLTIPLAS AMOSTRAS ── */
+window._amostrasExtras = [];
+
+function adicionarAmostra() {
+  // Coletar dados da amostra atual (amostra 1 ou última)
+  const mat = window._campoMaterial;
+  if (!mat) return;
+
+  const dadosBase = coletarDadosAmostra(mat);
+  const idx = window._amostrasExtras.length + 2; // Amostra 2, 3, 4...
+
+  window._amostrasExtras.push({ dados: {}, idx });
+
+  const container = document.getElementById('campo-amostras-extras');
+  container.style.display = 'block';
+
+  const divId = `amostra-extra-${idx}`;
+  const div = document.createElement('div');
+  div.id = divId;
+  div.innerHTML = `
+    <div class="card" style="margin-bottom:14px;border-left:3px solid var(--teal)">
+      <div class="card-header">
+        <span class="card-title">📋 Amostra ${idx} — ${mat}</span>
+        <button class="btn btn-ghost btn-sm" onclick="removerAmostra(${idx})" style="color:var(--danger)">Remover</button>
+      </div>
+      <div class="card-body" id="campos-amostra-${idx}">
+        ${campoFieldsPorMaterial(mat)}
+      </div>
+    </div>
+  `;
+  container.appendChild(div);
+
+  // Herdar dados da amostra 1 automaticamente
+  setTimeout(() => {
+    const get = (id) => document.getElementById(id)?.value || '';
+    const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+
+    if (mat === 'Solos' || mat === 'Agregados') {
+      set('f-jazida', dadosBase.jazida);
+      set('f-km-jazida', dadosBase.km_jazida);
+      set('f-data-coleta', dadosBase.data_coleta);
+      // furo e profundidade não herdam (são específicos de cada amostra)
+    }
+    if (mat === 'Concreto') {
+      set('f-data-conc', dadosBase.data_concretagem);
+      set('f-km', dadosBase.km);
+      set('f-peca', dadosBase.peca);
+      set('f-mpa-proj', dadosBase.mpa_proj);
+      set('f-slump-proj', dadosBase.slump_proj);
+      set('f-idade', dadosBase.idade_ruptura);
+      // cod_cp, slump_dia, temperatura não herdam
+    }
+    if (mat === 'Massa Asfáltica') {
+      set('f-data-usin', dadosBase.data_usinagem);
+      set('f-traco', dadosBase.traco_faixa);
+    }
+    if (mat === 'Ligante Asfáltico') {
+      set('f-data-col-lig', dadosBase.data_coleta);
+      set('f-cap', dadosBase.fornecedor_cap);
+    }
+    if (mat === 'CPs / Extração') {
+      set('f-km-ext', dadosBase.km);
+      set('f-faixa', dadosBase.faixa);
+      set('f-lado', dadosBase.lado);
+      set('f-camada', dadosBase.camada);
+      set('f-data-ext', dadosBase.data_extracao);
+      // cod_cp não herda — é específico de cada CP
+    }
+
+    // Salvar referência dos campos desta amostra
+    window._amostrasExtras[idx-2]._containerEl = document.getElementById(`campos-amostra-${idx}`);
+  }, 60);
+}
+
+function removerAmostra(idx) {
+  document.getElementById(`amostra-extra-${idx}`)?.remove();
+  window._amostrasExtras = window._amostrasExtras.filter(a => a.idx !== idx);
+  if (window._amostrasExtras.length === 0) {
+    document.getElementById('campo-amostras-extras').style.display = 'none';
+  }
+}
+
+function coletarTodasAmostras(mat) {
+  // Amostra 1 (campos principais)
+  const amostra1 = coletarDadosAmostra(mat);
+  const todasAmostras = [amostra1];
+
+  // Amostras extras: coletar de cada container
+  for (const extra of window._amostrasExtras) {
+    // Os inputs extras têm mesmo id — precisamos buscar dentro do container
+    const container = document.getElementById(`campos-amostra-${extra.idx}`);
+    if (!container) continue;
+    const get = (id) => container.querySelector(`#${id}`)?.value || '';
+
+    let dados = {};
+    if (mat === 'Solos' || mat === 'Agregados') {
+      dados = { jazida: get('f-jazida'), km_jazida: get('f-km-jazida'), data_coleta: get('f-data-coleta'), furo: get('f-furo'), profundidade: get('f-profundidade') };
+    } else if (mat === 'Concreto') {
+      dados = { data_concretagem: get('f-data-conc'), km: get('f-km'), peca: get('f-peca'), cod_cp: get('f-cod-cp'), mpa_proj: get('f-mpa-proj'), slump_proj: get('f-slump-proj'), slump_dia: get('f-slump-dia'), temperatura: get('f-temp'), idade_ruptura: get('f-idade') };
+    } else if (mat === 'Massa Asfáltica') {
+      dados = { data_usinagem: get('f-data-usin'), traco_faixa: get('f-traco') };
+    } else if (mat === 'Ligante Asfáltico') {
+      dados = { data_coleta: get('f-data-col-lig'), fornecedor_cap: get('f-cap') };
+    } else if (mat === 'CPs / Extração') {
+      dados = { cod_cp: get('f-cod-cp-ext'), km: get('f-km-ext'), faixa: get('f-faixa'), lado: get('f-lado'), camada: get('f-camada'), data_extracao: get('f-data-ext') };
+    }
+    todasAmostras.push(dados);
+  }
+  return todasAmostras;
+}
+
+function mostrarAnexo(inputId, labelId) {
+  const input = document.getElementById(inputId);
+  const label = document.getElementById(labelId);
+  if (input?.files?.[0] && label) {
+    label.innerHTML = `<span style="color:var(--ok);font-weight:600">✓ ${input.files[0].name}</span>`;
+    window[`_anexo_${inputId}`] = input.files[0];
+  }
+}
+
+function renderEnsaiosChecklist(ensaios) {
+  const el = document.getElementById('ensaios-checklist');
+  if (!ensaios || ensaios.length === 0) {
+    el.innerHTML = `<p style="font-size:12px;color:var(--text-3);padding:8px 0">Nenhum ensaio cadastrado para este material. Verifique o catálogo no módulo Gestor.</p>`;
+    return;
+  }
+  el.innerHTML = ensaios.map(e => `
+    <label style="
+      display:flex;align-items:flex-start;gap:10px;
+      padding:10px 6px;cursor:pointer;
+      border-bottom:1px solid var(--border);
+      transition:background .1s;
+    " onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''">
+      <input type="checkbox" value="${e.id}" style="margin-top:2px;flex-shrink:0;accent-color:var(--teal);width:15px;height:15px"
+        onchange="toggleEnsaio('${e.id}')">
+      <div style="flex:1">
+        <div style="font-size:12.5px;font-weight:600;color:var(--text)">${e.nome}</div>
+        ${e.norma ? `<div style="font-size:10.5px;color:var(--text-3);margin-top:2px">${e.norma}</div>` : ''}
+      </div>
+    </label>
+  `).join('');
+}
+
+function toggleEnsaio(id) {
+  if (window._campoSelecionados.has(id)) {
+    window._campoSelecionados.delete(id);
+  } else {
+    window._campoSelecionados.add(id);
+  }
+  const cnt = window._campoSelecionados.size;
+  document.getElementById('ensaios-count').textContent = cnt + ' selecionado' + (cnt !== 1 ? 's' : '');
+}
+
+async function enviarPedido() {
+  if (!window._campoMaterial) { toast('Selecione o tipo de material', 'warn'); return; }
+  if (window._campoSelecionados.size === 0) { toast('Selecione ao menos 1 ensaio', 'warn'); return; }
+
+  const btn = document.querySelector('button[onclick="enviarPedido()"]');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="login-spinner"></span>Enviando…';
+
+  try {
+    const { seq, num, ano } = await gerarNumeroPE();
+    const now = new Date();
+    const pedido = {
+      numero_pe:     num,
+      sequencial:    seq,
+      ano:           ano,
+      status:        'aguardando_lab',
+      material:      window._campoMaterial,
+      solicitante_id: APP.profile.id,
+      empresa:       APP.profile.empresa,
+      lote:          APP.profile.lote,
+      observacoes:   document.getElementById('campo-obs')?.value || '',
+      dados_amostra: coletarTodasAmostras(window._campoMaterial),
+      ensaios_ids:   [...window._campoSelecionados],
+      created_at:    now.toISOString(),
+    };
+
+    const { data: pedidoData, error } = await sb.from('pedidos_ensaio').insert(pedido).select().single();
+    if (error) throw error;
+
+    window._amostrasExtras = [];
+    toast(`PE ${num} criado com sucesso!`, 'ok');
+    setTimeout(() => switchTab('historico'), 1500);
+  } catch(e) {
+    toast('Erro ao criar pedido: ' + e.message, 'danger');
+    btn.disabled = false;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Enviar Pedido de Ensaio`;
+  }
+}
+
+function coletarDadosAmostra(mat) {
+  const get = id => document.getElementById(id)?.value || '';
+  if (mat === 'Solos' || mat === 'Agregados') return {
+    jazida: get('f-jazida'), km_jazida: get('f-km-jazida'),
+    data_coleta: get('f-data-coleta'), furo: get('f-furo'), profundidade: get('f-profundidade')
+  };
+  if (mat === 'Concreto') return {
+    data_concretagem: get('f-data-conc'), km: get('f-km'), peca: get('f-peca'),
+    cod_cp: get('f-cod-cp'), mpa_proj: get('f-mpa-proj'), slump_proj: get('f-slump-proj'),
+    slump_dia: get('f-slump-dia'), temperatura: get('f-temp'), idade_ruptura: get('f-idade')
+  };
+  if (mat === 'Massa Asfáltica') return {
+    data_usinagem: get('f-data-usin'), traco_faixa: get('f-traco')
+  };
+  if (mat === 'Ligante Asfáltico') return {
+    data_coleta: get('f-data-col-lig'), fornecedor_cap: get('f-cap')
+  };
+  if (mat === 'CPs / Extração') return {
+    cod_cp: get('f-cod-cp-ext'), km: get('f-km-ext'), faixa: get('f-faixa'),
+    lado: get('f-lado'), camada: get('f-camada'), data_extracao: get('f-data-ext')
+  };
+  return {};
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MÓDULO LABORATÓRIO
+   ────────────────────────────────────────────────────────────── */
+async function renderLaboratorio(el) {
+  el.innerHTML = `
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+    <div>
+      <h2 style="font-size:17px;font-weight:800;color:var(--navy)">Módulo Laboratório</h2>
+      <p style="font-size:11.5px;color:var(--text-3);margin-top:2px">Gerencie pedidos, atribua ensaios e finalize O.S.</p>
+    </div>
+  </div>
+  <div class="filter-bar">
+    <input class="field-input" placeholder="Buscar PE / O.S. / material…" id="lab-search" oninput="filtrarLab()" style="max-width:260px">
+    <select class="field-select" id="lab-status-filter" onchange="filtrarLab()">
+      <option value="">Todos os status</option>
+      <option value="aguardando_lab">Aguardando Lab</option>
+      <option value="em_analise">Em Análise</option>
+      <option value="em_andamento">Em Andamento</option>
+      <option value="aguardando_revisao">Aguardando Revisão</option>
+      <option value="concluido">Concluído</option>
+    </select>
+  </div>
+  <div id="lab-os-list">
+    <div class="empty-state">
+      <div class="loading-spin" style="width:28px;height:28px;border-width:2px"></div>
+    </div>
+  </div>`;
+
+  await carregarListaLab();
+}
+
+async function carregarListaLab() {
+  const el = document.getElementById('lab-os-list');
+  if (!el) return;
+
+  const { data, error } = await sb
+    .from('pedidos_ensaio')
+    .select('*, solicitante:usuarios!pedidos_ensaio_solicitante_id_fkey(nome, empresa, lote)')
+    .order('created_at', { ascending: false })
+    .limit(30);
+
+  if (error || !data || data.length === 0) {
+    el.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-4"/><rect x="9" y="1" width="6" height="4" rx="1"/></svg>
+      <strong>Nenhum pedido recebido</strong>
+      <span>Os pedidos do campo aparecerão aqui</span>
+    </div>`;
+    return;
+  }
+
+  window._labData = data;
+  renderLabCards(data);
+}
+
+function filtrarLab() {
+  const q = (document.getElementById('lab-search')?.value||'').toLowerCase();
+  const s = document.getElementById('lab-status-filter')?.value||'';
+  const filtrado = (window._labData||[]).filter(os => {
+    const matchQ = !q || (os.numero_pe||'').includes(q) || (os.material||'').toLowerCase().includes(q) || (os.numero_os||'').toLowerCase().includes(q);
+    const matchS = !s || os.status === s;
+    return matchQ && matchS;
+  });
+  renderLabCards(filtrado);
+}
+
+function renderLabCards(list) {
+  const el = document.getElementById('lab-os-list');
+  if (!el) return;
+  if (!list || list.length === 0) {
+    el.innerHTML = `<div class="empty-state"><strong>Nenhum resultado</strong><span>Ajuste os filtros acima</span></div>`;
+    return;
+  }
+  el.innerHTML = list.map(os => renderOSCard(os, true)).join('');
+}
+
+/* ── LABEL MAP ── */
+const STATUS_MAP = {
+  'aguardando_lab':    ['Aguardando Lab',     'status-aguardando-lab'],
+  'em_analise':        ['Em Análise',          'status-em-analise'],
+  'em_andamento':      ['Em Andamento',        'status-em-andamento'],
+  'aguardando_revisao':['Aguard. Revisão',     'status-aguardando-rev'],
+  'concluido':         ['Concluído',           'status-concluido'],
+  'devolvido_campo':   ['Dev. Campo',          'status-devolvido-campo'],
+  'devolvido_assist':  ['Dev. Assistente',     'status-devolvido-assist'],
+  'cancelado':         ['Cancelado',           'status-cancelado'],
+};
+const MAT_TAG = {
+  'Solos':'solos','Agregados':'solos','Concreto':'concreto',
+  'Massa Asfáltica':'asfalto','Ligante Asfáltico':'asfalto','CPs / Extração':'cp'
+};
+const DADOS_LABEL = {
+  jazida:'Jazida', km_jazida:'KM Jazida', data_coleta:'Data Coleta',
+  furo:'Furo/Registro', profundidade:'Profundidade',
+  data_concretagem:'Data Concretagem', km:'KM', peca:'Peça Concretada',
+  cod_cp:'Código CP', mpa_proj:'fck Projeto', slump_proj:'Slump Projeto',
+  slump_dia:'Slump Dia', temperatura:'Temperatura', idade_ruptura:'Idade Ruptura',
+  data_usinagem:'Data Usinagem', traco_faixa:'Traço/Faixa',
+  fornecedor_cap:'Fornecedor/CAP', data_extracao:'Data Extração',
+  faixa:'Faixa', lado:'Lado', camada:'Camada',
+};
+
+function renderOSCard(os, labMode=false, campoMode=false) {
+  const [statusLabel, statusCls] = STATUS_MAP[os.status] || ['—',''];
+  const matTag = MAT_TAG[os.material] || 'solos';
+  const dt = os.created_at ? new Date(os.created_at).toLocaleDateString('pt-BR') : '—';
+  const solicNome = os.solicitante?.nome || '—';
+  const osId = 'os-' + (os.id || Math.random().toString(36).slice(2));
+
+  return `
+  <div class="os-card" id="card-${os.id}">
+    <div class="os-card-header" onclick="toggleCard('${osId}')">
+      <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0">
+        <span class="os-card-num">PE ${os.numero_pe||'????'}</span>
+        ${os.numero_os ? `<span style="font-size:9px;color:var(--text-3);font-family:monospace">${os.numero_os}</span>` : ''}
+      </div>
+      <div class="os-card-info">
+        <div class="os-card-title">${os.material||'—'}</div>
+        <div class="os-card-meta">${solicNome} · ${dt} · ${os.empresa||''} ${os.lote?'· Lote '+os.lote:''}</div>
+      </div>
+      <span class="tag tag-${matTag}" style="flex-shrink:0;margin-right:4px">${os.material?.split(' ')[0]||''}</span>
+      <span class="status ${statusCls}" style="flex-shrink:0">${statusLabel}</span>
+      <svg class="os-card-chevron" id="${osId}-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="os-card-body" id="${osId}-body">
+      <div style="padding-top:12px">
+        ${renderOSCardBody(os, labMode, campoMode)}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderOSCardBody(os, labMode, campoMode) {
+  // Dados da amostra — pode ser array (múltiplas) ou objeto (simples)
+  const amostras = Array.isArray(os.dados_amostra) ? os.dados_amostra : [os.dados_amostra || {}];
+
+  const amostrasHtml = amostras.map((dados, idx) => {
+    const dadosHtml = Object.entries(dados).filter(([k,v])=>v).map(([k,v]) =>
+      `<div>
+        <span style="font-size:10px;color:var(--text-3);text-transform:uppercase;font-weight:600">${DADOS_LABEL[k]||k.replace(/_/g,' ')}</span>
+        <div style="font-size:12.5px;color:var(--text);margin-top:1px">${v}</div>
+      </div>`
+    ).join('');
+    return amostras.length > 1
+      ? `<div style="background:var(--surface-2);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:8px;border:1px solid var(--border)">
+          <div style="font-size:10px;font-weight:700;color:var(--teal-dark);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Amostra ${idx+1}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px">${dadosHtml}</div>
+        </div>`
+      : `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;margin-bottom:12px">${dadosHtml}</div>`;
+  }).join('');
+
+  // Ensaios listados
+  const ensaiosNomes = (os.ensaios_nomes||[]);
+  const ensaiosHtml = ensaiosNomes.length > 0
+    ? `<div style="margin-bottom:12px">
+        <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">Ensaios solicitados</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">
+          ${ensaiosNomes.map(n=>`<span style="background:var(--surface-2);border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:11px;color:var(--text-2)">${n}</span>`).join('')}
+        </div>
+      </div>`
+    : '';
+
+  // Motivo devolução
+  const motivoHtml = os.motivo_devolucao
+    ? `<div style="background:var(--warn-bg);border:1px solid #FCD34D;border-radius:var(--r-sm);padding:8px 12px;font-size:12px;color:var(--warn);margin-bottom:12px">
+        <strong>⚠️ Motivo da devolução:</strong> ${os.motivo_devolucao}
+      </div>`
+    : '';
+
+  // Observações
+  const obsHtml = os.observacoes
+    ? `<div style="background:var(--info-bg);border-radius:var(--r-sm);padding:8px 12px;font-size:12px;color:var(--info);margin-bottom:12px">
+        <strong>Obs:</strong> ${os.observacoes}
+      </div>`
+    : '';
+
+  return `
+    ${motivoHtml}
+    ${amostrasHtml}
+    ${ensaiosHtml}
+    ${obsHtml}
+    ${labMode   ? renderLabActions(os)   : ''}
+    ${campoMode ? renderCampoActions(os) : ''}
+  `;
+}
+
+/* ── AÇÕES DO CAMPO (para o inspetor no histórico) ── */
+function renderCampoActions(os) {
+  if (os.status === 'devolvido_campo') {
+    return `
+    <div style="margin-top:8px">
+      <button class="btn btn-teal btn-sm" onclick="editarPedidoDevolvido('${os.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Corrigir e Reenviar
+      </button>
+    </div>`;
+  }
+  return '';
+}
+
+/* ── AÇÕES DO LAB ── */
+function renderLabActions(os) {
+  if (os.status === 'aguardando_lab') {
+    return `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+      <button class="btn btn-teal btn-sm" onclick="abrirOS('${os.id}')">Abrir O.S.</button>
+      <button class="btn btn-ghost btn-sm" onclick="abrirModalDevolverCampo('${os.id}')">Devolver ao Campo</button>
+      <button class="btn btn-danger btn-sm" onclick="cancelarPedido('${os.id}')">Cancelar</button>
+    </div>`;
+  }
+  if (os.status === 'em_andamento' || os.status === 'em_analise') {
+    return `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+      <button class="btn btn-navy btn-sm" onclick="abrirModalAtribuir('${os.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Atribuir Ensaios
+      </button>
+      <button class="btn btn-teal btn-sm" onclick="abrirModalFinalizar('${os.id}')">Finalizar O.S.</button>
+      <button class="btn btn-ghost btn-sm" onclick="abrirModalDevolverCampo('${os.id}')">Devolver ao Campo</button>
+    </div>`;
+  }
+  if (os.status === 'aguardando_revisao') {
+    return `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+      <button class="btn btn-teal btn-sm" onclick="abrirModalFinalizar('${os.id}')">Revisar e Finalizar</button>
+      <button class="btn btn-ghost btn-sm" onclick="devolverAssistente('${os.id}')">Devolver ao Assistente</button>
+    </div>`;
+  }
+  if (os.status === 'concluido') {
+    return `
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn btn-ghost btn-sm">Ver PDF</button>
+    </div>`;
+  }
+  return '';
+}
+
+/* ── FUNÇÕES LAB ── */
+async function abrirOS(pedidoId) {
+  const now = new Date();
+  const { data: pedido } = await sb.from('pedidos_ensaio').select('*').eq('id', pedidoId).single();
+  if (!pedido) return;
+
+  const lote = pedido.lote || APP.profile.lote || '01';
+  const numOS = gerarNumeroOS({
+    ano: now.getFullYear(), mes: now.getMonth()+1,
+    dia: now.getDate(), lote, seq: pedido.sequencial
+  });
+
+  const historico = Array.isArray(pedido.historico) ? pedido.historico : [];
+  historico.push({ acao: 'OS aberta', usuario: APP.profile.nome, data: now.toISOString(), numero_os: numOS });
+
+  const { error } = await sb.from('pedidos_ensaio').update({
+    status: 'em_andamento',
+    numero_os: numOS,
+    aberto_por: APP.profile.id,
+    aberto_em: now.toISOString(),
+    historico,
+  }).eq('id', pedidoId);
+
+  if (error) { toast('Erro ao abrir O.S.: ' + error.message, 'danger'); return; }
+  toast(`${numOS} aberta com sucesso!`, 'ok');
+  await carregarListaLab();
+}
+
+function abrirModalDevolverCampo(pedidoId) {
+  const modal = document.getElementById('modal-devolver-campo');
+  if (modal) {
+    document.getElementById('devolver-campo-id').value = pedidoId;
+    document.getElementById('devolver-campo-motivo').value = '';
+    openModal('modal-devolver-campo');
+  } else {
+    // Fallback simples
+    const motivo = prompt('Motivo da devolução ao campo:');
+    if (motivo) executarDevolverCampo(pedidoId, motivo);
+  }
+}
+
+async function executarDevolverCampo(pedidoId, motivo) {
+  const now = new Date();
+  const { data: pedido } = await sb.from('pedidos_ensaio').select('historico').eq('id', pedidoId).single();
+  const historico = Array.isArray(pedido?.historico) ? pedido.historico : [];
+  historico.push({ acao: 'Devolvido ao campo', motivo, usuario: APP.profile.nome, data: now.toISOString() });
+
+  await sb.from('pedidos_ensaio').update({
+    status: 'devolvido_campo',
+    motivo_devolucao: motivo,
+    historico,
+  }).eq('id', pedidoId);
+
+  toast('Pedido devolvido ao campo', 'warn');
+  closeModal('modal-devolver-campo');
+  await carregarListaLab();
+}
+
+async function cancelarPedido(pedidoId) {
+  if (!confirm('Confirma o cancelamento deste pedido?')) return;
+  const now = new Date();
+  const { data: pedido } = await sb.from('pedidos_ensaio').select('historico').eq('id', pedidoId).single();
+  const historico = Array.isArray(pedido?.historico) ? pedido.historico : [];
+  historico.push({ acao: 'Cancelado', usuario: APP.profile.nome, data: now.toISOString() });
+  await sb.from('pedidos_ensaio').update({ status: 'cancelado', historico }).eq('id', pedidoId);
+  toast('Pedido cancelado', 'danger');
+  await carregarListaLab();
+}
+
+async function abrirModalAtribuir(pedidoId) {
+  const { data: pedido } = await sb.from('pedidos_ensaio').select('*').eq('id', pedidoId).single();
+  if (!pedido) return;
+
+  const { data: assistentes } = await sb.from('usuarios')
+    .select('id, nome, cargo')
+    .in('perfil', ['ASSIST','LAB','DEV'])
+    .eq('status', 'Ativo');
+
+  const { data: ensaiosData } = await sb.from('ensaios')
+    .select('id, nome')
+    .in('id', pedido.ensaios_ids || []);
+
+  const { data: jaAtribuidos } = await sb.from('ensaios_os')
+    .select('ensaio_id, assistente_id, usuarios(nome)')
+    .eq('pedido_id', pedidoId);
+
+  const atribMap = {};
+  (jaAtribuidos||[]).forEach(e => { atribMap[e.ensaio_id] = e; });
+
+  const body = document.getElementById('modal-atribuir-body');
+  body.innerHTML = `
+    <p style="font-size:12px;color:var(--text-3);margin-bottom:14px">Atribua cada ensaio a um assistente. O mesmo assistente pode receber vários ensaios.</p>
+    <div style="display:flex;flex-direction:column;gap:10px" id="atribuir-lista">
+      ${(ensaiosData||[]).map(e => {
+        const atual = atribMap[e.id];
+        return `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--surface-2);border-radius:var(--r-sm);border:1px solid var(--border)">
+          <div style="flex:1;font-size:12.5px;font-weight:600;color:var(--text)">${e.nome}</div>
+          <select class="field-select" id="assist-${e.id}" style="max-width:180px;font-size:12px">
+            <option value="">— Selecionar —</option>
+            ${(assistentes||[]).map(a=>`<option value="${a.id}" ${atual?.assistente_id===a.id?'selected':''}>${a.nome}</option>`).join('')}
+          </select>
+        </div>`;
+      }).join('')}
+    </div>
+    <input type="hidden" id="atribuir-pedido-id" value="${pedidoId}">
+    <input type="hidden" id="atribuir-ensaios-json" value='${JSON.stringify(ensaiosData||[])}'>
+  `;
+  openModal('modal-atribuir');
+}
+
+async function salvarAtribuicoes() {
+  const pedidoId = document.getElementById('atribuir-pedido-id').value;
+  const ensaios = JSON.parse(document.getElementById('atribuir-ensaios-json').value);
+  const now = new Date();
+  let count = 0;
+
+  for (const e of ensaios) {
+    const assistId = document.getElementById(`assist-${e.id}`)?.value;
+    if (!assistId) continue;
+
+    // Upsert — atualiza se já existe, cria se não
+    await sb.from('ensaios_os').upsert({
+      pedido_id: pedidoId,
+      ensaio_id: e.id,
+      nome_ensaio: e.nome,
+      assistente_id: assistId,
+      status: 'pendente',
+    }, { onConflict: 'pedido_id,ensaio_id' });
+    count++;
+  }
+
+  if (count > 0) {
+    await sb.from('pedidos_ensaio').update({ status: 'em_andamento' }).eq('id', pedidoId);
+    toast(`${count} ensaio(s) atribuído(s) com sucesso!`, 'ok');
+  }
+
+  closeModal('modal-atribuir');
+  await carregarListaLab();
+}
+
+async function abrirModalFinalizar(pedidoId) {
+  const { data: pedido } = await sb.from('pedidos_ensaio').select('*').eq('id', pedidoId).single();
+  if (!pedido) return;
+
+  const { data: ensaiosOS } = await sb.from('ensaios_os')
+    .select('*, assistente:usuarios(nome), assinatura_url:usuarios(assinatura_url)')
+    .eq('pedido_id', pedidoId);
+
+  const body = document.getElementById('modal-finalizar-body');
+  body.innerHTML = `
+    <p style="font-size:12px;color:var(--text-2);margin-bottom:14px">
+      Revise os ensaios, defina a visibilidade para o campo e finalize a O.S. <strong>${pedido.numero_os||'—'}</strong>.
+    </p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+      ${(ensaiosOS||[]).length === 0
+        ? `<p style="font-size:12px;color:var(--text-3)">Nenhum ensaio atribuído ainda.</p>`
+        : (ensaiosOS||[]).map(e => `
+          <div style="border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+              <div>
+                <div style="font-size:12.5px;font-weight:600;color:var(--text)">${e.nome_ensaio}</div>
+                <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">Assistente: ${e.assistente?.nome||'—'} · Status: ${e.status}</div>
+              </div>
+              <label class="toggle-group">
+                <label class="toggle">
+                  <input type="checkbox" id="vis-${e.id}" ${e.visivel_campo?'checked':''}>
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label">Visível ao campo</span>
+              </label>
+            </div>
+          </div>
+        `).join('')
+      }
+    </div>
+    <div style="background:var(--warn-bg);border:1px solid #FCD34D;border-radius:var(--r-sm);padding:10px 12px;font-size:12px;color:var(--warn);margin-bottom:4px">
+      ⚠️ Após finalizar, o documento fica bloqueado. Apenas o Gestor pode reabrir.
+    </div>
+    <input type="hidden" id="finalizar-pedido-id" value="${pedidoId}">
+    <input type="hidden" id="finalizar-ensaios-json" value='${JSON.stringify((ensaiosOS||[]).map(e=>({id:e.id})))}'>
+  `;
+  openModal('modal-finalizar');
+}
+
+async function confirmarFinalizar() {
+  const pedidoId = document.getElementById('finalizar-pedido-id').value;
+  const ensaios  = JSON.parse(document.getElementById('finalizar-ensaios-json').value);
+  const now = new Date();
+
+  // Salvar visibilidade de cada ensaio
+  for (const e of ensaios) {
+    const vis = document.getElementById(`vis-${e.id}`)?.checked || false;
+    await sb.from('ensaios_os').update({ visivel_campo: vis }).eq('id', e.id);
+  }
+
+  const { data: pedido } = await sb.from('pedidos_ensaio').select('historico').eq('id', pedidoId).single();
+  const historico = Array.isArray(pedido?.historico) ? pedido.historico : [];
+  historico.push({ acao: 'O.S. finalizada', usuario: APP.profile.nome, data: now.toISOString() });
+
+  await sb.from('pedidos_ensaio').update({
+    status: 'concluido',
+    finalizado_por: APP.profile.id,
+    finalizado_em: now.toISOString(),
+    historico,
+  }).eq('id', pedidoId);
+
+  toast('O.S. finalizada com sucesso!', 'ok');
+  closeModal('modal-finalizar');
+  await carregarListaLab();
+}
+
+async function devolverAssistente(pedidoId) {
+  const motivo = prompt('Motivo da devolução ao assistente:');
+  if (!motivo) return;
+  const now = new Date();
+  const { data: pedido } = await sb.from('pedidos_ensaio').select('historico').eq('id', pedidoId).single();
+  const historico = Array.isArray(pedido?.historico) ? pedido.historico : [];
+  historico.push({ acao: 'Devolvido ao assistente', motivo, usuario: APP.profile.nome, data: now.toISOString() });
+  await sb.from('pedidos_ensaio').update({ status: 'em_andamento', historico }).eq('id', pedidoId);
+  toast('Devolvido ao assistente', 'warn');
+  await carregarListaLab();
+}
+
+/* ── CAMPO: editar pedido devolvido ── */
+async function editarPedidoDevolvido(pedidoId) {
+  const { data: pedido } = await sb.from('pedidos_ensaio').select('*').eq('id', pedidoId).single();
+  if (!pedido) return;
+
+  // Carrega ensaios disponíveis para o material
+  const { data: todosEnsaios } = await sb.from('ensaios').select('*').eq('ativo', true).order('ordem');
+  const MATERIAIS = [
+    { id: 'Solos', catEnsaio: 'Solos e Agregados' },
+    { id: 'Agregados', catEnsaio: 'Solos e Agregados' },
+    { id: 'Massa Asfáltica', catEnsaio: 'Asfalto' },
+    { id: 'Ligante Asfáltico', catEnsaio: 'Asfalto' },
+    { id: 'CPs / Extração', catEnsaio: 'Asfalto' },
+    { id: 'Concreto', catEnsaio: 'Concreto' },
+  ];
+  const matObj = MATERIAIS.find(m => m.id === pedido.material);
+  const ensaiosFiltrados = (todosEnsaios||[]).filter(e => e.categoria === matObj?.catEnsaio);
+
+  const selecionados = new Set(pedido.ensaios_ids || []);
+  const dadosAtual = Array.isArray(pedido.dados_amostra) ? pedido.dados_amostra[0] : (pedido.dados_amostra || {});
+
+  document.getElementById('modal-editar-pedido-body').innerHTML = `
+    <div style="background:var(--warn-bg);border:1px solid #FCD34D;border-radius:var(--r-sm);padding:8px 12px;font-size:12px;color:var(--warn);margin-bottom:14px">
+      <strong>⚠️ Motivo da devolução:</strong> ${pedido.motivo_devolucao||'—'}
+    </div>
+    <div class="section-title" style="margin-bottom:10px">Dados da Amostra</div>
+    <div id="editar-campos-amostra">
+      ${campoFieldsPreenchidos(pedido.material, dadosAtual)}
+    </div>
+    <div class="section-title" style="margin:14px 0 10px">Ensaios Solicitados</div>
+    <div style="display:flex;flex-direction:column;gap:2px;margin-bottom:12px">
+      ${ensaiosFiltrados.map(e=>`
+        <label style="display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px solid var(--border);cursor:pointer">
+          <input type="checkbox" value="${e.id}" ${selecionados.has(e.id)?'checked':''}
+            style="accent-color:var(--teal);width:14px;height:14px"
+            onchange="toggleEnsaioEditar('${e.id}')">
+          <span style="font-size:12.5px;color:var(--text);font-weight:500">${e.nome}</span>
+        </label>
+      `).join('')}
+    </div>
+    <div class="section-title" style="margin-bottom:8px">Observações</div>
+    <textarea class="field-textarea" id="editar-obs" rows="2" placeholder="Observações…">${pedido.observacoes||''}</textarea>
+    <input type="hidden" id="editar-pedido-id" value="${pedidoId}">
+    <input type="hidden" id="editar-material" value="${pedido.material}">
+  `;
+  window._editarSelecionados = new Set(selecionados);
+  openModal('modal-editar-pedido');
+}
+
+function campoFieldsPreenchidos(mat, dados) {
+  // Reutiliza campoFieldsPorMaterial mas preenchido com valores existentes
+  const html = campoFieldsPorMaterial(mat);
+  // Injetar via JS após render
+  setTimeout(() => {
+    const get = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+    if (mat === 'Solos' || mat === 'Agregados') {
+      get('f-jazida', dados.jazida); get('f-km-jazida', dados.km_jazida);
+      get('f-data-coleta', dados.data_coleta); get('f-furo', dados.furo);
+      get('f-profundidade', dados.profundidade);
+    }
+    if (mat === 'Concreto') {
+      get('f-data-conc', dados.data_concretagem); get('f-km', dados.km);
+      get('f-peca', dados.peca); get('f-cod-cp', dados.cod_cp);
+      get('f-mpa-proj', dados.mpa_proj); get('f-slump-proj', dados.slump_proj);
+      get('f-slump-dia', dados.slump_dia); get('f-temp', dados.temperatura);
+      get('f-idade', dados.idade_ruptura);
+    }
+    if (mat === 'Massa Asfáltica') {
+      get('f-data-usin', dados.data_usinagem); get('f-traco', dados.traco_faixa);
+    }
+    if (mat === 'Ligante Asfáltico') {
+      get('f-data-col-lig', dados.data_coleta); get('f-cap', dados.fornecedor_cap);
+    }
+    if (mat === 'CPs / Extração') {
+      get('f-cod-cp-ext', dados.cod_cp); get('f-km-ext', dados.km);
+      get('f-faixa', dados.faixa); get('f-lado', dados.lado);
+      get('f-camada', dados.camada); get('f-data-ext', dados.data_extracao);
+    }
+  }, 50);
+  return html;
+}
+
+function toggleEnsaioEditar(id) {
+  if (window._editarSelecionados.has(id)) {
+    window._editarSelecionados.delete(id);
+  } else {
+    window._editarSelecionados.add(id);
+  }
+}
+
+async function salvarEdicaoPedido() {
+  const pedidoId = document.getElementById('editar-pedido-id').value;
+  const mat = document.getElementById('editar-material').value;
+  if (window._editarSelecionados.size === 0) { toast('Selecione ao menos 1 ensaio', 'warn'); return; }
+
+  const dados = coletarDadosAmostra(mat);
+  const now = new Date();
+  const { data: pedido } = await sb.from('pedidos_ensaio').select('historico').eq('id', pedidoId).single();
+  const historico = Array.isArray(pedido?.historico) ? pedido.historico : [];
+  historico.push({ acao: 'Corrigido e reenviado pelo campo', usuario: APP.profile.nome, data: now.toISOString() });
+
+  const { error } = await sb.from('pedidos_ensaio').update({
+    status: 'aguardando_lab',
+    dados_amostra: dados,
+    ensaios_ids: [...window._editarSelecionados],
+    observacoes: document.getElementById('editar-obs')?.value || '',
+    motivo_devolucao: null,
+    historico,
+  }).eq('id', pedidoId);
+
+  if (error) { toast('Erro ao salvar: ' + error.message, 'danger'); return; }
+  toast('Pedido corrigido e reenviado!', 'ok');
+  closeModal('modal-editar-pedido');
+  await renderHistorico(document.getElementById('main-content'));
+}
+
+function toggleCard(id) {
+  const body = document.getElementById(id+'-body');
+  const chev  = document.getElementById(id+'-chev');
+  if (!body) return;
+  body.classList.toggle('open');
+  chev?.classList.toggle('open');
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MÓDULO ASSISTENTE
+   ────────────────────────────────────────────────────────────── */
+async function renderAssistente(el) {
+  el.innerHTML = `
+  <div style="margin-bottom:18px">
+    <h2 style="font-size:17px;font-weight:800;color:var(--navy)">Meus Ensaios</h2>
+    <p style="font-size:11.5px;color:var(--text-3);margin-top:2px">Ensaios atribuídos a você para execução</p>
+  </div>
+  <div id="assist-list">
+    <div class="empty-state">
+      <div class="loading-spin" style="width:28px;height:28px;border-width:2px"></div>
+    </div>
+  </div>`;
+
+  const { data } = await sb
+    .from('ensaios_os')
+    .select('*, pedido:pedidos_ensaio(numero_pe, numero_os, material, dados_amostra)')
+    .eq('assistente_id', APP.profile.id)
+    .in('status', ['pendente','em_execucao'])
+    .order('created_at', { ascending: false });
+
+  const el2 = document.getElementById('assist-list');
+  if (!data || data.length === 0) {
+    el2.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+      <strong>Nenhum ensaio atribuído</strong>
+      <span>Aguarde o laboratorista atribuir ensaios a você</span>
+    </div>`;
+    return;
+  }
+
+  el2.innerHTML = data.map(e => `
+    <div class="os-card">
+      <div class="os-card-header" onclick="toggleCard('assist-${e.id}')">
+        <div style="flex:1">
+          <div class="os-card-title">${e.nome_ensaio||'Ensaio'}</div>
+          <div class="os-card-meta">O.S. ${e.pedido?.numero_os||'—'} · ${e.pedido?.material||''}</div>
+        </div>
+        <span class="status status-em-andamento">Pendente</span>
+        <svg class="os-card-chevron" id="assist-${e.id}-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="os-card-body" id="assist-${e.id}-body">
+        <div style="padding-top:12px">
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <button class="btn btn-teal btn-sm" onclick="abrirFichaDigital('${e.id}')">Preencher Ficha Digital</button>
+            <button class="btn btn-ghost btn-sm" onclick="uploadFoto('${e.id}')">Upload Foto/PDF</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MÓDULO GESTOR
+   ────────────────────────────────────────────────────────────── */
+async function renderGestor(el) {
+  el.innerHTML = `
+  <div style="margin-bottom:18px">
+    <h2 style="font-size:17px;font-weight:800;color:var(--navy)">Configurações do Sistema</h2>
+    <p style="font-size:11.5px;color:var(--text-3);margin-top:2px">Gerencie usuários, ensaios e fichas</p>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:24px">
+    ${[
+      {icon:'👥', label:'Usuários', sub:'Cadastros e perfis', fn:'gestorUsuarios'},
+      {icon:'🔬', label:'Catálogo de Ensaios', sub:'Tipos e categorias', fn:'gestorEnsaios'},
+      {icon:'📋', label:'Fichas ISO 9001', sub:'Templates e mapeamentos', fn:'gestorFichas'},
+      {icon:'🏗️', label:'Empresas e Lotes', sub:'Configurações de lote', fn:'gestorEmpresas'},
+      {icon:'⚙️', label:'Parâmetros', sub:'Configurações gerais', fn:'gestorParams'},
+    ].map(g=>`
+      <div class="card" style="cursor:pointer;transition:box-shadow .15s" onclick="${g.fn}()" onmouseover="this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.boxShadow='var(--shadow-sm)'">
+        <div class="card-body" style="display:flex;align-items:center;gap:14px;padding:18px">
+          <div style="font-size:28px;flex-shrink:0">${g.icon}</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text)">${g.label}</div>
+            <div style="font-size:11px;color:var(--text-3);margin-top:2px">${g.sub}</div>
+          </div>
+        </div>
+      </div>
+    `).join('')}
+  </div>
+  <div id="gestor-sub-content"></div>`;
+}
+
+async function gestorUsuarios() {
+  const { data } = await sb.from('usuarios').select('*').order('nome');
+  const el = document.getElementById('gestor-sub-content');
+  el.innerHTML = `
+  <div class="section-title">Usuários Cadastrados</div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+    <button class="btn btn-teal btn-sm" onclick="openNovoUsuario()">+ Novo Usuário</button>
+  </div>
+  <div class="card">
+    <table class="data-table">
+      <thead><tr>
+        <th>Nome</th><th>Perfil</th><th>Empresa / Lote</th><th>E-mail</th><th>Status</th><th></th>
+      </tr></thead>
+      <tbody>
+        ${(data||[]).map(u=>`
+          <tr>
+            <td><strong>${u.nome}</strong><br><span style="font-size:10.5px;color:var(--text-3)">${u.cargo||''}</span></td>
+            <td><span class="perfil-badge perfil-${u.perfil}">${u.perfil}</span></td>
+            <td style="font-size:11.5px">${u.empresa||'—'}${u.lote?' · Lote '+u.lote:''}</td>
+            <td style="font-size:11.5px">${u.email||''}</td>
+            <td><span class="status ${u.status==='Ativo'?'status-concluido':'status-cancelado'}">${u.status}</span></td>
+            <td><button class="btn btn-ghost btn-sm" onclick="editarUsuario('${u.id}')">Editar</button></td>
+          </tr>
+        `).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-3);padding:24px">Nenhum usuário cadastrado</td></tr>'}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+async function gestorEnsaios() {
+  const { data } = await sb.from('ensaios').select('*').order('categoria').order('ordem');
+  const el = document.getElementById('gestor-sub-content');
+  const cats = [...new Set((data||[]).map(e=>e.categoria))];
+
+  el.innerHTML = `
+  <div class="section-title">Catálogo de Ensaios</div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+    <button class="btn btn-teal btn-sm" onclick="openNovoEnsaio()">+ Novo Ensaio</button>
+  </div>
+  ${cats.map(cat => `
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-header">
+        <span class="card-title">${cat}</span>
+        <span class="tag tag-${cat.toLowerCase().split('/')[0].trim()}">${(data||[]).filter(e=>e.categoria===cat).length} ensaios</span>
+      </div>
+      <table class="data-table">
+        <tbody>
+          ${(data||[]).filter(e=>e.categoria===cat).map(e=>`
+            <tr>
+              <td><strong>${e.nome}</strong></td>
+              <td style="font-size:11px;color:var(--text-3)">${e.norma||'—'}</td>
+              <td><span class="status ${e.ativo?'status-concluido':'status-cancelado'}">${e.ativo?'Ativo':'Inativo'}</span></td>
+              <td><button class="btn btn-ghost btn-sm">Editar</button></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `).join('') || '<div class="empty-state"><strong>Nenhum ensaio cadastrado</strong></div>'}`;
+}
+
+function gestorFichas() {
+  document.getElementById('gestor-sub-content').innerHTML = `
+  <div class="section-title">Fichas ISO 9001</div>
+  <div class="card"><div class="card-body">
+    <p style="color:var(--text-2);font-size:13px;margin-bottom:14px">Upload dos templates Excel das fichas homologadas (55 fichas).</p>
+    <div class="upload-area" onclick="document.getElementById('ficha-upload').click()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Arraste ou clique para selecionar fichas Excel
+      <input type="file" id="ficha-upload" accept=".xlsx,.xls" multiple style="display:none">
+    </div>
+    <p style="font-size:11px;color:var(--text-3);margin-top:10px">⚠️ Os arquivos Excel originais são preservados sem alteração (ISO 9001).</p>
+  </div></div>`;
+}
+
+function gestorEmpresas() {
+  document.getElementById('gestor-sub-content').innerHTML = `
+  <div class="section-title">Empresas e Lotes</div>
+  <div class="card"><div class="card-body">
+    <div class="empty-state"><strong>Em desenvolvimento</strong><span>Módulo de configuração de empresas e lotes</span></div>
+  </div></div>`;
+}
+
+function gestorParams() {
+  document.getElementById('gestor-sub-content').innerHTML = `
+  <div class="section-title">Parâmetros do Sistema</div>
+  <div class="card"><div class="card-body">
+    <div class="empty-state"><strong>Em desenvolvimento</strong><span>Configurações gerais do sistema</span></div>
+  </div></div>`;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MÓDULO ADMIN (DEV)
+   ────────────────────────────────────────────────────────────── */
+async function renderAdmin(el) {
+  el.innerHTML = `
+  <div style="margin-bottom:18px">
+    <h2 style="font-size:17px;font-weight:800;color:var(--navy)">Admin / DEV</h2>
+    <p style="font-size:11.5px;color:var(--text-3);margin-top:2px">Ferramentas de desenvolvedor e configuração inicial</p>
+  </div>
+  <div class="card" style="margin-bottom:16px;border:2px solid #FCA5A5">
+    <div class="card-header" style="background:var(--danger-bg)">
+      <span class="card-title" style="color:var(--danger)">⚠️ Configuração Inicial do Banco</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:12.5px;color:var(--text-2);margin-bottom:14px">Execute os scripts SQL abaixo no Supabase para criar as tabelas necessárias. Faça isso apenas uma vez.</p>
+      <button class="btn btn-danger" onclick="mostrarSQLSetup()">Ver SQL de Setup</button>
+    </div>
+  </div>
+  <div id="sql-content"></div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Seed — Dados Iniciais</span></div>
+    <div class="card-body">
+      <p style="font-size:12px;color:var(--text-2);margin-bottom:12px">Após criar as tabelas, insira os dados iniciais (ensaios padrão, etc.)</p>
+      <button class="btn btn-navy btn-sm" onclick="seedEnsaios()">Inserir Ensaios Padrão</button>
+    </div>
+  </div>`;
+}
+
+function mostrarSQLSetup() {
+  const sql = `
+-- ============================================================
+-- CNRO LAB SYSTEM — SQL SETUP (Execute no Supabase SQL Editor)
+-- ============================================================
+
+-- TABELA: usuarios
+CREATE TABLE IF NOT EXISTS usuarios (
+  id          UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  auth_id     UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  nome        TEXT NOT NULL,
+  cargo       TEXT,
+  perfil      TEXT NOT NULL CHECK (perfil IN ('DEV','GESTOR','LAB','ASSIST','CAMPO')),
+  email       TEXT UNIQUE NOT NULL,
+  empresa     TEXT,
+  lote        TEXT,
+  assinatura_url  TEXT,
+  foto_url        TEXT,
+  status      TEXT DEFAULT 'Ativo' CHECK (status IN ('Ativo','Inativo')),
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+ALTER TABLE usuarios ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "usuarios_select" ON usuarios FOR SELECT USING (true);
+CREATE POLICY "usuarios_insert" ON usuarios FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY "usuarios_update" ON usuarios FOR UPDATE USING (auth.uid() = auth_id OR EXISTS (SELECT 1 FROM usuarios u WHERE u.auth_id = auth.uid() AND u.perfil IN ('DEV','GESTOR')));
+
+-- TABELA: ensaios (catálogo)
+CREATE TABLE IF NOT EXISTS ensaios (
+  id          UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  nome        TEXT NOT NULL,
+  categoria   TEXT NOT NULL,
+  norma       TEXT,
+  ordem       INT DEFAULT 0,
+  ativo       BOOLEAN DEFAULT true,
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+ALTER TABLE ensaios ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "ensaios_select" ON ensaios FOR SELECT USING (true);
+CREATE POLICY "ensaios_manage" ON ensaios FOR ALL USING (EXISTS (SELECT 1 FROM usuarios u WHERE u.auth_id = auth.uid() AND u.perfil IN ('DEV','GESTOR')));
+
+-- TABELA: pedidos_ensaio
+CREATE TABLE IF NOT EXISTS pedidos_ensaio (
+  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  numero_pe       TEXT,
+  numero_os       TEXT,
+  sequencial      INT,
+  ano             INT,
+  status          TEXT DEFAULT 'aguardando_lab',
+  material        TEXT,
+  solicitante_id  UUID REFERENCES usuarios(id),
+  empresa         TEXT,
+  lote            TEXT,
+  dados_amostra   JSONB DEFAULT '{}',
+  ensaios_ids     TEXT[] DEFAULT '{}',
+  observacoes     TEXT,
+  motivo_devolucao TEXT,
+  aberto_por      UUID REFERENCES usuarios(id),
+  aberto_em       TIMESTAMPTZ,
+  finalizado_por  UUID REFERENCES usuarios(id),
+  finalizado_em   TIMESTAMPTZ,
+  visibilidade_campo JSONB DEFAULT '{}',
+  historico       JSONB DEFAULT '[]',
+  created_at      TIMESTAMPTZ DEFAULT now(),
+  updated_at      TIMESTAMPTZ DEFAULT now()
+);
+ALTER TABLE pedidos_ensaio ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "pe_select" ON pedidos_ensaio FOR SELECT USING (true);
+CREATE POLICY "pe_insert" ON pedidos_ensaio FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY "pe_update" ON pedidos_ensaio FOR UPDATE USING (auth.uid() IS NOT NULL);
+
+-- TABELA: ensaios_os (ensaios individuais de uma O.S.)
+CREATE TABLE IF NOT EXISTS ensaios_os (
+  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  pedido_id       UUID REFERENCES pedidos_ensaio(id) ON DELETE CASCADE,
+  ensaio_id       UUID REFERENCES ensaios(id),
+  nome_ensaio     TEXT,
+  assistente_id   UUID REFERENCES usuarios(id),
+  status          TEXT DEFAULT 'pendente',
+  modo_preenchi   TEXT DEFAULT 'digital' CHECK (modo_preenchi IN ('digital','upload')),
+  dados_resultado JSONB DEFAULT '{}',
+  arquivo_url     TEXT,
+  visivel_campo   BOOLEAN DEFAULT false,
+  devolvido_motivo TEXT,
+  created_at      TIMESTAMPTZ DEFAULT now()
+);
+ALTER TABLE ensaios_os ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "ensaios_os_select" ON ensaios_os FOR SELECT USING (true);
+CREATE POLICY "ensaios_os_all"    ON ensaios_os FOR ALL USING (auth.uid() IS NOT NULL);
+
+-- FUNÇÃO: atualizar updated_at automaticamente
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS \$\$ BEGIN NEW.updated_at = now(); RETURN NEW; END; \$\$ LANGUAGE plpgsql;
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON pedidos_ensaio FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  `.trim();
+
+  document.getElementById('sql-content').innerHTML = `
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-header">
+      <span class="card-title">SQL de Setup — Cole no Supabase SQL Editor</span>
+      <button class="btn btn-ghost btn-sm" onclick="copiarSQL()">Copiar</button>
+    </div>
+    <div class="card-body">
+      <pre id="sql-pre" style="font-size:10.5px;color:var(--text-2);background:var(--surface-2);padding:14px;border-radius:var(--r-sm);overflow-x:auto;white-space:pre-wrap;border:1px solid var(--border);line-height:1.6;max-height:400px;overflow-y:auto">${sql}</pre>
+    </div>
+  </div>`;
+  window._sqlSetup = sql;
+}
+
+function copiarSQL() {
+  if (!window._sqlSetup) return;
+  navigator.clipboard.writeText(window._sqlSetup).then(() => toast('SQL copiado!', 'ok'));
+}
+
+async function seedEnsaios() {
+  const ensaiosPadrao = [
+    // SOLOS
+    {nome:'Granulometria por Peneiramento', categoria:'Solos', norma:'ABNT NBR 7181', ordem:1},
+    {nome:'Limite de Liquidez (LL)', categoria:'Solos', norma:'ABNT NBR 6459', ordem:2},
+    {nome:'Limite de Plasticidade (LP)', categoria:'Solos', norma:'ABNT NBR 7180', ordem:3},
+    {nome:'Proctor Normal (CBR)', categoria:'Solos', norma:'ABNT NBR 7182', ordem:4},
+    {nome:'ISC (CBR)', categoria:'Solos', norma:'ABNT NBR 9895', ordem:5},
+    {nome:'Mini-MCV', categoria:'Solos', norma:'DNER ME 258', ordem:6},
+    // CONCRETO
+    {nome:'Resistência à Compressão (CP)', categoria:'Concreto', norma:'ABNT NBR 5739', ordem:1},
+    {nome:'Resistência à Tração (RTCD)', categoria:'Concreto', norma:'ABNT NBR 7222', ordem:2},
+    {nome:'Abatimento (Slump)', categoria:'Concreto', norma:'ABNT NBR NM 67', ordem:3},
+    // ASFALTO / MASSA
+    {nome:'Marshall (Estabilidade e Fluência)', categoria:'Asfalto/Massa', norma:'DNER ME 043', ordem:1},
+    {nome:'Teor de Betume por Centrifugação', categoria:'Asfalto/Massa', norma:'DNER ME 053', ordem:2},
+    {nome:'Granulometria de Mistura Asfáltica', categoria:'Asfalto/Massa', norma:'DNER ME 083', ordem:3},
+    {nome:'Densidade RICE (Gmm)', categoria:'Asfalto/Massa', norma:'ASTM D 2041', ordem:4},
+    {nome:'Vazios (Va)', categoria:'Asfalto/Massa', norma:'DNER ME 117', ordem:5},
+    {nome:'RBV (Relação Betume/Vazios)', categoria:'Asfalto/Massa', norma:'DNER ME 117', ordem:6},
+    // ASFALTO / LIGANTE
+    {nome:'Penetração', categoria:'Asfalto/Ligante', norma:'ABNT NBR 6576', ordem:1},
+    {nome:'Ponto de Amolecimento', categoria:'Asfalto/Ligante', norma:'ABNT NBR 6560', ordem:2},
+    {nome:'Viscosidade Saybolt-Furol', categoria:'Asfalto/Ligante', norma:'ABNT NBR 14950', ordem:3},
+    // CPs
+    {nome:'Resistência à Compressão (CP Asfáltico)', categoria:'CPs/Extração', norma:'ABNT NBR 16505', ordem:1},
+    {nome:'RTCD (CP Extraído)', categoria:'CPs/Extração', norma:'ABNT NBR 15087', ordem:2},
+    {nome:'Espessura de Camada', categoria:'CPs/Extração', norma:'DNIT 108/2009', ordem:3},
+    {nome:'Densidade Aparente (Gmb)', categoria:'CPs/Extração', norma:'DNER ME 117', ordem:4},
+  ];
+
+  const { error } = await sb.from('ensaios').upsert(ensaiosPadrao, { onConflict: 'nome,categoria' });
+  if (error) { toast('Erro ao inserir ensaios: '+error.message, 'danger'); return; }
+  toast('Ensaios padrão inseridos com sucesso!', 'ok');
+}
+
+/* ──────────────────────────────────────────────────────────────
+   HISTÓRICO
+   ────────────────────────────────────────────────────────────── */
+async function renderHistorico(el) {
+  const isLab = ['DEV','GESTOR','LAB'].includes(APP.profile.perfil);
+  el.innerHTML = `
+  <div style="margin-bottom:18px">
+    <h2 style="font-size:17px;font-weight:800;color:var(--navy)">${isLab ? 'Histórico de O.S.' : 'Meus Pedidos'}</h2>
+    <p style="font-size:11.5px;color:var(--text-3);margin-top:2px">Consulte pedidos e acompanhe o status</p>
+  </div>
+  <div class="filter-bar">
+    <input class="field-input" placeholder="Buscar PE, material…" id="hist-search" oninput="filtrarHistorico()" style="max-width:240px">
+    <select class="field-select" id="hist-status-filter" onchange="filtrarHistorico()" style="max-width:180px">
+      <option value="">Todos os status</option>
+      <option value="aguardando_lab">Aguardando Lab</option>
+      <option value="em_andamento">Em Andamento</option>
+      <option value="aguardando_revisao">Aguard. Revisão</option>
+      <option value="devolvido_campo">Devolvido — Campo</option>
+      <option value="concluido">Concluído</option>
+      <option value="cancelado">Cancelado</option>
+    </select>
+  </div>
+  <div id="historico-list">
+    <div class="empty-state"><div class="loading-spin" style="width:24px;height:24px;border-width:2px"></div></div>
+  </div>`;
+
+  let query = sb.from('pedidos_ensaio')
+    .select('*, solicitante:usuarios!pedidos_ensaio_solicitante_id_fkey(nome)')
+    .order('created_at', { ascending: true })
+    .limit(100);
+  if (!isLab) query = query.eq('solicitante_id', APP.profile.id);
+
+  const { data } = await query;
+  window._histData = data || [];
+  const histEl = document.getElementById('historico-list');
+  if (!data || data.length === 0) {
+    histEl.innerHTML = `<div class="empty-state"><strong>Nenhum pedido encontrado</strong></div>`;
+    return;
+  }
+  histEl.innerHTML = data.map(os => renderOSCard(os, isLab, !isLab)).join('');
+}
+
+function filtrarHistorico() {
+  const q = (document.getElementById('hist-search')?.value||'').toLowerCase();
+  const s = document.getElementById('hist-status-filter')?.value||'';
+  const isLab = ['DEV','GESTOR','LAB'].includes(APP.profile.perfil);
+  const filtrado = (window._histData||[]).filter(os => {
+    const matchQ = !q || (os.numero_pe||'').includes(q) || (os.material||'').toLowerCase().includes(q);
+    const matchS = !s || os.status === s;
+    return matchQ && matchS;
+  });
+  const histEl = document.getElementById('historico-list');
+  if (!histEl) return;
+  histEl.innerHTML = filtrado.length > 0
+    ? filtrado.map(os => renderOSCard(os, isLab, !isLab)).join('')
+    : `<div class="empty-state"><strong>Nenhum resultado</strong><span>Ajuste os filtros</span></div>`;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MODAIS E UX
+   ────────────────────────────────────────────────────────────── */
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function openPerfilModal() {
+  const p = APP.profile;
+  document.getElementById('perfil-modal-body').innerHTML = `
+  <div class="form-row">
+    <div><label class="field-label">Nome</label><input class="field-input" id="pm-nome" value="${p.nome||''}"></div>
+    <div><label class="field-label">Cargo</label><input class="field-input" id="pm-cargo" value="${p.cargo||''}"></div>
+  </div>
+  <div class="form-row">
+    <div><label class="field-label">E-mail</label><input class="field-input" id="pm-email" value="${p.email||''}" disabled></div>
+    <div><label class="field-label">Perfil</label><input class="field-input" value="${p.perfil}" disabled style="background:var(--surface-2)"></div>
+  </div>
+  <div class="form-row">
+    <div><label class="field-label">Empresa</label><input class="field-input" id="pm-empresa" value="${p.empresa||''}"></div>
+    <div><label class="field-label">Lote</label><input class="field-input" id="pm-lote" value="${p.lote||''}"></div>
+  </div>
+  <div style="margin-top:8px">
+    <label class="field-label">Assinatura Digital (PNG fundo transparente)</label>
+    <div class="sign-box">
+      ${p.assinatura_url ? `<img src="${p.assinatura_url}" alt="assinatura">` : '<span style="font-size:12px;color:var(--text-3)">Sem assinatura cadastrada</span>'}
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById(\'upload-sign\').click()">Trocar</button>
+    </div>
+    <input type="file" id="upload-sign" accept="image/png" style="display:none" onchange="uploadAssinatura(this)">
+    <div class="field-hint">Obrigatório para perfis LAB e ASSIST. PNG com fundo transparente.</div>
+  </div>`;
+  openModal('modal-perfil');
+  closeUserMenu();
+}
+
+async function savePerfilChanges() {
+  const updates = {
+    nome:    document.getElementById('pm-nome')?.value || APP.profile.nome,
+    cargo:   document.getElementById('pm-cargo')?.value || '',
+    empresa: document.getElementById('pm-empresa')?.value || '',
+    lote:    document.getElementById('pm-lote')?.value || '',
+  };
+  if (APP.profile.id) {
+    const { error } = await sb.from('usuarios').update(updates).eq('id', APP.profile.id);
+    if (error) { toast('Erro ao salvar: '+error.message, 'danger'); return; }
+  }
+  Object.assign(APP.profile, updates);
+  renderAppForPerfil();
+  closeModal('modal-perfil');
+  toast('Perfil atualizado!', 'ok');
+}
+
+async function uploadAssinatura(input) {
+  const file = input.files[0];
+  if (!file || !APP.profile.id) return;
+  const path = `assinaturas/${APP.profile.id}.png`;
+  const { error } = await sb.storage.from('avatars').upload(path, file, { upsert: true });
+  if (error) { toast('Erro no upload: '+error.message, 'danger'); return; }
+  const { data: urlData } = sb.storage.from('avatars').getPublicUrl(path);
+  await sb.from('usuarios').update({ assinatura_url: urlData.publicUrl }).eq('id', APP.profile.id);
+  APP.profile.assinatura_url = urlData.publicUrl;
+  toast('Assinatura salva!', 'ok');
+  openPerfilModal();
+}
+
+function toggleUserMenu() {
+  document.getElementById('user-menu').classList.toggle('open');
+}
+function closeUserMenu() {
+  document.getElementById('user-menu').classList.remove('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.dropdown')) closeUserMenu();
+});
+
+/* ──────────────────────────────────────────────────────────────
+   TOAST
+   ────────────────────────────────────────────────────────────── */
+function toast(msg, type='') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => {
+    t.style.animation = 'slide-out .2s ease forwards';
+    setTimeout(() => t.remove(), 200);
+  }, 3200);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   STUBS (funções a implementar nas próximas fases)
+   ────────────────────────────────────────────────────────────── */
+function openNovoUsuario()   { toast('Cadastro de usuário — disponível na Fase 4', 'warn'); }
+function editarUsuario(id)   { toast('Edição de usuário — disponível na Fase 4', 'warn'); }
+function openNovoEnsaio()    { toast('Criação de ensaio — disponível na Fase 4', 'warn'); }
+function abrirFichaDigital(id){ toast('Ficha digital — disponível na Fase 3', 'warn'); }
+function uploadFoto(id)      { toast('Upload de resultado — disponível na Fase 3', 'warn'); }
+</script>
+</body>
+</html>
