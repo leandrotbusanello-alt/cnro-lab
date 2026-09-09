@@ -754,6 +754,48 @@ body {
 <!-- TOAST CONTAINER -->
 <div class="toast-container" id="toast-container"></div>
 
+<!-- MODAL: FICHA FR-IMOB-05 — Solicitação -->
+<div class="modal-overlay" id="modal-ficha-sol">
+  <div class="modal" style="max-width:820px;max-height:92vh">
+    <div class="modal-header">
+      <span class="modal-title">FR-IMOB-05 — Solicitação de Ensaios/Estudos</span>
+      <button class="modal-close" onclick="closeModal('modal-ficha-sol')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-ficha-sol-body" style="padding:12px">carregando…</div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="imprimirFichaSOL()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimir / PDF
+      </button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-ficha-sol')">Fechar</button>
+      <button class="btn btn-teal" onclick="salvarFichaSOL()">Salvar Ficha</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: FICHA FR-IMOB-04 — Ordem de Serviço -->
+<div class="modal-overlay" id="modal-ficha-os">
+  <div class="modal" style="max-width:820px;max-height:92vh">
+    <div class="modal-header">
+      <span class="modal-title">FR-IMOB-04 — Ordem de Serviço</span>
+      <button class="modal-close" onclick="closeModal('modal-ficha-os')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-ficha-os-body" style="padding:12px">carregando…</div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="imprimirFichaOS()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimir / PDF
+      </button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-ficha-os')">Fechar</button>
+      <button class="btn btn-teal" onclick="salvarFichaOS()">Salvar O.S.</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: DEVOLVER AO CAMPO -->
 <div class="modal-overlay" id="modal-devolver-campo">
   <div class="modal" style="max-width:440px">
@@ -1183,98 +1225,158 @@ function setKPI(id, val) {
 /* ──────────────────────────────────────────────────────────────
    MÓDULO CAMPO
    ────────────────────────────────────────────────────────────── */
-async function renderCampo(el) {
-  // Carregar ensaios do banco primeiro
-  window._campoSelecionados = new Set();
-  window._campoMaterial = null;
-  const { data } = await sb.from('ensaios').select('*').eq('ativo', true).order('ordem');
-  window._todosEnsaios = data || [];
+/* ══════════════════════════════════════════════════════════════
+   MÓDULO CAMPO — COMPLETO (conforme diretrizes PDF)
+   ══════════════════════════════════════════════════════════════ */
 
-  // Definição dos 6 tipos de material
-  const MATERIAIS = [
-    { id: 'Solos',            label: 'Solos',              icon: '🪨', cor: 'var(--solos)',    catEnsaio: 'Solos e Agregados' },
-    { id: 'Agregados',        label: 'Agregados',          icon: '⛏️', cor: 'var(--solos)',    catEnsaio: 'Solos e Agregados' },
-    { id: 'Massa Asfáltica',  label: 'Massa Asfáltica',    icon: '🛣️', cor: 'var(--asfalto)',  catEnsaio: 'Asfalto' },
-    { id: 'Ligante Asfáltico',label: 'Ligante Asfáltico',  icon: '🛢️', cor: 'var(--asfalto)',  catEnsaio: 'Asfalto' },
-    { id: 'CPs / Extração',   label: 'CPs / Extração',     icon: '🔬', cor: 'var(--asfalto)',  catEnsaio: 'Asfalto' },
-    { id: 'Concreto',         label: 'Concreto',           icon: '🏗️', cor: 'var(--concreto)', catEnsaio: 'Concreto' },
-  ];
-  window._MATERIAIS = MATERIAIS;
+const CAMPO_STATE = {
+  tipoAmostra: null,
+  subTipo: null,
+  amostras: [],
+  ensaiosSelecionados: new Set(),
+  todosEnsaios: [],
+  empresas: [],
+};
+
+async function renderCampo(el) {
+  const [resEnsaios, resEmpresas] = await Promise.all([
+    sb.from('ensaios').select('*').eq('ativo', true).order('ordem'),
+    sb.from('empresas').select('id,nome,lote').eq('ativo', true).order('nome').catch(() => ({ data: [] })),
+  ]);
+  CAMPO_STATE.todosEnsaios = resEnsaios.data || [];
+  CAMPO_STATE.empresas = resEmpresas.data || [];
+  CAMPO_STATE.tipoAmostra = null;
+  CAMPO_STATE.subTipo = null;
+  CAMPO_STATE.amostras = [];
+  CAMPO_STATE.ensaiosSelecionados = new Set();
 
   el.innerHTML = `
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
-    <div>
-      <h2 style="font-size:17px;font-weight:800;color:var(--navy)">Novo Pedido de Ensaio</h2>
-      <p style="font-size:11.5px;color:var(--text-3);margin-top:2px">Cada pedido corresponde a um tipo de material. Materiais diferentes = pedidos separados.</p>
-    </div>
-    <button class="btn btn-ghost btn-sm" onclick="switchTab('historico')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      Meus pedidos
-    </button>
-  </div>
-
-  <!-- STEP 1: TIPO DE MATERIAL -->
+  <!-- CABEÇÁRIO DO SOLICITANTE -->
   <div class="card" style="margin-bottom:14px">
     <div class="card-header">
-      <span class="card-title">1. Tipo de Material</span>
-      <span style="font-size:10.5px;color:var(--text-3)">Selecione um tipo por pedido</span>
+      <span class="card-title">👤 Dados do Solicitante</span>
     </div>
     <div class="card-body">
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px" id="material-grid">
-        ${MATERIAIS.map(m => `
-          <button class="material-btn" data-mat="${m.id}" onclick="selecionarMaterial('${m.id}')" style="
-            border: 2px solid var(--border);
-            background: var(--surface);
-            border-radius: var(--r-md);
-            padding: 14px 10px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-2);
-            transition: all .15s;
-            text-align: center;
-            line-height: 1.4;
-          ">
-            <span style="font-size:24px;display:block;margin-bottom:6px">${m.icon}</span>
-            ${m.label}
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:10px;flex-wrap:wrap">
+        <div>
+          <label class="field-label">Nome</label>
+          <input class="field-input" id="c-nome" value="${APP.profile.nome||''}" readonly style="background:var(--surface-2)">
+        </div>
+        <div>
+          <label class="field-label">Área</label>
+          <input class="field-input" id="c-area" value="${APP.profile.empresa||''}" readonly style="background:var(--surface-2)">
+        </div>
+        <div>
+          <label class="field-label">Cargo / Função</label>
+          <input class="field-input" id="c-cargo" value="${APP.profile.cargo||''}" readonly style="background:var(--surface-2)">
+        </div>
+        <div>
+          <label class="field-label">Data da Solicitação</label>
+          <input class="field-input" id="c-data" value="${new Date().toLocaleDateString('pt-BR')}" readonly style="background:var(--surface-2)">
+        </div>
+        <div>
+          <label class="field-label">Nº da Solicitação</label>
+          <input class="field-input" id="c-num-sol" value="(gerado ao enviar)" readonly style="background:var(--surface-2);font-size:11px;color:var(--text-3)">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DADOS DA SOLICITAÇÃO -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-header">
+      <span class="card-title">📋 Dados da Solicitação</span>
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:2fr 1fr 2fr;gap:12px;margin-bottom:12px">
+        <div>
+          <label class="field-label">Obra / Empresa <span style="color:var(--danger)">*</span></label>
+          <select class="field-select" id="c-obra" onchange="campoSetLote()">
+            <option value="">Selecione a obra…</option>
+            ${(CAMPO_STATE.empresas.length > 0
+              ? CAMPO_STATE.empresas.map(e => `<option value="${e.id}" data-lote="${e.lote||''}">${e.nome}</option>`).join('')
+              : `<option value="cnro" data-lote="${APP.profile.lote||''}">CNRO — ${APP.profile.empresa||'Sede'}</option>`
+            )}
+          </select>
+        </div>
+        <div>
+          <label class="field-label">Lote</label>
+          <input class="field-input" id="c-lote" value="${APP.profile.lote||''}" readonly style="background:var(--surface-2)">
+        </div>
+        <div>
+          <label class="field-label">Tipo de Solicitação <span style="color:var(--danger)">*</span></label>
+          <select class="field-select" id="c-tipo-sol" onchange="campoTipoSolChange()">
+            <option value="">Selecione…</option>
+            <option value="Contraprova">Contraprova</option>
+            <option value="Estudo">Estudo</option>
+            <option value="Investigação">Investigação</option>
+            <option value="Ensaios Especiais">Ensaios Especiais</option>
+            <option value="Outros">Outros</option>
+          </select>
+        </div>
+      </div>
+      <div id="c-tipo-sol-outros" style="display:none;margin-bottom:12px">
+        <label class="field-label">Especifique o tipo de solicitação</label>
+        <input class="field-input" id="c-tipo-sol-texto" placeholder="Descreva o tipo de solicitação…">
+      </div>
+
+      <!-- TIPO DE AMOSTRA -->
+      <label class="field-label" style="margin-bottom:8px;display:block">Tipo de Amostra <span style="color:var(--danger)">*</span></label>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px" id="tipo-amostra-grid">
+        ${[
+          {id:'solos',     label:'Solos e Agregados', icon:'🪨', cor:'var(--solos)'},
+          {id:'asfalto',   label:'Asfalto',           icon:'🛣️', cor:'var(--asfalto)'},
+          {id:'concreto',  label:'Concreto',          icon:'🏗️', cor:'var(--concreto)'},
+          {id:'especiais', label:'Ensaios Especiais', icon:'🔬', cor:'var(--navy)'},
+        ].map(t => `
+          <button class="tipo-amostra-btn" data-tipo="${t.id}" onclick="campoSelecionarTipo('${t.id}')" style="
+            border:2px solid var(--border);background:var(--surface);border-radius:var(--r-md);
+            padding:14px 8px;cursor:pointer;font-size:11.5px;font-weight:700;
+            color:var(--text-2);transition:all .15s;text-align:center;line-height:1.4;">
+            <span style="font-size:22px;display:block;margin-bottom:5px">${t.icon}</span>${t.label}
           </button>
         `).join('')}
       </div>
     </div>
   </div>
 
-  <!-- STEP 2: DADOS DA AMOSTRA (dinâmico) -->
-  <div id="campo-dados-amostra" style="display:none"></div>
+  <!-- SUBCATEGORIAS (dinâmico) -->
+  <div id="campo-subtipo" style="display:none"></div>
 
-  <!-- STEP 3: ENSAIOS -->
+  <!-- CABEÇÁRIO FIXO (dinâmico) -->
+  <div id="campo-cabecario-fixo" style="display:none"></div>
+
+  <!-- AMOSTRAS (dinâmico) -->
+  <div id="campo-amostras-container" style="display:none"></div>
+
+  <!-- BOTÃO ADICIONAR AMOSTRA -->
+  <div id="campo-btn-add-amostra" style="display:none;margin-bottom:14px">
+    <button class="btn btn-ghost" style="width:100%;justify-content:center;border:2px dashed var(--border)" onclick="campoAdicionarAmostra()">
+      + Adicionar Próxima Amostra (Herdar Dados)
+    </button>
+  </div>
+
+
+  <!-- ENSAIOS SOLICITADOS -->
   <div id="campo-ensaios-section" style="display:none">
     <div class="card" style="margin-bottom:14px">
       <div class="card-header">
         <span class="card-title">2. Ensaios Solicitados</span>
-        <span style="font-size:10.5px;color:var(--text-3)" id="ensaios-count">0 selecionados</span>
+        <span style="font-size:10.5px;color:var(--text-3)" id="ensaios-count-label">0 selecionados</span>
       </div>
-      <div class="card-body" id="ensaios-checklist" style="display:flex;flex-direction:column;gap:2px;padding:8px 16px"></div>
+      <div class="card-body" id="campo-ensaios-lista" style="padding:8px 16px"></div>
     </div>
   </div>
 
-  <!-- STEP 3b: AMOSTRAS ADICIONAIS -->
-  <div id="campo-amostras-extras" style="display:none"></div>
-
-  <!-- STEP 4: OBSERVAÇÕES + ENVIO -->
-  <div id="campo-obs-section" style="display:none">
-    <div style="margin-bottom:10px">
-      <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="adicionarAmostra()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-        Adicionar outra amostra (mesmo material)
-      </button>
-    </div>
+  <!-- OBSERVAÇÕES + ENVIO -->
+  <div id="campo-envio-section" style="display:none">
     <div class="card" style="margin-bottom:14px">
-      <div class="card-header"><span class="card-title">3. Observações</span></div>
+      <div class="card-header"><span class="card-title">Observações</span></div>
       <div class="card-body">
         <textarea class="field-textarea" id="campo-obs" placeholder="Informações adicionais, ensaios 'Outros', especificações complementares…" rows="3"></textarea>
       </div>
     </div>
-    <button class="btn btn-teal" style="width:100%;justify-content:center;padding:14px;font-size:14px" onclick="enviarPedido()">
+    <button class="btn btn-teal" style="width:100%;justify-content:center;padding:14px;font-size:14px;gap:8px" onclick="campoenviarpedido()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
       Enviar Pedido de Ensaio
     </button>
@@ -1282,379 +1384,760 @@ async function renderCampo(el) {
   `;
 }
 
-function selecionarMaterial(mat) {
-  window._campoMaterial = mat;
-  window._campoSelecionados = new Set();
-
-  // Visual feedback nos botões
-  document.querySelectorAll('.material-btn').forEach(b => {
-    const isActive = b.dataset.mat === mat;
-    const m = window._MATERIAIS.find(x => x.id === mat);
-    b.style.borderColor = isActive ? (m?.cor || 'var(--teal)') : 'var(--border)';
-    b.style.background  = isActive ? `rgba(${isActive ? '19,178,172' : '0,0,0'},.08)` : 'var(--surface)';
-    b.style.color       = isActive ? (m?.cor || 'var(--teal-dark)') : 'var(--text-2)';
-    if (isActive) {
-      b.style.background = 'rgba(19,178,172,.08)';
-      b.style.color = 'var(--teal-dark)';
-    }
-  });
-
-  // Montar campos específicos da amostra
-  const dadosEl = document.getElementById('campo-dados-amostra');
-  dadosEl.style.display = 'block';
-  dadosEl.innerHTML = `
-    <div class="card" style="margin-bottom:14px">
-      <div class="card-header">
-        <span class="card-title">📋 Dados da Amostra — ${mat}</span>
-      </div>
-      <div class="card-body">
-        ${campoFieldsPorMaterial(mat)}
-      </div>
-    </div>
-  `;
-
-  // Filtrar ensaios pela categoria correta
-  const matObj = window._MATERIAIS.find(m => m.id === mat);
-  const catEnsaio = matObj?.catEnsaio || '';
-  const filtrados = window._todosEnsaios.filter(e => e.categoria === catEnsaio);
-
-  renderEnsaiosChecklist(filtrados);
-  document.getElementById('campo-ensaios-section').style.display = 'block';
-  document.getElementById('campo-obs-section').style.display = 'block';
-  document.getElementById('ensaios-count').textContent = '0 selecionados';
+function campoSetLote() {
+  const sel = document.getElementById('c-obra');
+  const opt = sel.options[sel.selectedIndex];
+  const lote = opt?.dataset?.lote || APP.profile.lote || '';
+  document.getElementById('c-lote').value = lote;
 }
 
-function campoFieldsPorMaterial(mat) {
-  const hoje = new Date().toISOString().slice(0, 10);
+function campoTipoSolChange() {
+  const val = document.getElementById('c-tipo-sol').value;
+  document.getElementById('c-tipo-sol-outros').style.display = val === 'Outros' ? 'block' : 'none';
+}
 
-  // SOLOS e AGREGADOS — mesmos campos
-  if (mat === 'Solos' || mat === 'Agregados') return `
-    <div class="form-row">
-      <div><label class="field-label">Jazida</label><input class="field-input" id="f-jazida" placeholder="Ex: Jazida KM 150"></div>
-      <div><label class="field-label">KM da Jazida</label><input class="field-input" id="f-km-jazida" placeholder="0+000"></div>
-    </div>
-    <div class="form-row">
-      <div><label class="field-label">Data de Coleta</label><input type="date" class="field-input" id="f-data-coleta" value="${hoje}"></div>
-      <div><label class="field-label">Furo / Registro</label><input class="field-input" id="f-furo" placeholder="Nº do furo"></div>
-    </div>
-    <div class="form-row single">
-      <div><label class="field-label">Profundidade (m)</label><input class="field-input" id="f-profundidade" placeholder="Ex: 0,00 – 1,50 m"></div>
-    </div>`;
+/* ── SELEÇÃO DO TIPO DE AMOSTRA ── */
+function campoSelecionarTipo(tipo) {
+  CAMPO_STATE.tipoAmostra = tipo;
+  CAMPO_STATE.subTipo = null;
+  CAMPO_STATE.amostras = [];
 
-  // CONCRETO
-  if (mat === 'Concreto') return `
-    <div class="form-row">
-      <div><label class="field-label">Data de Concretagem</label><input type="date" class="field-input" id="f-data-conc" value="${hoje}"></div>
-      <div><label class="field-label">KM</label><input class="field-input" id="f-km" placeholder="0+000"></div>
-    </div>
-    <div class="form-row">
-      <div><label class="field-label">Peça Concretada</label><input class="field-input" id="f-peca" placeholder="Ex: Viga, Pilar, Laje…"></div>
-      <div><label class="field-label">Código CP</label><input class="field-input" id="f-cod-cp" placeholder="CP-001"></div>
-    </div>
-    <div class="form-row triple">
-      <div><label class="field-label">fck Projeto (MPa)</label><input class="field-input" id="f-mpa-proj" placeholder="25"></div>
-      <div><label class="field-label">Slump Projeto (cm)</label><input class="field-input" id="f-slump-proj" placeholder="0"></div>
-      <div><label class="field-label">Slump do Dia (cm)</label><input class="field-input" id="f-slump-dia" placeholder="0"></div>
-    </div>
-    <div class="form-row">
-      <div><label class="field-label">Temperatura (°C)</label><input class="field-input" id="f-temp" placeholder="0"></div>
-      <div><label class="field-label">Idade de Ruptura</label>
-        <select class="field-select" id="f-idade">
-          <option>7 dias</option>
-          <option>14 dias</option>
-          <option selected>28 dias</option>
-          <option>Personalizado</option>
-        </select>
-      </div>
-    </div>`;
+  // Visual botões
+  document.querySelectorAll('.tipo-amostra-btn').forEach(b => {
+    const ativo = b.dataset.tipo === tipo;
+    b.style.borderColor = ativo ? 'var(--teal)' : 'var(--border)';
+    b.style.background  = ativo ? 'rgba(19,178,172,.09)' : 'var(--surface)';
+    b.style.color       = ativo ? 'var(--teal-dark)' : 'var(--text-2)';
+  });
 
-  // MASSA ASFÁLTICA
-  if (mat === 'Massa Asfáltica') return `
-    <div class="form-row">
-      <div><label class="field-label">Data de Usinagem</label><input type="date" class="field-input" id="f-data-usin" value="${hoje}"></div>
-      <div><label class="field-label">Traço / Faixa</label><input class="field-input" id="f-traco" placeholder="Ex: CBUQ Faixa C"></div>
-    </div>
-    <div class="form-row single">
-      <div><label class="field-label">Anexo (foto / PDF — opcional)</label>
-        <div class="upload-area" onclick="document.getElementById('f-anexo-massa').click()" id="upload-massa-label">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Toque para selecionar arquivo
-          <input type="file" id="f-anexo-massa" accept="image/*,.pdf" style="display:none" onchange="mostrarAnexo('f-anexo-massa','upload-massa-label')">
+  // Montar subcategorias
+  const subtipos = {
+    solos:    [
+      {id:'jazida',        label:'Jazida',                      icon:'⛏️'},
+      {id:'emprestimo',    label:'Caixa de Empréstimo',         icon:'📦'},
+      {id:'segmento',      label:'Segmento',                    icon:'📍'},
+      {id:'solo_cimento',  label:'CPs Solo Cimento',            icon:'🧱'},
+      {id:'agregados',     label:'Agregados',                   icon:'🪨'},
+    ],
+    asfalto:  [
+      {id:'massa',         label:'Massa Asfáltica',             icon:'🛣️'},
+      {id:'cp_pista',      label:'CPs Extraídos de Pista',      icon:'🔩'},
+      {id:'ligante',       label:'Ligante Asfáltico',           icon:'🛢️'},
+    ],
+    concreto: [
+      {id:'cp_concreto',   label:'Corpos de Prova de Concreto', icon:'🏗️'},
+    ],
+    especiais:[
+      {id:'mancha_areia',  label:'Mancha de Areia',             icon:'🏖️'},
+      {id:'pendulo',       label:'Pêndulo Britânico',           icon:'⚖️'},
+      {id:'benkelman',     label:'Viga Benkelman',              icon:'📏'},
+      {id:'outros_esp',    label:'Outros',                      icon:'📋'},
+    ],
+  };
+
+  const subs = subtipos[tipo] || [];
+  const subEl = document.getElementById('campo-subtipo');
+
+  // Concreto tem só 1 subcategoria — seleciona direto
+  if (subs.length === 1) {
+    subEl.style.display = 'none';
+    campoSelecionarSubtipo(subs[0].id);
+    return;
+  }
+
+  subEl.style.display = 'block';
+  subEl.innerHTML = `
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-header"><span class="card-title">1. Subcategoria</span></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px">
+          ${subs.map(s => `
+            <button class="subtipo-btn" data-sub="${s.id}" onclick="campoSelecionarSubtipo('${s.id}')" style="
+              border:2px solid var(--border);background:var(--surface);border-radius:var(--r-md);
+              padding:12px 8px;cursor:pointer;font-size:11.5px;font-weight:600;
+              color:var(--text-2);transition:all .15s;text-align:center;line-height:1.4;">
+              <span style="font-size:20px;display:block;margin-bottom:4px">${s.icon}</span>${s.label}
+            </button>
+          `).join('')}
         </div>
       </div>
     </div>`;
 
-  // LIGANTE ASFÁLTICO
-  if (mat === 'Ligante Asfáltico') return `
-    <div class="form-row">
-      <div><label class="field-label">Data de Coleta</label><input type="date" class="field-input" id="f-data-col-lig" value="${hoje}"></div>
-      <div><label class="field-label">Fornecedor / Tipo CAP</label><input class="field-input" id="f-cap" placeholder="Ex: CAP 50/70 — Petrobras"></div>
-    </div>
-    <div class="form-row single">
-      <div><label class="field-label">Certificado (PDF — opcional)</label>
-        <div class="upload-area" onclick="document.getElementById('f-cert-lig').click()" id="upload-lig-label">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Anexar certificado
-          <input type="file" id="f-cert-lig" accept=".pdf,image/*" style="display:none" onchange="mostrarAnexo('f-cert-lig','upload-lig-label')">
+  // Esconder seções seguintes
+  document.getElementById('campo-cabecario-fixo').style.display = 'none';
+  document.getElementById('campo-amostras-container').style.display = 'none';
+  document.getElementById('campo-ensaios-section').style.display = 'none';
+  document.getElementById('campo-envio-section').style.display = 'none';
+}
+
+/* ── SELEÇÃO DA SUBCATEGORIA ── */
+function campoSelecionarSubtipo(sub) {
+  CAMPO_STATE.subTipo = sub;
+  CAMPO_STATE.amostras = [];
+
+  // Visual
+  document.querySelectorAll('.subtipo-btn').forEach(b => {
+    const ativo = b.dataset.sub === sub;
+    b.style.borderColor = ativo ? 'var(--teal)' : 'var(--border)';
+    b.style.background  = ativo ? 'rgba(19,178,172,.09)' : 'var(--surface)';
+    b.style.color       = ativo ? 'var(--teal-dark)' : 'var(--text-2)';
+  });
+
+  // Montar cabeçário fixo se aplicável
+  const cabEl = document.getElementById('campo-cabecario-fixo');
+  const cabHtml = campoCabecarioFixo(sub);
+  if (cabHtml) {
+    cabEl.style.display = 'block';
+    cabEl.innerHTML = `
+      <div class="card" style="margin-bottom:14px;border-left:3px solid var(--teal)">
+        <div class="card-header">
+          <span class="card-title">📍 Informações Gerais (preenchidas uma vez)</span>
         </div>
+        <div class="card-body">${cabHtml}</div>
+      </div>`;
+  } else {
+    cabEl.style.display = 'none';
+  }
+
+  // Inicializar amostras
+  document.getElementById('campo-amostras-container').style.display = 'block';
+  document.getElementById('campo-btn-add-amostra').style.display = 'block';
+  CAMPO_STATE.amostras = [];
+  campoAdicionarAmostra();
+
+  // Ensaios
+  campoRenderEnsaios();
+  document.getElementById('campo-ensaios-section').style.display = 'block';
+  document.getElementById('campo-envio-section').style.display = 'block';
+}
+
+/* ── CABEÇÁRIO FIXO POR SUBCATEGORIA ── */
+function campoCabecarioFixo(sub) {
+  // Solos com Pista, Camada, Proctor
+  const solosPistaCamada = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div>
+        <label class="field-label">Camada</label>
+        <select class="field-select" id="cf-camada">
+          <option value="">Selecione…</option>
+          ${['Corpo de Aterro','1ª CFT','2ª CFT','3ª CFT','Subleito','Reforço do Subleito','Sub-base','Sub-base Melhorada','Base','Base Melhorada'].map(c=>`<option>${c}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Pista</label>
+        <select class="field-select" id="cf-pista">
+          <option value="">Selecione…</option>
+          ${['Norte','Sul','Marginal Norte','Marginal Sul'].map(p=>`<option>${p}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Proctor / Energia</label>
+        <select class="field-select" id="cf-proctor">
+          <option value="">Selecione…</option>
+          ${['Normal','Intermediário','Modificado'].map(p=>`<option>${p}</option>`).join('')}
+        </select>
       </div>
     </div>`;
 
-  // CPs / EXTRAÇÃO DE PISTA
-  if (mat === 'CPs / Extração') return `
-    <div class="form-row">
-      <div><label class="field-label">Código CP</label><input class="field-input" id="f-cod-cp-ext" placeholder="CP-001"></div>
-      <div><label class="field-label">KM</label><input class="field-input" id="f-km-ext" placeholder="0+000"></div>
+  if (sub === 'jazida') return solosPistaCamada + `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px">
+      <div><label class="field-label">Nome da Jazida</label><input class="field-input" id="cf-jazida-nome" placeholder="Ex: Jazida J6"></div>
+      <div><label class="field-label">KM da Jazida</label><input class="field-input" id="cf-jazida-km" placeholder="km 440+000"></div>
+      <div><label class="field-label">Data da Coleta</label><input type="date" class="field-input" id="cf-jazida-data" value="${new Date().toISOString().slice(0,10)}"></div>
+    </div>`;
+
+  if (sub === 'emprestimo') return solosPistaCamada + `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+      <div><label class="field-label">Data da Coleta</label><input type="date" class="field-input" id="cf-emp-data" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div><label class="field-label">KM da Caixa de Empréstimo</label><input class="field-input" id="cf-emp-km" placeholder="km 000+000"></div>
+    </div>`;
+
+  if (sub === 'segmento') return solosPistaCamada;
+
+  if (sub === 'solo_cimento') return solosPistaCamada + `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+      <div><label class="field-label">Data da Moldagem</label><input type="date" class="field-input" id="cf-sc-data" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div><label class="field-label">Camada (aplicação)</label><input class="field-input" id="cf-sc-camada-apl" placeholder="Ex: 1ª Camada"></div>
+    </div>`;
+
+  if (sub === 'agregados') return `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div>
+        <label class="field-label">Tipo de Material</label>
+        <select class="field-select" id="cf-agr-tipo" onchange="campoAgrTipoChange()">
+          <option value="">Selecione…</option>
+          ${['Seixo Rolado','Brita Calcária','Brita Granítica','Areia Natural','Areia Lavada','Outros'].map(t=>`<option>${t}</option>`).join('')}
+        </select>
+      </div>
+      <div><label class="field-label">Nome da Pedreira</label><input class="field-input" id="cf-agr-pedreira" placeholder="Nome da pedreira"></div>
+      <div><label class="field-label">Data da Coleta</label><input type="date" class="field-input" id="cf-agr-data" value="${new Date().toISOString().slice(0,10)}"></div>
     </div>
-    <div class="form-row triple">
-      <div><label class="field-label">Faixa</label>
-        <select class="field-select" id="f-faixa">
-          <option>F1</option><option>F2</option><option>F3</option><option>Acostamento</option>
-        </select>
-      </div>
-      <div><label class="field-label">Lado</label>
-        <select class="field-select" id="f-lado">
-          <option>LD</option><option>LE</option><option>EX</option>
-        </select>
-      </div>
-      <div><label class="field-label">Camada</label>
-        <select class="field-select" id="f-camada">
-          <option>CBUQ</option><option>BGTC</option><option>BG</option><option>Sub-base</option>
+    <div id="cf-agr-outro" style="display:none;margin-top:10px">
+      <label class="field-label">Especifique o tipo de material</label>
+      <input class="field-input" id="cf-agr-tipo-texto" placeholder="Descreva o tipo de material…">
+    </div>`;
+
+  if (sub === 'cp_pista') return `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+      <div><label class="field-label">Data de Aplicação da Massa</label><input type="date" class="field-input" id="cf-cpp-dt-aplic" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div><label class="field-label">Data de Extração</label><input type="date" class="field-input" id="cf-cpp-dt-extr" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div>
+        <label class="field-label">Pista</label>
+        <select class="field-select" id="cf-cpp-pista">
+          <option value="">Selecione…</option>
+          ${['Norte','Sul','Marginal Norte','Marginal Sul'].map(p=>`<option>${p}</option>`).join('')}
         </select>
       </div>
     </div>
-    <div class="form-row single">
-      <div><label class="field-label">Data de Extração</label><input type="date" class="field-input" id="f-data-ext" value="${hoje}"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div>
+        <label class="field-label">Camada</label>
+        <select class="field-select" id="cf-cpp-camada">
+          <option value="">Selecione…</option>
+          ${['Binder','1ª Camada','2ª Camada','Capa'].map(c=>`<option>${c}</option>`).join('')}
+        </select>
+      </div>
+      <div><label class="field-label">Espessura de Projeto (cm)</label><input class="field-input" id="cf-cpp-espessura" placeholder="Ex: 5,0"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div><label class="field-label">KM Inicial</label><input class="field-input" id="cf-cpp-km-ini" placeholder="000+000"></div>
+        <div><label class="field-label">KM Final</label><input class="field-input" id="cf-cpp-km-fim" placeholder="000+000"></div>
+      </div>
+    </div>`;
+
+  // Ensaios especiais com medições
+  if (['mancha_areia','pendulo','benkelman','outros_esp'].includes(sub)) return `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+      <div><label class="field-label">Data do Ensaio</label><input type="date" class="field-input" id="cf-esp-data" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div>
+        <label class="field-label">Pista / Local</label>
+        <select class="field-select" id="cf-esp-pista">
+          <option value="">Selecione…</option>
+          ${['Norte','Sul','Marginal Norte','Marginal Sul'].map(p=>`<option>${p}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Faixa</label>
+        <select class="field-select" id="cf-esp-faixa">
+          <option value="">Selecione…</option>
+          ${['F1','F2','F3','Acostamento','Alça Aceleração','Alça Desaceleração','Retorno','Interseção'].map(f=>`<option>${f}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div><label class="field-label">KM Inicial</label><input class="field-input" id="cf-esp-km-ini" placeholder="000+000"></div>
+      <div><label class="field-label">KM Final</label><input class="field-input" id="cf-esp-km-fim" placeholder="000+000"></div>
+      <div>
+        <label class="field-label">Camada</label>
+        <select class="field-select" id="cf-esp-camada">
+          <option value="">Selecione…</option>
+          ${['CBUQ','Binder','Base','Sub-base','Outros'].map(c=>`<option>${c}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    ${sub === 'outros_esp' ? `<div style="margin-top:12px"><label class="field-label">Descrição do Ensaio</label><input class="field-input" id="cf-esp-descricao" placeholder="Descreva o ensaio a ser realizado…"></div>` : ''}`;
+
+  return ''; // massa, ligante, cp_concreto — sem cabeçário fixo
+}
+
+function campoAgrTipoChange() {
+  const val = document.getElementById('cf-agr-tipo')?.value;
+  const div = document.getElementById('cf-agr-outro');
+  if (div) div.style.display = val === 'Outros' ? 'block' : 'none';
+}
+
+/* ── AMOSTRAS ── */
+function campoAdicionarAmostra() {
+  const idx = CAMPO_STATE.amostras.length;
+  CAMPO_STATE.amostras.push({ idx });
+
+  const container = document.getElementById('campo-amostras-container');
+  const isFirst = idx === 0;
+
+  const div = document.createElement('div');
+  div.id = `amostra-bloco-${idx}`;
+  div.innerHTML = `
+    <div class="card" style="margin-bottom:10px;border-left:3px solid ${isFirst ? 'var(--navy)' : 'var(--teal)'}">
+      <div class="card-header" style="padding:10px 14px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:10px;font-weight:800;background:var(--navy);color:#fff;padding:2px 8px;border-radius:10px">
+            ${campoSubLabel(CAMPO_STATE.subTipo)} #${idx+1}
+          </span>
+          ${idx > 0 ? '<span style="font-size:10px;color:var(--teal-dark);font-weight:600">⟳ Herança</span>' : ''}
+        </div>
+        ${idx > 0 ? `<button class="btn btn-ghost btn-sm" onclick="campoRemoverAmostra(${idx})" style="color:var(--danger);padding:4px 8px">✕ Remover</button>` : ''}
+      </div>
+      <div class="card-body" id="amostra-campos-${idx}">
+        ${campoCamposAmostra(CAMPO_STATE.subTipo, idx)}
+      </div>
+    </div>`;
+
+  container.appendChild(div);
+
+  // Aplicar herança se não for a primeira
+  if (idx > 0) {
+    setTimeout(() => campoAplicarHeranca(idx), 80);
+  }
+
+  // Atualizar contador no header do card
+  campoAtualizarContador();
+}
+
+function campoSubLabel(sub) {
+  const labels = {
+    jazida:'Solo', emprestimo:'Solo', segmento:'Solo', solo_cimento:'CP Solo-Cimento',
+    agregados:'Agregado', massa:'Massa Asfáltica', cp_pista:'CP Pista', ligante:'Ligante',
+    cp_concreto:'CP Concreto', mancha_areia:'Leitura', pendulo:'Leitura',
+    benkelman:'Leitura', outros_esp:'Leitura',
+  };
+  return labels[sub] || 'Amostra';
+}
+
+function campoAtualizarContador() {
+  const n = CAMPO_STATE.amostras.length;
+  // Atualizar badge no card de amostras se existir
+}
+
+function campoRemoverAmostra(idx) {
+  document.getElementById(`amostra-bloco-${idx}`)?.remove();
+  CAMPO_STATE.amostras = CAMPO_STATE.amostras.filter(a => a.idx !== idx);
+}
+
+/* ── CAMPOS POR SUBCATEGORIA (por amostra) ── */
+function campoCamposAmostra(sub, idx) {
+  const g = (id) => `id="${id}-${idx}"`;
+
+  if (sub === 'jazida') return `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div><label class="field-label">Furo / Registro</label><input class="field-input" ${g('a-furo')} placeholder="Furo 01"></div>
+      <div><label class="field-label">Profundidade (m)</label><input class="field-input" ${g('a-prof')} placeholder="Ex: 0,00 – 1,50"></div>
+    </div>`;
+
+  if (sub === 'emprestimo') return `
+    <div><label class="field-label">Quantidade de Material (kg)</label><input class="field-input" ${g('a-qty')} placeholder="0,0 kg" type="number" min="0" step="0.1"></div>`;
+
+  if (sub === 'segmento') return `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div><label class="field-label">KM</label><input class="field-input" ${g('a-km')} placeholder="000+000"></div>
+      <div>
+        <label class="field-label">Posição / Lado</label>
+        <select class="field-select" ${g('a-pos')}>
+          <option value="">Selecione…</option>
+          ${['LD','LE','EX'].map(p=>`<option>${p}</option>`).join('')}
+        </select>
+      </div>
+      <div><label class="field-label">Quantidade (kg)</label><input class="field-input" ${g('a-qty')} placeholder="0,0 kg" type="number" min="0"></div>
+    </div>`;
+
+  if (sub === 'solo_cimento') return `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:10px">
+      <div><label class="field-label">KM da Coleta</label><input class="field-input" ${g('a-km')} placeholder="000+000"></div>
+      <div>
+        <label class="field-label">Posição (LD/LE/EX)</label>
+        <select class="field-select" ${g('a-pos')}>
+          <option value="">Selecione…</option>
+          ${['LD','LE','EX'].map(p=>`<option>${p}</option>`).join('')}
+        </select>
+      </div>
+      <div><label class="field-label">Código / Nº do CP</label><input class="field-input" ${g('a-cod')} placeholder="CP-001"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div><label class="field-label">% de Cimento</label><input class="field-input" ${g('a-cimento')} placeholder="Ex: 3,5" type="number" step="0.1"></div>
+      <div>
+        <label class="field-label">Plano de Rompimento</label>
+        <select class="field-select" ${g('a-plano')}>
+          <option value="">Selecione…</option>
+          <option>Axial</option><option>Diametral</option>
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Ruptura</label>
+        <select class="field-select" ${g('a-ruptura')} onchange="campoRupturaOutros('${idx}')">
+          <option value="">Selecione…</option>
+          <option>3 dias</option><option>7 dias</option><option>14 dias</option><option>28 dias</option><option>Outros</option>
+        </select>
+      </div>
+    </div>
+    <div id="a-ruptura-outros-${idx}" style="display:none;margin-top:10px">
+      <label class="field-label">Especifique a ruptura (dias)</label>
+      <input class="field-input" ${g('a-ruptura-txt')} placeholder="Ex: 21 dias">
+    </div>`;
+
+  if (sub === 'agregados') return `
+    <div style="font-size:11.5px;color:var(--text-3);padding:8px 0">Dados gerais preenchidos no cabeçário acima. Adicione observações específicas desta amostra no campo de observações ao final.</div>`;
+
+  if (sub === 'massa') return `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+      <div><label class="field-label">Data de Usinagem</label><input type="date" class="field-input" ${g('a-dt-usin')} value="${new Date().toISOString().slice(0,10)}"></div>
+      <div><label class="field-label">Hora da Coleta</label><input type="time" class="field-input" ${g('a-hr-coleta')}></div>
+      <div>
+        <label class="field-label">Pista / Local de Aplicação</label>
+        <select class="field-select" ${g('a-pista')}>
+          <option value="">Selecione…</option>
+          ${['Norte','Sul','Marginal Norte','Marginal Sul'].map(p=>`<option>${p}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+      <div>
+        <label class="field-label">Faixa</label>
+        <select class="field-select" ${g('a-faixa')}>
+          <option value="">Selecione…</option>
+          ${['F1','F2','F3','Acostamento'].map(f=>`<option>${f}</option>`).join('')}
+        </select>
+      </div>
+      <div><label class="field-label">KM Inicial</label><input class="field-input" ${g('a-km-ini')} placeholder="000+000"></div>
+      <div><label class="field-label">KM Final</label><input class="field-input" ${g('a-km-fim')} placeholder="000+000"></div>
+      <div>
+        <label class="field-label">Camada</label>
+        <select class="field-select" ${g('a-camada')}>
+          <option value="">Selecione…</option>
+          ${['Binder','1ª Camada','2ª Camada','Capa'].map(c=>`<option>${c}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div>
+      <label class="field-label">Projeto Adotado / Traço</label>
+      <input class="field-input" ${g('a-projeto')} placeholder="Ex: CBUQ Faixa C — Traço aprovado em 15/01/2026">
+    </div>`;
+
+  if (sub === 'cp_pista') return `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:10px">
+      <div><label class="field-label">KM de Extração</label><input class="field-input" ${g('a-km-ext')} placeholder="000+000"></div>
+      <div>
+        <label class="field-label">Faixa</label>
+        <select class="field-select" ${g('a-faixa')}>
+          <option value="">Selecione…</option>
+          ${['F1','F2','Alça Aceleração','Alça Desaceleração','Retorno','Interseção','Ramo Dispositivo','Acostamento'].map(f=>`<option>${f}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Posição (LD/LE/EX)</label>
+        <select class="field-select" ${g('a-pos')}>
+          <option value="">Selecione…</option>
+          ${['LD','LE','EX'].map(p=>`<option>${p}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div><label class="field-label">Identificação do CP</label><input class="field-input" ${g('a-id-cp')} placeholder="CP-01"></div>`;
+
+  if (sub === 'ligante') return `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div><label class="field-label">Data da Coleta</label><input type="date" class="field-input" ${g('a-dt-col')} value="${new Date().toISOString().slice(0,10)}"></div>
+      <div>
+        <label class="field-label">Fornecedor</label>
+        <select class="field-select" ${g('a-fornec')} onchange="campoLiganteFornecChange('${idx}')">
+          <option value="">Selecione…</option>
+          ${['Petrobras','Betunel','Stratura','Greca','Emam','Outros'].map(f=>`<option>${f}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div>
+        <label class="field-label">Tipo (CAP)</label>
+        <select class="field-select" ${g('a-tipo-cap')} onchange="campoLiganteTipoChange('${idx}')">
+          <option value="">Selecione…</option>
+          ${['30/45','50/70','85/100','Outros'].map(t=>`<option>${t}</option>`).join('')}
+        </select>
+      </div>
+      <div id="a-tipo-cap-outros-${idx}" style="display:none">
+        <label class="field-label">Especifique o tipo</label>
+        <input class="field-input" ${g('a-tipo-cap-txt')} placeholder="Ex: CAP 60/85">
+      </div>
+    </div>
+    <div id="a-fornec-outros-${idx}" style="display:none;margin-top:10px">
+      <label class="field-label">Especifique o fornecedor</label>
+      <input class="field-input" ${g('a-fornec-txt')} placeholder="Nome do fornecedor">
+    </div>
+    <div style="margin-top:12px">
+      <label class="field-label">Certificado do CAP (PDF / foto — opcional)</label>
+      <div class="upload-area" onclick="document.getElementById('a-cert-${idx}').click()" id="a-cert-label-${idx}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Selecionar certificado
+        <input type="file" id="a-cert-${idx}" accept=".pdf,image/*" style="display:none" onchange="mostrarAnexo('a-cert-${idx}','a-cert-label-${idx}')">
+      </div>
+    </div>`;
+
+  if (sub === 'cp_concreto') return `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+      <div><label class="field-label">Data de Concretagem</label><input type="date" class="field-input" ${g('a-dt-conc')} value="${new Date().toISOString().slice(0,10)}"></div>
+      <div><label class="field-label">KM de Aplicação</label><input class="field-input" ${g('a-km')} placeholder="000+000"></div>
+      <div><label class="field-label">Peça Concretada (OAE / Nome)</label><input class="field-input" ${g('a-peca')} placeholder="Ex: Viga Longarina 01, Laje Bloco B3"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div><label class="field-label">Identificação do Caminhão</label><input class="field-input" ${g('a-caminhao')} placeholder="Ex: Betoneira 03 — ABC-1234"></div>
+      <div><label class="field-label">Nota / Romaneio</label><input class="field-input" ${g('a-nota')} placeholder="Nº da nota fiscal"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+      <div>
+        <label class="field-label">Slump Projeto (mm)</label>
+        <input class="field-input" ${g('a-slump-val')} placeholder="Ex: 100" type="number">
+      </div>
+      <div>
+        <label class="field-label">Variação ±</label>
+        <input class="field-input" ${g('a-slump-var')} placeholder="Ex: 20" type="number">
+      </div>
+      <div><label class="field-label">MPA de Projeto</label><input class="field-input" ${g('a-mpa')} placeholder="Ex: 35" type="number"></div>
+      <div><label class="field-label">Temperatura (°C)</label><input class="field-input" ${g('a-temp')} placeholder="Ex: 26" type="number"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div><label class="field-label">Cód / Nº CP</label><input class="field-input" ${g('a-cod-cp')} placeholder="CP-C01"></div>
+      <div>
+        <label class="field-label">Idade de Ruptura</label>
+        <select class="field-select" ${g('a-ruptura')} onchange="campoRupturaOutros('${idx}')">
+          <option value="">Selecione…</option>
+          <option>3 dias</option><option>7 dias</option><option>14 dias</option><option>28 dias</option><option>Outros</option>
+        </select>
+      </div>
+    </div>
+    <div id="a-ruptura-outros-${idx}" style="display:none;margin-top:10px">
+      <label class="field-label">Especifique a ruptura (dias)</label>
+      <input class="field-input" ${g('a-ruptura-txt')} placeholder="Ex: 21 dias">
+    </div>`;
+
+  // Ensaios especiais — leituras
+  if (['mancha_areia','pendulo','benkelman','outros_esp'].includes(sub)) return `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div><label class="field-label">KM da Leitura</label><input class="field-input" ${g('a-km')} placeholder="000+000"></div>
+      <div>
+        <label class="field-label">Posição / Lado</label>
+        <select class="field-select" ${g('a-pos')}>
+          <option value="">Selecione…</option>
+          ${['LD','LE','EX','Centro'].map(p=>`<option>${p}</option>`).join('')}
+        </select>
+      </div>
+      <div><label class="field-label">Leitura / Resultado</label><input class="field-input" ${g('a-resultado')} placeholder="Ex: 0,25 mm"></div>
     </div>`;
 
   return '';
 }
 
-/* ── MÚLTIPLAS AMOSTRAS ── */
-window._amostrasExtras = [];
-
-function adicionarAmostra() {
-  // Coletar dados da amostra atual (amostra 1 ou última)
-  const mat = window._campoMaterial;
-  if (!mat) return;
-
-  const dadosBase = coletarDadosAmostra(mat);
-  const idx = window._amostrasExtras.length + 2; // Amostra 2, 3, 4...
-
-  window._amostrasExtras.push({ dados: {}, idx });
-
-  const container = document.getElementById('campo-amostras-extras');
-  container.style.display = 'block';
-
-  const divId = `amostra-extra-${idx}`;
-  const div = document.createElement('div');
-  div.id = divId;
-  div.innerHTML = `
-    <div class="card" style="margin-bottom:14px;border-left:3px solid var(--teal)">
-      <div class="card-header">
-        <span class="card-title">📋 Amostra ${idx} — ${mat}</span>
-        <button class="btn btn-ghost btn-sm" onclick="removerAmostra(${idx})" style="color:var(--danger)">Remover</button>
-      </div>
-      <div class="card-body" id="campos-amostra-${idx}">
-        ${campoFieldsPorMaterial(mat)}
-      </div>
-    </div>
-  `;
-  container.appendChild(div);
-
-  // Herdar dados da amostra 1 automaticamente
-  setTimeout(() => {
-    const get = (id) => document.getElementById(id)?.value || '';
-    const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
-
-    if (mat === 'Solos' || mat === 'Agregados') {
-      set('f-jazida', dadosBase.jazida);
-      set('f-km-jazida', dadosBase.km_jazida);
-      set('f-data-coleta', dadosBase.data_coleta);
-      // furo e profundidade não herdam (são específicos de cada amostra)
-    }
-    if (mat === 'Concreto') {
-      set('f-data-conc', dadosBase.data_concretagem);
-      set('f-km', dadosBase.km);
-      set('f-peca', dadosBase.peca);
-      set('f-mpa-proj', dadosBase.mpa_proj);
-      set('f-slump-proj', dadosBase.slump_proj);
-      set('f-idade', dadosBase.idade_ruptura);
-      // cod_cp, slump_dia, temperatura não herdam
-    }
-    if (mat === 'Massa Asfáltica') {
-      set('f-data-usin', dadosBase.data_usinagem);
-      set('f-traco', dadosBase.traco_faixa);
-    }
-    if (mat === 'Ligante Asfáltico') {
-      set('f-data-col-lig', dadosBase.data_coleta);
-      set('f-cap', dadosBase.fornecedor_cap);
-    }
-    if (mat === 'CPs / Extração') {
-      set('f-km-ext', dadosBase.km);
-      set('f-faixa', dadosBase.faixa);
-      set('f-lado', dadosBase.lado);
-      set('f-camada', dadosBase.camada);
-      set('f-data-ext', dadosBase.data_extracao);
-      // cod_cp não herda — é específico de cada CP
-    }
-
-    // Salvar referência dos campos desta amostra
-    window._amostrasExtras[idx-2]._containerEl = document.getElementById(`campos-amostra-${idx}`);
-  }, 60);
+function campoRupturaOutros(idx) {
+  const val = document.getElementById(`a-ruptura-${idx}`)?.value;
+  const div = document.getElementById(`a-ruptura-outros-${idx}`);
+  if (div) div.style.display = val === 'Outros' ? 'block' : 'none';
 }
 
-function removerAmostra(idx) {
-  document.getElementById(`amostra-extra-${idx}`)?.remove();
-  window._amostrasExtras = window._amostrasExtras.filter(a => a.idx !== idx);
-  if (window._amostrasExtras.length === 0) {
-    document.getElementById('campo-amostras-extras').style.display = 'none';
-  }
+function campoLiganteFornecChange(idx) {
+  const val = document.getElementById(`a-fornec-${idx}`)?.value;
+  const div = document.getElementById(`a-fornec-outros-${idx}`);
+  if (div) div.style.display = val === 'Outros' ? 'block' : 'none';
 }
 
-function coletarTodasAmostras(mat) {
-  // Amostra 1 (campos principais)
-  const amostra1 = coletarDadosAmostra(mat);
-  const todasAmostras = [amostra1];
-
-  // Amostras extras: coletar de cada container
-  for (const extra of window._amostrasExtras) {
-    // Os inputs extras têm mesmo id — precisamos buscar dentro do container
-    const container = document.getElementById(`campos-amostra-${extra.idx}`);
-    if (!container) continue;
-    const get = (id) => container.querySelector(`#${id}`)?.value || '';
-
-    let dados = {};
-    if (mat === 'Solos' || mat === 'Agregados') {
-      dados = { jazida: get('f-jazida'), km_jazida: get('f-km-jazida'), data_coleta: get('f-data-coleta'), furo: get('f-furo'), profundidade: get('f-profundidade') };
-    } else if (mat === 'Concreto') {
-      dados = { data_concretagem: get('f-data-conc'), km: get('f-km'), peca: get('f-peca'), cod_cp: get('f-cod-cp'), mpa_proj: get('f-mpa-proj'), slump_proj: get('f-slump-proj'), slump_dia: get('f-slump-dia'), temperatura: get('f-temp'), idade_ruptura: get('f-idade') };
-    } else if (mat === 'Massa Asfáltica') {
-      dados = { data_usinagem: get('f-data-usin'), traco_faixa: get('f-traco') };
-    } else if (mat === 'Ligante Asfáltico') {
-      dados = { data_coleta: get('f-data-col-lig'), fornecedor_cap: get('f-cap') };
-    } else if (mat === 'CPs / Extração') {
-      dados = { cod_cp: get('f-cod-cp-ext'), km: get('f-km-ext'), faixa: get('f-faixa'), lado: get('f-lado'), camada: get('f-camada'), data_extracao: get('f-data-ext') };
-    }
-    todasAmostras.push(dados);
-  }
-  return todasAmostras;
+function campoLiganteTipoChange(idx) {
+  const val = document.getElementById(`a-tipo-cap-${idx}`)?.value;
+  const div = document.getElementById(`a-tipo-cap-outros-${idx}`);
+  if (div) div.style.display = val === 'Outros' ? 'block' : 'none';
 }
 
-function mostrarAnexo(inputId, labelId) {
-  const input = document.getElementById(inputId);
-  const label = document.getElementById(labelId);
-  if (input?.files?.[0] && label) {
-    label.innerHTML = `<span style="color:var(--ok);font-weight:600">✓ ${input.files[0].name}</span>`;
-    window[`_anexo_${inputId}`] = input.files[0];
-  }
+/* ── HERANÇA DE DADOS ── */
+function campoAplicarHeranca(idx) {
+  if (idx === 0) return;
+  const prev = idx - 1;
+  const sub = CAMPO_STATE.subTipo;
+  const g = (field, i) => document.getElementById(`${field}-${i}`);
+  const copy = (field) => {
+    const src = g(field, prev);
+    const dst = g(field, idx);
+    if (src && dst && src.value) dst.value = src.value;
+  };
+
+  // Campos que herdam por subcategoria
+  const heranca = {
+    jazida:      ['a-furo'],   // só profundidade não herda, furo não herda também
+    emprestimo:  [],           // só qty — não herda
+    segmento:    ['a-pos'],
+    solo_cimento:['a-km','a-pos','a-plano','a-ruptura'],
+    massa:       ['a-dt-usin','a-pista','a-faixa','a-camada','a-km-ini','a-km-fim','a-projeto'],
+    cp_pista:    ['a-faixa','a-pos'],
+    ligante:     ['a-dt-col','a-fornec','a-tipo-cap'],
+    cp_concreto: ['a-dt-conc','a-km','a-peca','a-caminhao','a-nota','a-slump-val','a-slump-var','a-mpa','a-temp','a-ruptura'],
+    mancha_areia:['a-pos'], pendulo:['a-pos'], benkelman:['a-pos'], outros_esp:['a-pos'],
+  };
+
+  (heranca[sub] || []).forEach(f => copy(f));
 }
 
-function renderEnsaiosChecklist(ensaios) {
-  const el = document.getElementById('ensaios-checklist');
-  if (!ensaios || ensaios.length === 0) {
-    el.innerHTML = `<p style="font-size:12px;color:var(--text-3);padding:8px 0">Nenhum ensaio cadastrado para este material. Verifique o catálogo no módulo Gestor.</p>`;
+/* ── ENSAIOS ── */
+function campoRenderEnsaios() {
+  const catMap = {
+    solos:    'Solos e Agregados',
+    asfalto:  'Asfalto',
+    concreto: 'Concreto',
+    especiais: null, // todos
+  };
+  const cat = catMap[CAMPO_STATE.tipoAmostra];
+  const filtrados = cat
+    ? CAMPO_STATE.todosEnsaios.filter(e => e.categoria === cat)
+    : CAMPO_STATE.todosEnsaios;
+
+  const el = document.getElementById('campo-ensaios-lista');
+  CAMPO_STATE.ensaiosSelecionados = new Set();
+  document.getElementById('ensaios-count-label').textContent = '0 selecionados';
+
+  if (!filtrados || filtrados.length === 0) {
+    el.innerHTML = `<p style="font-size:12px;color:var(--text-3);padding:8px 0">Nenhum ensaio cadastrado para este tipo. Verifique o catálogo no módulo Gestor.</p>`;
     return;
   }
-  el.innerHTML = ensaios.map(e => `
-    <label style="
-      display:flex;align-items:flex-start;gap:10px;
-      padding:10px 6px;cursor:pointer;
-      border-bottom:1px solid var(--border);
-      transition:background .1s;
-    " onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''">
+
+  el.innerHTML = filtrados.map(e => `
+    <label style="display:flex;align-items:flex-start;gap:10px;padding:9px 4px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s"
+      onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''">
       <input type="checkbox" value="${e.id}" style="margin-top:2px;flex-shrink:0;accent-color:var(--teal);width:15px;height:15px"
-        onchange="toggleEnsaio('${e.id}')">
+        onchange="campoToggleEnsaio('${e.id}')">
       <div style="flex:1">
         <div style="font-size:12.5px;font-weight:600;color:var(--text)">${e.nome}</div>
-        ${e.norma ? `<div style="font-size:10.5px;color:var(--text-3);margin-top:2px">${e.norma}</div>` : ''}
+        ${e.norma ? `<div style="font-size:10.5px;color:var(--text-3);margin-top:1px">${e.norma}</div>` : ''}
       </div>
     </label>
   `).join('');
 }
 
-function toggleEnsaio(id) {
-  if (window._campoSelecionados.has(id)) {
-    window._campoSelecionados.delete(id);
+function campoToggleEnsaio(id) {
+  if (CAMPO_STATE.ensaiosSelecionados.has(id)) {
+    CAMPO_STATE.ensaiosSelecionados.delete(id);
   } else {
-    window._campoSelecionados.add(id);
+    CAMPO_STATE.ensaiosSelecionados.add(id);
   }
-  const cnt = window._campoSelecionados.size;
-  document.getElementById('ensaios-count').textContent = cnt + ' selecionado' + (cnt !== 1 ? 's' : '');
+  const cnt = CAMPO_STATE.ensaiosSelecionados.size;
+  document.getElementById('ensaios-count-label').textContent = cnt + ' selecionado' + (cnt !== 1 ? 's' : '');
 }
 
-async function enviarPedido() {
-  if (!window._campoMaterial) { toast('Selecione o tipo de material', 'warn'); return; }
-  if (window._campoSelecionados.size === 0) { toast('Selecione ao menos 1 ensaio', 'warn'); return; }
+/* ── COLETA DE DADOS ── */
+function campoColetar() {
+  const get = id => document.getElementById(id)?.value || '';
+  const sub = CAMPO_STATE.subTipo;
 
-  const btn = document.querySelector('button[onclick="enviarPedido()"]');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="login-spinner"></span>Enviando…';
+  // Cabeçário fixo
+  let cabecario = {};
+  if (['jazida','emprestimo','segmento','solo_cimento'].includes(sub)) {
+    cabecario = { camada: get('cf-camada'), pista: get('cf-pista'), proctor: get('cf-proctor') };
+  }
+  if (sub === 'jazida')       { cabecario.jazida_nome = get('cf-jazida-nome'); cabecario.jazida_km = get('cf-jazida-km'); cabecario.jazida_data = get('cf-jazida-data'); }
+  if (sub === 'emprestimo')   { cabecario.emp_data = get('cf-emp-data'); cabecario.emp_km = get('cf-emp-km'); }
+  if (sub === 'solo_cimento') { cabecario.sc_data = get('cf-sc-data'); cabecario.sc_camada_apl = get('cf-sc-camada-apl'); }
+  if (sub === 'agregados')    { cabecario.agr_tipo = get('cf-agr-tipo') === 'Outros' ? get('cf-agr-tipo-texto') : get('cf-agr-tipo'); cabecario.agr_pedreira = get('cf-agr-pedreira'); cabecario.agr_data = get('cf-agr-data'); }
+  if (sub === 'cp_pista')     { cabecario.cpp_dt_aplic = get('cf-cpp-dt-aplic'); cabecario.cpp_dt_extr = get('cf-cpp-dt-extr'); cabecario.cpp_pista = get('cf-cpp-pista'); cabecario.cpp_camada = get('cf-cpp-camada'); cabecario.cpp_espessura = get('cf-cpp-espessura'); cabecario.cpp_km_ini = get('cf-cpp-km-ini'); cabecario.cpp_km_fim = get('cf-cpp-km-fim'); }
+  if (['mancha_areia','pendulo','benkelman','outros_esp'].includes(sub)) { cabecario.esp_data = get('cf-esp-data'); cabecario.esp_pista = get('cf-esp-pista'); cabecario.esp_faixa = get('cf-esp-faixa'); cabecario.esp_km_ini = get('cf-esp-km-ini'); cabecario.esp_km_fim = get('cf-esp-km-fim'); cabecario.esp_camada = get('cf-esp-camada'); if (sub==='outros_esp') cabecario.esp_descricao = get('cf-esp-descricao'); }
+
+  // Amostras
+  const amostras = CAMPO_STATE.amostras.map(a => {
+    const i = a.idx;
+    const g2 = f => document.getElementById(`${f}-${i}`)?.value || '';
+    if (sub === 'jazida') return { furo: g2('a-furo'), profundidade: g2('a-prof') };
+    if (sub === 'emprestimo') return { quantidade_kg: g2('a-qty') };
+    if (sub === 'segmento') return { km: g2('a-km'), posicao: g2('a-pos'), quantidade: g2('a-qty') };
+    if (sub === 'solo_cimento') return { km: g2('a-km'), posicao: g2('a-pos'), codigo_cp: g2('a-cod'), pct_cimento: g2('a-cimento'), plano: g2('a-plano'), ruptura: g2('a-ruptura') === 'Outros' ? g2('a-ruptura-txt') : g2('a-ruptura') };
+    if (sub === 'massa') return { dt_usinagem: g2('a-dt-usin'), hr_coleta: g2('a-hr-coleta'), pista: g2('a-pista'), faixa: g2('a-faixa'), km_ini: g2('a-km-ini'), km_fim: g2('a-km-fim'), camada: g2('a-camada'), projeto: g2('a-projeto') };
+    if (sub === 'cp_pista') return { km_extracao: g2('a-km-ext'), faixa: g2('a-faixa'), posicao: g2('a-pos'), id_cp: g2('a-id-cp') };
+    if (sub === 'ligante') return { dt_coleta: g2('a-dt-col'), fornecedor: g2('a-fornec') === 'Outros' ? g2('a-fornec-txt') : g2('a-fornec'), tipo_cap: g2('a-tipo-cap') === 'Outros' ? g2('a-tipo-cap-txt') : g2('a-tipo-cap') };
+    if (sub === 'cp_concreto') return { dt_concretagem: g2('a-dt-conc'), km: g2('a-km'), peca: g2('a-peca'), caminhao: g2('a-caminhao'), nota: g2('a-nota'), slump_val: g2('a-slump-val'), slump_var: g2('a-slump-var'), mpa: g2('a-mpa'), temperatura: g2('a-temp'), cod_cp: g2('a-cod-cp'), ruptura: g2('a-ruptura') === 'Outros' ? g2('a-ruptura-txt') : g2('a-ruptura') };
+    if (['mancha_areia','pendulo','benkelman','outros_esp'].includes(sub)) return { km: g2('a-km'), posicao: g2('a-pos'), resultado: g2('a-resultado') };
+    return {};
+  });
+
+  return { cabecario, amostras };
+}
+
+/* ── ENVIAR PEDIDO ── */
+async function campoenviarpedido() {
+  // Validações básicas
+  const obra = document.getElementById('c-obra')?.value;
+  const tipoSol = document.getElementById('c-tipo-sol')?.value;
+  if (!obra) { toast('Selecione a obra / empresa', 'warn'); return; }
+  if (!tipoSol) { toast('Selecione o tipo de solicitação', 'warn'); return; }
+  if (!CAMPO_STATE.tipoAmostra) { toast('Selecione o tipo de amostra', 'warn'); return; }
+  if (!CAMPO_STATE.subTipo) { toast('Selecione a subcategoria', 'warn'); return; }
+  if (CAMPO_STATE.ensaiosSelecionados.size === 0) { toast('Selecione ao menos 1 ensaio', 'warn'); return; }
+
+  const btn = document.querySelector('button[onclick="campoenviarpedido()"]');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="login-spinner"></span>Enviando…'; }
 
   try {
     const { seq, num, ano } = await gerarNumeroPE();
+    const { cabecario, amostras } = campoColetar();
     const now = new Date();
+
+    const tipoSolFinal = tipoSol === 'Outros'
+      ? (document.getElementById('c-tipo-sol-texto')?.value || 'Outros')
+      : tipoSol;
+
+    const lote = document.getElementById('c-lote')?.value || APP.profile.lote || '';
+
     const pedido = {
-      numero_pe:     num,
-      sequencial:    seq,
-      ano:           ano,
-      status:        'aguardando_lab',
-      material:      window._campoMaterial,
+      numero_pe:      num,
+      sequencial:     seq,
+      ano:            ano,
+      status:         'aguardando_lab',
+      tipo_amostra:   CAMPO_STATE.tipoAmostra,
+      sub_tipo:       CAMPO_STATE.subTipo,
+      material:       campoSubLabel(CAMPO_STATE.subTipo),
+      tipo_solicitacao: tipoSolFinal,
       solicitante_id: APP.profile.id,
-      empresa:       APP.profile.empresa,
-      lote:          APP.profile.lote,
-      observacoes:   document.getElementById('campo-obs')?.value || '',
-      dados_amostra: coletarTodasAmostras(window._campoMaterial),
-      ensaios_ids:   [...window._campoSelecionados],
-      created_at:    now.toISOString(),
+      empresa:        APP.profile.empresa,
+      lote:           lote,
+      observacoes:    document.getElementById('campo-obs')?.value || '',
+      dados_amostra:  { cabecario, amostras },
+      ensaios_ids:    [...CAMPO_STATE.ensaiosSelecionados],
+      created_at:     now.toISOString(),
     };
 
-    const { data: pedidoData, error } = await sb.from('pedidos_ensaio').insert(pedido).select().single();
+    const { error } = await sb.from('pedidos_ensaio').insert(pedido);
     if (error) throw error;
 
-    window._amostrasExtras = [];
     toast(`PE ${num} criado com sucesso!`, 'ok');
+    CAMPO_STATE.amostras = [];
+    CAMPO_STATE.ensaiosSelecionados = new Set();
     setTimeout(() => switchTab('historico'), 1500);
   } catch(e) {
     toast('Erro ao criar pedido: ' + e.message, 'danger');
-    btn.disabled = false;
-    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Enviar Pedido de Ensaio`;
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Enviar Pedido de Ensaio';
+    }
   }
 }
 
-function coletarDadosAmostra(mat) {
-  const get = id => document.getElementById(id)?.value || '';
-  if (mat === 'Solos' || mat === 'Agregados') return {
-    jazida: get('f-jazida'), km_jazida: get('f-km-jazida'),
-    data_coleta: get('f-data-coleta'), furo: get('f-furo'), profundidade: get('f-profundidade')
-  };
-  if (mat === 'Concreto') return {
-    data_concretagem: get('f-data-conc'), km: get('f-km'), peca: get('f-peca'),
-    cod_cp: get('f-cod-cp'), mpa_proj: get('f-mpa-proj'), slump_proj: get('f-slump-proj'),
-    slump_dia: get('f-slump-dia'), temperatura: get('f-temp'), idade_ruptura: get('f-idade')
-  };
-  if (mat === 'Massa Asfáltica') return {
-    data_usinagem: get('f-data-usin'), traco_faixa: get('f-traco')
-  };
-  if (mat === 'Ligante Asfáltico') return {
-    data_coleta: get('f-data-col-lig'), fornecedor_cap: get('f-cap')
-  };
-  if (mat === 'CPs / Extração') return {
-    cod_cp: get('f-cod-cp-ext'), km: get('f-km-ext'), faixa: get('f-faixa'),
-    lado: get('f-lado'), camada: get('f-camada'), data_extracao: get('f-data-ext')
-  };
-  return {};
+/* ── FUNÇÕES AUXILIARES REMANESCENTES ── */
+function mostrarAnexo(inputId, labelId) {
+  const input = document.getElementById(inputId);
+  const label = document.getElementById(labelId);
+  if (input?.files?.[0] && label) {
+    label.innerHTML = `<span style="color:var(--ok);font-weight:600">✓ ${input.files[0].name}</span>`;
+  }
 }
 
-/* ──────────────────────────────────────────────────────────────
-   MÓDULO LABORATÓRIO
-   ────────────────────────────────────────────────────────────── */
+// Manter compatibilidade com funções antigas referenciadas no código de devolução
+function selecionarMaterial(mat) { /* substituído por campoSelecionarTipo */ }
+function coletarDadosAmostra(mat) { return {}; }
+function coletarTodasAmostras(mat) { return []; }
+function adicionarAmostra() { campoAdicionarAmostra(); }
+function removerAmostra(idx) { campoRemoverAmostra(idx); }
+function toggleEnsaio(id) { campoToggleEnsaio(id); }
+function enviarPedido() { campoenviarpedido(); }
+/* ══════════════════════════════════════════════════════════════
+   MÓDULO LABORATÓRIO — COMPLETO
+   ══════════════════════════════════════════════════════════════ */
+
+/* SVG Logo Nova Rota (reconstituído do branding) */
+const LOGO_NR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 48" style="height:36px">
+  <g transform="translate(2,4)">
+    <!-- Ícone seta/rota -->
+    <rect x="0" y="8" width="14" height="14" rx="2" fill="#1B9CC4"/>
+    <rect x="4" y="4" width="14" height="14" rx="2" fill="#3DBFDC"/>
+    <rect x="8" y="0" width="14" height="14" rx="2" fill="#F5C800"/>
+    <!-- Texto Nova Rota -->
+    <text x="28" y="14" font-family="Arial,sans-serif" font-weight="800" font-size="13" fill="#283272">Nova Rota</text>
+    <text x="28" y="26" font-family="Arial,sans-serif" font-weight="400" font-size="9" fill="#666">do Oeste</text>
+  </g>
+</svg>`;
+
+/* ── RENDER PRINCIPAL ── */
 async function renderLaboratorio(el) {
   el.innerHTML = `
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
     <div>
       <h2 style="font-size:17px;font-weight:800;color:var(--navy)">Módulo Laboratório</h2>
-      <p style="font-size:11.5px;color:var(--text-3);margin-top:2px">Gerencie pedidos, atribua ensaios e finalize O.S.</p>
+      <p style="font-size:11.5px;color:var(--text-3);margin-top:2px">Fila de pedidos — mais antigos primeiro</p>
     </div>
   </div>
   <div class="filter-bar">
@@ -1662,10 +2145,18 @@ async function renderLaboratorio(el) {
     <select class="field-select" id="lab-status-filter" onchange="filtrarLab()">
       <option value="">Todos os status</option>
       <option value="aguardando_lab">Aguardando Lab</option>
-      <option value="em_analise">Em Análise</option>
       <option value="em_andamento">Em Andamento</option>
       <option value="aguardando_revisao">Aguardando Revisão</option>
+      <option value="devolvido_campo">Devolvido — Campo</option>
       <option value="concluido">Concluído</option>
+      <option value="cancelado">Cancelado</option>
+    </select>
+    <select class="field-select" id="lab-tipo-filter" onchange="filtrarLab()" style="max-width:160px">
+      <option value="">Todos os tipos</option>
+      <option value="solos">Solos e Agregados</option>
+      <option value="asfalto">Asfalto</option>
+      <option value="concreto">Concreto</option>
+      <option value="especiais">Ensaios Especiais</option>
     </select>
   </div>
   <div id="lab-os-list">
@@ -1683,13 +2174,13 @@ async function carregarListaLab() {
 
   const { data, error } = await sb
     .from('pedidos_ensaio')
-    .select('*, solicitante:usuarios!pedidos_ensaio_solicitante_id_fkey(nome, empresa, lote)')
-    .order('created_at', { ascending: false })
-    .limit(30);
+    .select('*, solicitante:usuarios!pedidos_ensaio_solicitante_id_fkey(nome, cargo, empresa, lote)')
+    .order('created_at', { ascending: true }) // mais antigos primeiro
+    .limit(50);
 
   if (error || !data || data.length === 0) {
     el.innerHTML = `<div class="empty-state">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-4"/><rect x="9" y="1" width="6" height="4" rx="1"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;opacity:.3;display:block;margin:0 auto 12px"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-4"/><rect x="9" y="1" width="6" height="4" rx="1"/></svg>
       <strong>Nenhum pedido recebido</strong>
       <span>Os pedidos do campo aparecerão aqui</span>
     </div>`;
@@ -1701,12 +2192,14 @@ async function carregarListaLab() {
 }
 
 function filtrarLab() {
-  const q = (document.getElementById('lab-search')?.value||'').toLowerCase();
-  const s = document.getElementById('lab-status-filter')?.value||'';
+  const q  = (document.getElementById('lab-search')?.value||'').toLowerCase();
+  const s  = document.getElementById('lab-status-filter')?.value||'';
+  const tp = document.getElementById('lab-tipo-filter')?.value||'';
   const filtrado = (window._labData||[]).filter(os => {
-    const matchQ = !q || (os.numero_pe||'').includes(q) || (os.material||'').toLowerCase().includes(q) || (os.numero_os||'').toLowerCase().includes(q);
-    const matchS = !s || os.status === s;
-    return matchQ && matchS;
+    const matchQ  = !q  || (os.numero_pe||'').includes(q) || (os.material||'').toLowerCase().includes(q) || (os.numero_os||'').toLowerCase().includes(q);
+    const matchS  = !s  || os.status === s;
+    const matchTp = !tp || (os.tipo_amostra||'') === tp;
+    return matchQ && matchS && matchTp;
   });
   renderLabCards(filtrado);
 }
@@ -1719,6 +2212,575 @@ function renderLabCards(list) {
     return;
   }
   el.innerHTML = list.map(os => renderOSCard(os, true)).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FICHA FR-IMOB-05 — Solicitação de Ensaios/Estudos
+   ══════════════════════════════════════════════════════════════ */
+async function abrirFichaSOL(pedidoId) {
+  const { data: pedido } = await sb.from('pedidos_ensaio').select('*').eq('id', pedidoId).single();
+  if (!pedido) return;
+
+  // Buscar ficha existente ou preparar nova
+  let { data: ficha } = await sb.from('fichas_solicitacao').select('*').eq('pedido_id', pedidoId).single();
+
+  // Montar localizações a partir das amostras do pedido
+  const dados = pedido.dados_amostra || {};
+  const amostras = dados.amostras || [];
+  const localizacoes = ficha?.localizacoes || amostras.map(a => ({
+    km: a.km || a.km_extracao || a.km_ini || '',
+    pista: a.posicao || a.pista || '',
+    trilho: a.faixa || '',
+  })).filter(l => l.km);
+
+  // Gerar observação automática
+  const obsAuto = gerarObsSOL(pedido);
+  const obs = ficha?.observacao || obsAuto;
+
+  const tipoSol = pedido.tipo_solicitacao || '';
+
+  document.getElementById('modal-ficha-sol-body').innerHTML = `
+  <!-- FICHA FR-IMOB-05 -->
+  <div id="ficha-sol-doc" style="font-family:'Times New Roman',Times,serif;font-size:11px;color:#000;background:#fff;padding:20px 24px;border:1px solid #ccc;max-width:780px;margin:0 auto">
+
+    <!-- CABEÇALHO -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;padding-bottom:8px;border-bottom:2px solid #000">
+      <div>
+        <div style="font-size:12px;font-weight:bold">Título: <span style="font-weight:bold">Solicitação de Ensaios/Estudos</span></div>
+        <div style="margin-top:4px">Tipo de Documento: <strong>Formulário</strong> &nbsp;&nbsp;&nbsp; Codificação: <strong>FR-IMOB-05</strong></div>
+        <div>Data de Vigência: <strong>16/02/2026</strong> &nbsp;&nbsp;&nbsp; Versão: <strong>00</strong></div>
+        <div>Fase: <strong>Vigente</strong> &nbsp;&nbsp;&nbsp; Nível: <strong>Operacional</strong></div>
+      </div>
+      <div style="text-align:right">
+        ${LOGO_NR_SVG}
+      </div>
+    </div>
+
+    <!-- DADOS DO SOLICITANTE -->
+    <table style="width:100%;border-collapse:collapse;margin-bottom:0">
+      <tr style="background:#283272;color:#fff">
+        <td colspan="4" style="text-align:center;padding:5px;font-weight:bold;font-size:11px">Dados do Solicitante</td>
+      </tr>
+      <tr style="border:1px solid #999">
+        <td style="padding:4px 6px;font-weight:bold;border:1px solid #999;width:80px">Obra</td>
+        <td style="padding:4px 6px;color:#283272;font-weight:bold;border:1px solid #999">${pedido.empresa||'—'}</td>
+        <td style="padding:4px 6px;font-weight:bold;border:1px solid #999;width:40px">Lote</td>
+        <td style="padding:4px 6px;font-weight:bold;border:1px solid #999;width:40px;text-align:center">${pedido.lote||'—'}</td>
+      </tr>
+      <tr>
+        <td style="padding:4px 6px;font-weight:bold;border:1px solid #999">Solicitante</td>
+        <td colspan="3" style="padding:4px 6px;color:#283272;font-weight:bold;border:1px solid #999">${pedido.solicitante?.nome||'—'}</td>
+      </tr>
+      <tr>
+        <td style="padding:4px 6px;font-weight:bold;border:1px solid #999">Contato</td>
+        <td colspan="3" style="padding:4px 6px;border:1px solid #999">${pedido.solicitante?.cargo||'—'}</td>
+      </tr>
+    </table>
+
+    <!-- TIPO DE SOLICITAÇÃO -->
+    <div style="background:#1a5fa8;color:#fff;text-align:center;padding:4px;font-size:10px;margin-bottom:4px">
+      Solicitação (selecione detalhe demanda especificando locais dos ensaios/investigação)
+    </div>
+    <div style="margin-bottom:8px;padding:4px 0">
+      <div style="font-weight:bold;margin-bottom:4px">Selecione:</div>
+      ${[
+        {val:'Contraprova', label:'Contra-prova de ensaios realizados pelas terceiras'},
+        {val:'Investigação', label:'Investigação de patologia no pavimento'},
+        {val:'Estudo',      label:'Estudo de dosagem e/ou de materiais'},
+        {val:'Outros',      label:'Outros'},
+      ].map(t => `
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+          <input type="checkbox" ${tipoSol===t.val?'checked':''} onclick="return false" style="width:12px;height:12px">
+          <span>${t.label}</span>
+        </div>
+      `).join('')}
+    </div>
+
+    <!-- TABELA DE LOCALIZAÇÃO -->
+    <div style="font-weight:bold;margin-bottom:4px;font-size:10px">Detalhar demanda especificando locais dos ensaios/investigação:</div>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:8px" id="sol-loc-table">
+      <tr>
+        ${[1,2,3].map(() => `
+          <td style="width:33%">
+            <table style="width:100%;border-collapse:collapse">
+              <tr style="background:#e8e8e8">
+                <th style="border:1px solid #999;padding:3px;font-size:9px;width:30%">Km</th>
+                <th style="border:1px solid #999;padding:3px;font-size:9px;width:35%">Pista N/S</th>
+                <th style="border:1px solid #999;padding:3px;font-size:9px;width:35%">Trilho de roda</th>
+              </tr>
+              ${Array(8).fill(0).map((_,r) => `
+                <tr>
+                  <td style="border:1px solid #ccc;padding:2px;height:18px"><input type="text" class="sol-km" style="border:none;width:100%;font-size:10px;outline:none" placeholder=""></td>
+                  <td style="border:1px solid #ccc;padding:2px"><input type="text" class="sol-pista" style="border:none;width:100%;font-size:10px;outline:none" placeholder=""></td>
+                  <td style="border:1px solid #ccc;padding:2px"><input type="text" class="sol-trilho" style="border:none;width:100%;font-size:10px;outline:none" placeholder=""></td>
+                </tr>
+              `).join('')}
+            </table>
+          </td>
+        `).join('')}
+      </tr>
+    </table>
+
+    <!-- OBSERVAÇÃO -->
+    <div style="margin-bottom:8px">
+      <div style="font-size:10px;font-weight:bold;color:#c00;margin-bottom:2px">Observação:</div>
+      <textarea id="sol-obs" style="width:100%;min-height:60px;border:1px solid #999;font-family:inherit;font-size:10px;padding:4px;resize:vertical;color:#c00;font-weight:bold">${obs}</textarea>
+    </div>
+
+    <!-- RODAPÉ ASSINATURAS (fixo — não editável) -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;border-top:1px solid #999;padding-top:6px">
+      ${[
+        {label:'Elaborado por:', nome:'Thyago Biasin'},
+        {label:'Revisado por:',  nome:'Samara Rodrigues'},
+        {label:'Aprovado por:',  nome:'Rheno Tormin'},
+      ].map(a => `
+        <div>
+          <span style="font-size:10px">${a.label}</span>
+          <strong style="display:block;font-size:11px">${a.nome}</strong>
+        </div>
+      `).join('')}
+    </div>
+  </div>
+
+  <input type="hidden" id="sol-pedido-id" value="${pedidoId}">
+  <input type="hidden" id="sol-ficha-id" value="${ficha?.id||''}">
+  `;
+
+  // Preencher localizações existentes
+  if (localizacoes.length > 0) {
+    setTimeout(() => {
+      const kms    = document.querySelectorAll('.sol-km');
+      const pistas = document.querySelectorAll('.sol-pista');
+      const trilhos= document.querySelectorAll('.sol-trilho');
+      localizacoes.forEach((l, i) => {
+        if (i < kms.length) {
+          kms[i].value    = l.km    || '';
+          pistas[i].value = l.pista || '';
+          trilhos[i].value= l.trilho|| '';
+        }
+      });
+    }, 100);
+  }
+
+  openModal('modal-ficha-sol');
+}
+
+function gerarObsSOL(pedido) {
+  const dados = pedido.dados_amostra || {};
+  const cab = dados.cabecario || {};
+  const ano = new Date(pedido.created_at).getFullYear();
+  const num = String(pedido.sequencial||0).padStart(3,'0');
+
+  const sub = pedido.sub_tipo || '';
+  if (sub === 'cp_pista') {
+    return `FORAM EXTRAÍDOS PELA EQUIPE DO LABORATÓRIO CNRO CORPOS DE PROVA (CPs) DE C.A.U.Q. PROVENIENTES DO KM ${cab.cpp_km_ini||'---'} — ${pedido.empresa||'---'} / LOTE ${pedido.lote||'---'}. REGISTRADOS COM N° ${num}/${ano}.`;
+  }
+  if (sub === 'jazida') {
+    return `FOI ENTREGUE AO LABORATÓRIO AMOSTRA DE SOLO PARA A CARACTERIZAÇÃO COMPLETA. MATERIAL PROVENIENTE DA ${cab.jazida_nome||'JAZIDA'} / LOTE ${pedido.lote||'---'}. REGISTRADOS COM N° ${num}/${ano}.`;
+  }
+  if (sub === 'cp_concreto') {
+    return `FORAM ENTREGUES AO LABORATÓRIO CORPOS DE PROVA DE CONCRETO. CORPOS DE PROVA PROVENIENTES DO CONSÓRCIO ${pedido.empresa||'---'} / LOTE ${pedido.lote||'---'}. REGISTRADOS COM N° ${num}/${ano}.`;
+  }
+  if (sub === 'massa') {
+    return `FOI COLETADA AMOSTRA DE MASSA ASFÁLTICA PARA ENSAIOS DE CONTROLE. MATERIAL PROVENIENTE DO CONSÓRCIO ${pedido.empresa||'---'} / LOTE ${pedido.lote||'---'}. REGISTRADOS COM N° ${num}/${ano}.`;
+  }
+  if (sub === 'agregados') {
+    return `FOI ENTREGUE AO LABORATÓRIO AMOSTRA DE AGREGADO PARA CARACTERIZAÇÃO. MATERIAL PROVENIENTE DA PEDREIRA: ${cab.agr_pedreira||'---'}. CONSÓRCIO ${pedido.empresa||'---'} / LOTE ${pedido.lote||'---'}. REGISTRADOS COM N° ${num}/${ano}.`;
+  }
+  return `MATERIAL RECEBIDO NO LABORATÓRIO CNRO. PROVENIENTE DO CONSÓRCIO ${pedido.empresa||'---'} / LOTE ${pedido.lote||'---'}. REGISTRADOS COM N° ${num}/${ano}.`;
+}
+
+async function salvarFichaSOL() {
+  const pedidoId = document.getElementById('sol-pedido-id').value;
+  const fichaId  = document.getElementById('sol-ficha-id').value;
+  const obs      = document.getElementById('sol-obs').value;
+
+  // Coletar localizações
+  const kms    = [...document.querySelectorAll('.sol-km')].map(e=>e.value);
+  const pistas = [...document.querySelectorAll('.sol-pista')].map(e=>e.value);
+  const trilhos= [...document.querySelectorAll('.sol-trilho')].map(e=>e.value);
+  const localizacoes = kms.map((km,i) => ({
+    km: km||'', pista: pistas[i]||'', trilho: trilhos[i]||''
+  })).filter(l => l.km || l.pista || l.trilho);
+
+  const payload = {
+    pedido_id:  pedidoId,
+    observacao: obs,
+    observacao_editada: true,
+    localizacoes,
+    criado_por: APP.profile.id,
+    status: 'emitida',
+  };
+
+  let error;
+  if (fichaId) {
+    ({ error } = await sb.from('fichas_solicitacao').update(payload).eq('id', fichaId));
+  } else {
+    // Preencher campos do pedido automaticamente
+    const { data: pedido } = await sb.from('pedidos_ensaio').select('*').eq('id', pedidoId).single();
+    payload.obra        = pedido.empresa;
+    payload.lote        = pedido.lote;
+    payload.solicitante = pedido.solicitante?.nome || APP.profile.nome;
+    payload.tipo_contraprova  = pedido.tipo_solicitacao === 'Contraprova';
+    payload.tipo_investigacao = pedido.tipo_solicitacao === 'Investigação';
+    payload.tipo_estudo       = pedido.tipo_solicitacao === 'Estudo';
+    payload.tipo_outros       = pedido.tipo_solicitacao === 'Outros';
+    ({ error } = await sb.from('fichas_solicitacao').insert(payload));
+  }
+
+  if (error) { toast('Erro ao salvar ficha: ' + error.message, 'danger'); return; }
+  toast('Ficha FR-IMOB-05 salva!', 'ok');
+  closeModal('modal-ficha-sol');
+}
+
+function imprimirFichaSOL() {
+  const conteudo = document.getElementById('ficha-sol-doc').innerHTML;
+  const janela = window.open('', '_blank');
+  janela.document.write(`
+    <html><head><title>FR-IMOB-05 — Solicitação de Ensaios</title>
+    <style>
+      body { font-family: 'Times New Roman', serif; font-size: 11px; margin: 20px; }
+      input, textarea { border: none !important; outline: none; background: transparent; }
+      @media print { @page { size: A4; margin: 15mm; } }
+    </style></head>
+    <body onload="window.print()">${conteudo}</body></html>
+  `);
+  janela.document.close();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FICHA FR-IMOB-04 — Ordem de Serviço
+   ══════════════════════════════════════════════════════════════ */
+async function abrirFichaOS(pedidoId) {
+  const { data: pedido } = await sb.from('pedidos_ensaio').select('*, solicitante:usuarios!pedidos_ensaio_solicitante_id_fkey(nome,cargo)').eq('id', pedidoId).single();
+  if (!pedido) return;
+
+  let { data: ficha } = await sb.from('fichas_os').select('*').eq('pedido_id', pedidoId).single();
+
+  const obsAuto = gerarObsSOL(pedido);
+  const obs = ficha?.observacao || obsAuto;
+  const hoje = new Date().toLocaleDateString('pt-BR');
+
+  // Gerar número OS se ainda não existir
+  const numOS = pedido.numero_os || '(será gerado ao validar)';
+
+  // Ensaios selecionados para marcar checkboxes
+  const ensaiosSel = pedido.ensaios_ids || [];
+  const { data: ensaiosData } = await sb.from('ensaios').select('id,nome,categoria').in('id', ensaiosSel);
+  const nomes = (ensaiosData||[]).map(e => e.nome.toLowerCase());
+  const temEnsaio = (termo) => nomes.some(n => n.includes(termo.toLowerCase()));
+
+  document.getElementById('modal-ficha-os-body').innerHTML = `
+  <!-- FICHA FR-IMOB-04 -->
+  <div id="ficha-os-doc" style="font-family:'Times New Roman',Times,serif;font-size:10.5px;color:#000;background:#fff;padding:16px 20px;border:1px solid #ccc;max-width:780px;margin:0 auto">
+
+    <!-- CABEÇALHO -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #000">
+      <div>
+        <div style="font-size:11px">Título: <strong>Ordem de Serviço</strong></div>
+        <div>Tipo de Documento: <strong>Formulário</strong> &nbsp;&nbsp; Codificação: <strong>FR-IMOB-04</strong></div>
+        <div>Data de Vigência: <strong>16/02/2026</strong> &nbsp;&nbsp; Versão: <strong>00</strong></div>
+        <div>Fase: <strong>Vigente</strong> &nbsp;&nbsp; Nível: <strong>Operacional</strong></div>
+      </div>
+      <div>${LOGO_NR_SVG}</div>
+    </div>
+
+    <!-- BLOCO DATAS -->
+    <table style="width:100%;border-collapse:collapse;margin-bottom:0;border:1px solid #283272">
+      <tr style="background:#283272;color:#fff">
+        <td colspan="4" style="text-align:center;padding:4px;font-weight:bold;font-size:10.5px">Datas</td>
+      </tr>
+      <tr>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold;width:30%">Número da ordem de serviço:</td>
+        <td style="padding:3px 6px;border:1px solid #999;color:#283272;font-weight:bold;width:20%">${numOS}</td>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold;width:25%">Início dos ensaios:</td>
+        <td style="padding:3px 6px;border:1px solid #999;width:25%">
+          <input type="date" id="os-inicio" class="os-field" value="${ficha?.inicio_ensaios||''}" style="border:none;outline:none;width:100%;font-size:10.5px;font-family:inherit">
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold">Data da solicitação:</td>
+        <td style="padding:3px 6px;border:1px solid #999">${new Date(pedido.created_at).toLocaleDateString('pt-BR')}</td>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold">Fim dos ensaios:</td>
+        <td style="padding:3px 6px;border:1px solid #999">
+          <input type="date" id="os-fim" class="os-field" value="${ficha?.fim_ensaios||''}" style="border:none;outline:none;width:100%;font-size:10.5px;font-family:inherit">
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold">Previsão de entrega:</td>
+        <td style="padding:3px 6px;border:1px solid #999">
+          <input type="date" id="os-prev-entrega" class="os-field" value="${ficha?.previsao_entrega||''}" style="border:none;outline:none;width:100%;font-size:10.5px;font-family:inherit">
+        </td>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold">Análise dos ensaios:</td>
+        <td style="padding:3px 6px;border:1px solid #999">
+          <input type="date" id="os-analise" class="os-field" value="${ficha?.analise_ensaios||''}" style="border:none;outline:none;width:100%;font-size:10.5px;font-family:inherit">
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold">Repactuação data entrega:</td>
+        <td style="padding:3px 6px;border:1px solid #999">
+          <input type="date" id="os-repac-data" class="os-field" value="${ficha?.repactuacao_data||''}" style="border:none;outline:none;width:100%;font-size:10.5px;font-family:inherit">
+        </td>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold">Entrega da solicitação:</td>
+        <td style="padding:3px 6px;border:1px solid #999">
+          <input type="date" id="os-entrega-sol" class="os-field" value="${ficha?.entrega_solicitacao||''}" style="border:none;outline:none;width:100%;font-size:10.5px;font-family:inherit">
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold">Motivo repactuação:</td>
+        <td style="padding:3px 6px;border:1px solid #999">
+          <input type="text" id="os-motivo-repac" class="os-field" value="${ficha?.motivo_repactuacao||''}" style="border:none;outline:none;width:100%;font-size:10.5px;font-family:inherit">
+        </td>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold">Indicador:</td>
+        <td style="padding:3px 6px;border:1px solid #999">
+          <input type="text" id="os-indicador" class="os-field" value="${ficha?.indicador||'Entrega no prazo'}" style="border:none;outline:none;width:100%;font-size:10.5px;font-family:inherit">
+        </td>
+      </tr>
+    </table>
+
+    <!-- DADOS DO SOLICITANTE -->
+    <table style="width:100%;border-collapse:collapse;margin-top:0">
+      <tr style="background:#283272;color:#fff">
+        <td colspan="4" style="text-align:center;padding:4px;font-weight:bold;font-size:10.5px">Dados do Solicitante</td>
+      </tr>
+      <tr>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold;width:80px">Obra:</td>
+        <td style="padding:3px 6px;border:1px solid #999;color:#283272;font-weight:bold;text-align:center">${pedido.empresa||'—'}</td>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold;width:40px">Lote:</td>
+        <td style="padding:3px 6px;border:1px solid #999;text-align:center;font-weight:bold">${pedido.lote||'—'}</td>
+      </tr>
+      <tr>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold">Solicitante:</td>
+        <td colspan="3" style="padding:3px 6px;border:1px solid #999;color:#283272;font-weight:bold;text-align:center">${pedido.solicitante?.nome||'—'}</td>
+      </tr>
+      <tr>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold">Contato:</td>
+        <td colspan="3" style="padding:3px 6px;border:1px solid #999;text-align:center">${pedido.solicitante?.cargo||'—'}</td>
+      </tr>
+    </table>
+
+    <!-- ENSAIOS / ESTUDOS -->
+    <table style="width:100%;border-collapse:collapse;margin-top:0">
+      <tr style="background:#283272;color:#fff">
+        <td colspan="4" style="text-align:center;padding:4px;font-weight:bold;font-size:10.5px">Ensaios / Estudos</td>
+      </tr>
+    </table>
+
+    <!-- ESPECIFICAÇÃO -->
+    <div style="border:1px solid #999;padding:4px 6px;border-top:none">
+      <div style="font-weight:bold;margin-bottom:3px">Especificação:</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px">
+        ${[
+          {id:'espec_programar_coleta',     label:'Programar coleta dos materiais em campo'},
+          {id:'espec_caract_agregados',     label:'Caracterização dos agregados (brita, pedrisco, pó)'},
+          {id:'espec_caract_ligante',       label:'Caracterização do ligante'},
+          {id:'espec_caract_rap',           label:'Caracterização do RAP'},
+          {id:'espec_dosagem_asfaltica',    label:'Estudos de dosagem de misturas asfálticas'},
+          {id:'espec_investigativos',       label:'Ensaios investigativos do pavimento'},
+          {id:'espec_compressao',           label:'Compressão Axial / Diametral'},
+          {id:'espec_controle_campo',       label:'Controle em campo'},
+          {id:'espec_misturas_frescas',     label:'Misturas frescas'},
+          {id:'espec_misturas_endurecidas', label:'Misturas endurecidas'},
+          {id:'espec_outros',               label:'Outros'},
+        ].map(e => `
+          <div style="display:flex;align-items:center;gap:4px">
+            <input type="checkbox" id="${e.id}" ${ficha?.[e.id]?'checked':''} style="width:11px;height:11px">
+            <label for="${e.id}" style="font-size:10px;cursor:pointer">${e.label}</label>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- DETALHAR ENSAIOS -->
+    <div style="font-weight:bold;padding:3px 6px;border:1px solid #999;border-top:none;background:#f0f0f0">Detalhar ensaios:</div>
+    <table style="width:100%;border-collapse:collapse;border:1px solid #999;border-top:none">
+      <tr>
+        <th style="border:1px solid #999;padding:3px;text-align:center;font-size:10px;width:33%;background:#e8e8e8">Asfalto</th>
+        <th style="border:1px solid #999;padding:3px;text-align:center;font-size:10px;width:34%;background:#e8e8e8">Solos e Agregados</th>
+        <th style="border:1px solid #999;padding:3px;text-align:center;font-size:10px;width:33%;background:#e8e8e8">Concreto</th>
+      </tr>
+      <tr style="vertical-align:top">
+        <!-- ASFALTO -->
+        <td style="border:1px solid #999;padding:4px">
+          ${[
+            {id:'ens_rice',              label:'Densidade máxima teórica e massa específica máxima teórica - rice test', term:'rice'},
+            {id:'ens_equiv_areia',       label:'Determinação da equivalência de areia', term:'equivalência'},
+            {id:'ens_viscosidade',       label:'Viscosidade usando viscosímetro rotacional brookfield', term:'viscosidade'},
+            {id:'ens_penetracao',        label:'Penetração', term:'penetração'},
+            {id:'ens_ponto_fulgor',      label:'Ponto de fulgor - vaso aberto de cleveland', term:'fulgor'},
+            {id:'ens_ponto_amolecimento',label:'Ponto de amolecimento - método anel e bola', term:'amolecimento'},
+            {id:'ens_recuperacao_elastica',label:'Recuperação elástica', term:'recuperação'},
+            {id:'ens_ductilidade',       label:'Ductilidade a 25ºC 5 cm/min', term:'ductilidade'},
+            {id:'ens_conf_espessuras_asf',label:'Conferência de espessuras de amostras indeformadas', term:'espessura'},
+            {id:'ens_extracao_rotarex',  label:'Extração de betume (rotarex)', term:'rotarex'},
+            {id:'ens_extracao_soxhlet',  label:'Extração de betume (soxhlet)', term:'soxhlet'},
+            {id:'ens_marshall',          label:'Ensaios marshall (volumetria, fluência, estabilidade, tração)', term:'marshall'},
+            {id:'ens_dano_umidade',      label:'Dano por umidade induzida', term:'umidade induzida'},
+            {id:'ens_modulo_resiliencia',label:'Ensaio de módulo de resiliência', term:'resiliência'},
+            {id:'ens_fadiga',            label:'Ensaio de fadiga', term:'fadiga'},
+            {id:'ens_deformacao_perm',   label:'Ensaio de deformação permanente', term:'deformação'},
+            {id:'ens_outros_asfalto',    label:'Outros (Especificar na observação)', term:'__never__'},
+          ].map(e => `
+            <div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:3px">
+              <input type="checkbox" id="${e.id}" ${(ficha?.[e.id]||temEnsaio(e.term))?'checked':''} style="width:11px;height:11px;margin-top:1px;flex-shrink:0">
+              <label for="${e.id}" style="font-size:9.5px;cursor:pointer;line-height:1.3">${e.label}</label>
+            </div>
+          `).join('')}
+        </td>
+        <!-- SOLOS E AGREGADOS -->
+        <td style="border:1px solid #999;padding:4px">
+          ${[
+            {id:'ens_granulometria',      label:'Análise granulométrica por peneiramento', term:'granulométrica'},
+            {id:'ens_compactacao_nt',     label:'Compactação de amostras não trabalhadas', term:'não trabalhadas'},
+            {id:'ens_compactacao_t',      label:'Compactação de amostras trabalhadas', term:'trabalhadas'},
+            {id:'ens_teor_umidade',       label:'Teor de umidade', term:'umidade'},
+            {id:'ens_massa_esp_insitu',   label:'Massa específica aparente "in situ"', term:'in situ'},
+            {id:'ens_resistencia_tracao', label:'Resistência à tração', term:'tração'},
+            {id:'ens_conf_espessuras_solo',label:'Conferência de espessuras de amostras indeformadas', term:'indeformadas'},
+            {id:'ens_benkelman',          label:'Verificação deflectométrica - viga benkelman', term:'benkelman'},
+            {id:'ens_outros_solos',       label:'Outros (Especificar na observação)', term:'__never__'},
+            {id:'ens_dens_agr_graudo',    label:'Massa específica, densidade relativa, absorção de agregado graúdo', term:'graúdo'},
+            {id:'ens_dens_agr_miudo',     label:'Massa específica real, densidade relativa real de agregado miúdo', term:'miúdo'},
+          ].map(e => `
+            <div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:3px">
+              <input type="checkbox" id="${e.id}" ${(ficha?.[e.id]||temEnsaio(e.term))?'checked':''} style="width:11px;height:11px;margin-top:1px;flex-shrink:0">
+              <label for="${e.id}" style="font-size:9.5px;cursor:pointer;line-height:1.3">${e.label}</label>
+            </div>
+          `).join('')}
+        </td>
+        <!-- CONCRETO -->
+        <td style="border:1px solid #999;padding:4px">
+          <div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:3px">
+            <input type="checkbox" id="ens_compressao_axial" ${(ficha?.ens_compressao_axial||temEnsaio('compressão'))?'checked':''} style="width:11px;height:11px;margin-top:1px;flex-shrink:0">
+            <label for="ens_compressao_axial" style="font-size:9.5px;cursor:pointer;line-height:1.3">Compressão Axial de Corpo de Prova</label>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <!-- OBSERVAÇÃO -->
+    <div style="border:1px solid #999;border-top:none;padding:4px 6px">
+      <span style="font-size:10px;font-weight:bold;color:#c00">Observação: </span>
+      <textarea id="os-obs" style="width:100%;min-height:56px;border:none;font-family:inherit;font-size:9.5px;color:#c00;font-weight:bold;resize:vertical;outline:none;margin-top:2px">${obs}</textarea>
+    </div>
+
+    <!-- RODAPÉ -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;border-top:1px solid #999;padding-top:6px;margin-top:4px">
+      ${[
+        {label:'Elaborado por:', nome:'Thyago Biasin'},
+        {label:'Revisado por:',  nome:'Samara Rodrigues'},
+        {label:'Aprovado por:',  nome:'Rheno Tormin'},
+      ].map(a => `
+        <div>
+          <span style="font-size:10px">${a.label}</span>
+          <strong style="display:block;font-size:11px">${a.nome}</strong>
+        </div>
+      `).join('')}
+    </div>
+  </div>
+
+  <input type="hidden" id="os-pedido-id" value="${pedidoId}">
+  <input type="hidden" id="os-ficha-id" value="${ficha?.id||''}">
+  `;
+
+  openModal('modal-ficha-os');
+}
+
+async function salvarFichaOS() {
+  const pedidoId = document.getElementById('os-pedido-id').value;
+  const fichaId  = document.getElementById('os-ficha-id').value;
+  const get = id => document.getElementById(id);
+  const chk = id => document.getElementById(id)?.checked || false;
+
+  const payload = {
+    pedido_id:        pedidoId,
+    inicio_ensaios:   get('os-inicio')?.value      || null,
+    fim_ensaios:      get('os-fim')?.value          || null,
+    previsao_entrega: get('os-prev-entrega')?.value  || null,
+    analise_ensaios:  get('os-analise')?.value       || null,
+    repactuacao_data: get('os-repac-data')?.value    || null,
+    entrega_solicitacao: get('os-entrega-sol')?.value|| null,
+    motivo_repactuacao:  get('os-motivo-repac')?.value||null,
+    indicador:        get('os-indicador')?.value     || null,
+    observacao:       get('os-obs')?.value           || null,
+    observacao_editada: true,
+    criado_por:       APP.profile.id,
+    status:           'emitida',
+    // Especificação
+    espec_programar_coleta:     chk('espec_programar_coleta'),
+    espec_caract_agregados:     chk('espec_caract_agregados'),
+    espec_caract_ligante:       chk('espec_caract_ligante'),
+    espec_caract_rap:           chk('espec_caract_rap'),
+    espec_dosagem_asfaltica:    chk('espec_dosagem_asfaltica'),
+    espec_investigativos:       chk('espec_investigativos'),
+    espec_compressao:           chk('espec_compressao'),
+    espec_controle_campo:       chk('espec_controle_campo'),
+    espec_misturas_frescas:     chk('espec_misturas_frescas'),
+    espec_misturas_endurecidas: chk('espec_misturas_endurecidas'),
+    espec_outros:               chk('espec_outros'),
+    // Ensaios
+    ens_rice:                chk('ens_rice'),
+    ens_equiv_areia:         chk('ens_equiv_areia'),
+    ens_viscosidade:         chk('ens_viscosidade'),
+    ens_penetracao:          chk('ens_penetracao'),
+    ens_ponto_fulgor:        chk('ens_ponto_fulgor'),
+    ens_ponto_amolecimento:  chk('ens_ponto_amolecimento'),
+    ens_recuperacao_elastica:chk('ens_recuperacao_elastica'),
+    ens_ductilidade:         chk('ens_ductilidade'),
+    ens_conf_espessuras_asf: chk('ens_conf_espessuras_asf'),
+    ens_extracao_rotarex:    chk('ens_extracao_rotarex'),
+    ens_extracao_soxhlet:    chk('ens_extracao_soxhlet'),
+    ens_marshall:            chk('ens_marshall'),
+    ens_dano_umidade:        chk('ens_dano_umidade'),
+    ens_modulo_resiliencia:  chk('ens_modulo_resiliencia'),
+    ens_fadiga:              chk('ens_fadiga'),
+    ens_deformacao_perm:     chk('ens_deformacao_perm'),
+    ens_granulometria:       chk('ens_granulometria'),
+    ens_compactacao_nt:      chk('ens_compactacao_nt'),
+    ens_compactacao_t:       chk('ens_compactacao_t'),
+    ens_teor_umidade:        chk('ens_teor_umidade'),
+    ens_massa_esp_insitu:    chk('ens_massa_esp_insitu'),
+    ens_resistencia_tracao:  chk('ens_resistencia_tracao'),
+    ens_conf_espessuras_solo:chk('ens_conf_espessuras_solo'),
+    ens_benkelman:           chk('ens_benkelman'),
+    ens_dens_agr_graudo:     chk('ens_dens_agr_graudo'),
+    ens_dens_agr_miudo:      chk('ens_dens_agr_miudo'),
+    ens_outros_solos:        chk('ens_outros_solos'),
+    ens_compressao_axial:    chk('ens_compressao_axial'),
+  };
+
+  let error;
+  if (fichaId) {
+    ({ error } = await sb.from('fichas_os').update(payload).eq('id', fichaId));
+  } else {
+    const { data: pedido } = await sb.from('pedidos_ensaio').select('*').eq('id', pedidoId).single();
+    payload.numero_os    = pedido.numero_os || '';
+    payload.obra         = pedido.empresa;
+    payload.lote         = pedido.lote;
+    payload.solicitante  = pedido.solicitante?.nome || '';
+    payload.data_solicitacao = pedido.created_at?.slice(0,10);
+    ({ error } = await sb.from('fichas_os').insert(payload));
+  }
+
+  if (error) { toast('Erro ao salvar O.S.: ' + error.message, 'danger'); return; }
+  toast('Ficha FR-IMOB-04 salva!', 'ok');
+  closeModal('modal-ficha-os');
+  await carregarListaLab();
+}
+
+function imprimirFichaOS() {
+  const conteudo = document.getElementById('ficha-os-doc').innerHTML;
+  const janela = window.open('', '_blank');
+  janela.document.write(`
+    <html><head><title>FR-IMOB-04 — Ordem de Serviço</title>
+    <style>
+      body { font-family: 'Times New Roman', serif; font-size: 10.5px; margin: 15px; }
+      input[type="text"], input[type="date"], textarea { border: none !important; outline: none; background: transparent; font-family: inherit; }
+      @media print { @page { size: A4; margin: 12mm; } }
+    </style></head>
+    <body onload="window.print()">${conteudo}</body></html>
+  `);
+  janela.document.close();
 }
 
 /* ── LABEL MAP ── */
@@ -1850,7 +2912,14 @@ function renderLabActions(os) {
   if (os.status === 'aguardando_lab') {
     return `
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
-      <button class="btn btn-teal btn-sm" onclick="abrirOS('${os.id}')">Abrir O.S.</button>
+      <button class="btn btn-ghost btn-sm" onclick="abrirFichaSOL('${os.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        FR-IMOB-05
+      </button>
+      <button class="btn btn-teal btn-sm" onclick="abrirFichaOS('${os.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        FR-IMOB-04 + Abrir O.S.
+      </button>
       <button class="btn btn-ghost btn-sm" onclick="abrirModalDevolverCampo('${os.id}')">Devolver ao Campo</button>
       <button class="btn btn-danger btn-sm" onclick="cancelarPedido('${os.id}')">Cancelar</button>
     </div>`;
@@ -1858,6 +2927,8 @@ function renderLabActions(os) {
   if (os.status === 'em_andamento' || os.status === 'em_analise') {
     return `
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+      <button class="btn btn-ghost btn-sm" onclick="abrirFichaSOL('${os.id}')">FR-IMOB-05</button>
+      <button class="btn btn-ghost btn-sm" onclick="abrirFichaOS('${os.id}')">FR-IMOB-04</button>
       <button class="btn btn-navy btn-sm" onclick="abrirModalAtribuir('${os.id}')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Atribuir Ensaios
