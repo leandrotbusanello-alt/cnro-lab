@@ -1,0 +1,4113 @@
+[index (1).html](https://github.com/user-attachments/files/32103772/index.1.html)
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CNRO Lab Control — Sistema Operacional</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ============================================================
+   DESIGN TOKENS — PALETA NOVA ROTA
+   ============================================================ */
+:root {
+  --navy:       #283272;
+  --navy-mid:   #2F509F;
+  --navy-light: #3869B1;
+  --teal:       #13B2AC;
+  --teal-light: #4AC5BB;
+  --teal-dark:  #0D8F8A;
+
+  --asfalto:    #B8A000;
+  --asfalto-bg: #FDFAE5;
+  --solos:      #2E7D1F;
+  --solos-bg:   #F0FAF0;
+  --concreto:   #1A6A9A;
+  --concreto-bg:#EBF5FB;
+  --ligante:    #7B3FA0;
+  --ligante-bg: #F8F0FF;
+  --cp-asf:     #9A3412;
+  --cp-asf-bg:  #FFF7ED;
+
+  --ok:         #166534;
+  --ok-bg:      #DCFCE7;
+  --warn:       #92400E;
+  --warn-bg:    #FEF3C7;
+  --danger:     #991B1B;
+  --danger-bg:  #FEE2E2;
+  --info:       #1E3A8A;
+  --info-bg:    #DBEAFE;
+
+  --bg:         #F0F2F7;
+  --surface:    #FFFFFF;
+  --surface-2:  #F7F9FC;
+  --border:     #DDE3EE;
+  --border-2:   #C8D1E0;
+
+  --text:       #1A2340;
+  --text-2:     #3D4F6B;
+  --text-3:     #64748B;
+  --text-inv:   #FFFFFF;
+
+  --r-sm:  6px;
+  --r-md:  10px;
+  --r-lg:  14px;
+  --r-xl:  18px;
+
+  --shadow-sm: 0 1px 3px rgba(40,50,114,.07);
+  --shadow-md: 0 4px 16px rgba(40,50,114,.11);
+  --shadow-lg: 0 8px 32px rgba(40,50,114,.16);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { font-size: 14px; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overscroll-behavior: none;
+}
+
+/* ============================================================
+   TELA DE LOGIN
+   ============================================================ */
+#login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, var(--navy) 0%, #1a2255 60%, #0f1535 100%);
+  padding: 20px;
+}
+.login-card {
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  padding: 40px 36px 36px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: var(--shadow-lg);
+}
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+.login-logo-icon {
+  width: 48px; height: 48px;
+  background: var(--navy);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.login-logo-icon svg { width: 26px; height: 26px; }
+.login-logo-text { line-height: 1.2; }
+.login-logo-text strong { display: block; font-size: 17px; font-weight: 800; color: var(--navy); letter-spacing: -.01em; }
+.login-logo-text span { font-size: 11px; color: var(--text-3); font-weight: 500; }
+.login-divider { width: 40px; height: 3px; background: var(--teal); border-radius: 2px; margin-bottom: 28px; }
+.login-title { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.login-sub { font-size: 12.5px; color: var(--text-3); margin-bottom: 28px; }
+
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 11.5px; font-weight: 600; color: var(--text-2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .04em; }
+.form-input {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 11px 14px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--surface);
+  transition: border-color .15s;
+  outline: none;
+}
+.form-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(19,178,172,.12); }
+.form-input::placeholder { color: var(--text-3); }
+
+.btn-primary {
+  width: 100%;
+  padding: 13px;
+  background: var(--navy);
+  color: var(--text-inv);
+  border: none;
+  border-radius: var(--r-md);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+  margin-top: 8px;
+  letter-spacing: .01em;
+}
+.btn-primary:hover { background: var(--navy-mid); }
+.btn-primary:active { transform: scale(.98); }
+.btn-primary:disabled { background: var(--border-2); color: var(--text-3); cursor: not-allowed; transform: none; }
+
+.login-error {
+  background: var(--danger-bg);
+  border: 1px solid #FCA5A5;
+  color: var(--danger);
+  border-radius: var(--r-md);
+  padding: 10px 14px;
+  font-size: 12.5px;
+  margin-top: 14px;
+  display: none;
+}
+.login-spinner {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.login-footer {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+/* ============================================================
+   APP SHELL (pós-login)
+   ============================================================ */
+#app-shell { display: none; min-height: 100vh; flex-direction: column; }
+
+/* TOPBAR */
+.topbar {
+  background: var(--navy);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  box-shadow: 0 2px 12px rgba(40,50,114,.3);
+}
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+}
+.topbar-brand { display: flex; align-items: center; gap: 10px; }
+.topbar-icon {
+  width: 32px; height: 32px;
+  background: var(--teal);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.topbar-icon svg { width: 18px; height: 18px; }
+.topbar-name { color: #fff; font-size: 13.5px; font-weight: 800; letter-spacing: -.01em; }
+.topbar-env  { color: rgba(255,255,255,.45); font-size: 9px; display: block; margin-top: 1px; font-weight: 500; }
+
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.conn-badge {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 10px;
+  color: rgba(255,255,255,.7);
+}
+.conn-dot { width: 5px; height: 5px; border-radius: 50%; background: #4ADE80; flex-shrink: 0; }
+.conn-dot.off { background: #FC8181; }
+.user-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--navy-light);
+  border: 2px solid rgba(255,255,255,.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* NAV TABS */
+.nav-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 12px 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.nav-tabs::-webkit-scrollbar { display: none; }
+.nav-tab {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--r-md);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: rgba(255,255,255,.6);
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+  border: none;
+  background: transparent;
+  letter-spacing: .01em;
+}
+.nav-tab:hover  { background: rgba(255,255,255,.1); color: rgba(255,255,255,.85); }
+.nav-tab.active { background: rgba(255,255,255,.15); color: #fff; }
+.nav-tab svg { width: 14px; height: 14px; flex-shrink: 0; }
+.nav-badge {
+  background: var(--teal);
+  color: var(--navy);
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 8px;
+  min-width: 16px;
+  text-align: center;
+}
+
+/* ============================================================
+   CONTENT AREA
+   ============================================================ */
+.content-area { flex: 1; padding: 16px; max-width: 1200px; margin: 0 auto; width: 100%; }
+
+/* PERFIL BADGE (dentro das páginas) */
+.perfil-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px 3px 6px;
+  border-radius: 20px;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.perfil-CAMPO  { background: #E0F2FE; color: #075985; }
+.perfil-LAB    { background: #EDE9FE; color: #5B21B6; }
+.perfil-ASSIST { background: #DCFCE7; color: #166534; }
+.perfil-GESTOR { background: #FEF3C7; color: #92400E; }
+.perfil-DEV    { background: #FEE2E2; color: #991B1B; }
+
+/* CARDS GERAIS */
+.card {
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+.card-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-title { font-size: 13px; font-weight: 700; color: var(--text); }
+.card-body  { padding: 16px; }
+
+/* STATUS BADGES */
+.status {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+.status::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.status-aguardando-lab  { background: #E0F2FE; color: #0369A1; }
+.status-em-analise      { background: #EDE9FE; color: #7C3AED; }
+.status-em-andamento    { background: #FEF3C7; color: #B45309; }
+.status-aguardando-rev  { background: #FFE4E6; color: #BE123C; }
+.status-concluido       { background: var(--ok-bg); color: var(--ok); }
+.status-devolvido-campo { background: #FFF7ED; color: #C2410C; }
+.status-devolvido-assist{ background: #F3F4F6; color: #374151; }
+.status-cancelado       { background: #F3F4F6; color: #6B7280; }
+
+/* SECTION TITLE */
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* KPI GRID */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+}
+.kpi-label { font-size: 10px; color: var(--text-3); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+.kpi-value { font-size: 28px; font-weight: 800; color: var(--navy); line-height: 1; }
+.kpi-sub   { font-size: 10px; color: var(--text-3); margin-top: 4px; }
+.kpi-accent { border-top: 3px solid var(--teal); }
+
+/* BUTTONS */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 16px;
+  border-radius: var(--r-md);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all .15s;
+  letter-spacing: .01em;
+}
+.btn:active { transform: scale(.97); }
+.btn-teal    { background: var(--teal);      color: #fff; }
+.btn-teal:hover { background: var(--teal-dark); }
+.btn-navy    { background: var(--navy);      color: #fff; }
+.btn-navy:hover { background: var(--navy-mid); }
+.btn-ghost   { background: transparent;      color: var(--text-2); border: 1.5px solid var(--border); }
+.btn-ghost:hover { border-color: var(--border-2); background: var(--surface-2); }
+.btn-danger  { background: var(--danger-bg); color: var(--danger); border: 1px solid #FCA5A5; }
+.btn-sm { padding: 6px 11px; font-size: 11px; }
+.btn svg { width: 14px; height: 14px; }
+
+/* TOAST */
+.toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  background: var(--text);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: var(--r-md);
+  font-size: 12.5px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  animation: slide-in .2s ease;
+  max-width: 320px;
+}
+.toast.ok      { background: var(--ok); }
+.toast.warn    { background: var(--warn); }
+.toast.danger  { background: var(--danger); }
+@keyframes slide-in { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
+
+/* DROPDOWN MENU */
+.dropdown { position: relative; }
+.dropdown-menu {
+  position: absolute;
+  right: 0; top: calc(100% + 6px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
+  min-width: 200px;
+  z-index: 500;
+  overflow: hidden;
+  display: none;
+}
+.dropdown-menu.open { display: block; }
+.dropdown-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px;
+  font-size: 13px;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background .1s;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+.dropdown-item:hover { background: var(--surface-2); }
+.dropdown-item svg { width: 15px; height: 15px; color: var(--text-3); }
+.dropdown-sep { height: 1px; background: var(--border); margin: 4px 0; }
+.dropdown-header { padding: 10px 14px 6px; font-size: 10px; color: var(--text-3); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 800;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(2px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: modal-in .2s ease;
+}
+@keyframes modal-in { from { transform: scale(.95) translateY(10px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+.modal-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.modal-close { width: 28px; height: 28px; border: none; background: var(--surface-2); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-3); }
+.modal-close:hover { background: var(--border); }
+.modal-body { padding: 20px; }
+.modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+
+/* FORM ROWS */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.form-row.single { grid-template-columns: 1fr; }
+.form-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+.field-label { display: block; font-size: 11px; font-weight: 600; color: var(--text-2); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .04em; }
+.field-input, .field-select, .field-textarea {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 9px 11px;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface);
+  transition: border-color .15s;
+  outline: none;
+  font-family: inherit;
+}
+.field-input:focus, .field-select:focus, .field-textarea:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(19,178,172,.1);
+}
+.field-textarea { resize: vertical; min-height: 80px; }
+.field-select { cursor: pointer; }
+.field-hint { font-size: 10.5px; color: var(--text-3); margin-top: 4px; }
+
+/* TABLE */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+}
+.data-table td {
+  padding: 12px 12px;
+  font-size: 12.5px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--surface-2); }
+
+/* COLLAPSIBLE CARDS */
+.os-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  margin-bottom: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.os-card-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: background .1s;
+  user-select: none;
+}
+.os-card-header:hover { background: var(--surface-2); }
+.os-card-num { font-size: 11px; font-weight: 800; color: var(--navy); font-family: 'Courier New', monospace; flex-shrink: 0; }
+.os-card-info { flex: 1; min-width: 0; }
+.os-card-title { font-size: 12.5px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.os-card-meta  { font-size: 10.5px; color: var(--text-3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.os-card-chevron { color: var(--text-3); flex-shrink: 0; transition: transform .2s; }
+.os-card-chevron.open { transform: rotate(180deg); }
+.os-card-body { display: none; padding: 0 14px 14px; border-top: 1px solid var(--border); }
+.os-card-body.open { display: block; }
+
+/* TOGGLE */
+.toggle-group { display: flex; align-items: center; gap: 8px; }
+.toggle { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: var(--border-2);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background .2s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 14px; height: 14px;
+  left: 3px; top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform .2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.toggle input:checked + .toggle-slider { background: var(--teal); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(16px); }
+.toggle-label { font-size: 12px; color: var(--text-2); }
+
+/* UPLOAD AREA */
+.upload-area {
+  border: 2px dashed var(--border-2);
+  border-radius: var(--r-md);
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .15s;
+  color: var(--text-3);
+  font-size: 12.5px;
+}
+.upload-area:hover { border-color: var(--teal); color: var(--teal); background: rgba(19,178,172,.04); }
+.upload-area svg { width: 28px; height: 28px; margin-bottom: 8px; display: block; margin-inline: auto; }
+
+/* EMPTY STATE */
+.empty-state { text-align: center; padding: 48px 24px; color: var(--text-3); }
+.empty-state svg { width: 48px; height: 48px; margin-bottom: 12px; display: block; margin-inline: auto; opacity: .4; }
+.empty-state strong { display: block; font-size: 14px; color: var(--text-2); margin-bottom: 6px; }
+.empty-state span { font-size: 12.5px; }
+
+/* LOADING OVERLAY */
+.loading-overlay {
+  position: fixed; inset: 0;
+  background: rgba(255,255,255,.85);
+  z-index: 999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+}
+.loading-overlay.active { display: flex; }
+.loading-spin {
+  width: 40px; height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--teal);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+.loading-text { font-size: 13px; color: var(--text-3); }
+
+/* MOBILE ADJUSTMENTS */
+@media (max-width: 600px) {
+  .form-row { grid-template-columns: 1fr; }
+  .form-row.triple { grid-template-columns: 1fr 1fr; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .content-area { padding: 12px; }
+  .card-body { padding: 12px; }
+  .modal { max-width: 100%; border-radius: var(--r-lg) var(--r-lg) 0 0; align-self: flex-end; max-height: 95vh; }
+  .modal-overlay.open { align-items: flex-end; padding: 0; }
+}
+
+/* TAG DISCIPLINA */
+.tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+.tag-solos    { background: var(--solos-bg);    color: var(--solos);   }
+.tag-asfalto  { background: var(--asfalto-bg);  color: var(--asfalto); }
+.tag-concreto { background: var(--concreto-bg); color: var(--concreto); }
+.tag-ligante  { background: var(--ligante-bg);  color: var(--ligante); }
+.tag-cp       { background: var(--cp-asf-bg);   color: var(--cp-asf);  }
+
+/* AVATAR INITIALS */
+.avatar-sm {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* SEARCH / FILTER BAR */
+.filter-bar {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.filter-bar .field-input { max-width: 220px; }
+.filter-bar .field-select { max-width: 160px; }
+
+/* SIGN BOX */
+.sign-box {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 10px;
+  background: var(--surface-2);
+  display: flex; align-items: center; gap: 10px;
+}
+.sign-box img { height: 36px; object-fit: contain; }
+.sign-box-label { font-size: 10px; color: var(--text-3); }
+.sign-box-name  { font-size: 12px; font-weight: 600; color: var(--text); }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     LOADING OVERLAY
+     ============================================================ -->
+<div class="loading-overlay active" id="app-loader">
+  <div class="loading-spin"></div>
+  <div class="loading-text">Carregando CNRO Lab Control…</div>
+</div>
+
+<!-- ============================================================
+     TELA DE LOGIN
+     ============================================================ -->
+<div id="login-screen" style="display:none">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#13B2AC" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
+        </svg>
+      </div>
+      <div class="login-logo-text">
+        <strong>CNRO Lab Control</strong>
+        <span>Concessionária Nova Rota do Oeste</span>
+      </div>
+    </div>
+    <div class="login-divider"></div>
+    <div class="login-title">Acesso ao Sistema</div>
+    <div class="login-sub">Entre com seu e-mail e senha cadastrados</div>
+    <div class="form-group">
+      <label class="form-label">E-mail</label>
+      <input type="email" class="form-input" id="login-email" placeholder="seu@email.com" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Senha</label>
+      <input type="password" class="form-input" id="login-password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn-primary" id="login-btn" onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="login-error"></div>
+    <div class="login-footer">Sistema restrito — acesso somente a usuários cadastrados pela CNRO</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     APP SHELL
+     ============================================================ -->
+<div id="app-shell" style="display:none; flex-direction:column; min-height:100vh;">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-brand">
+        <div class="topbar-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
+          </svg>
+        </div>
+        <div>
+          <div class="topbar-name">CNRO Lab Control</div>
+          <span class="topbar-env" id="topbar-perfil-label">carregando…</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="conn-badge" id="conn-badge">
+          <div class="conn-dot" id="conn-dot"></div>
+          <span id="conn-text">Online</span>
+        </div>
+        <div class="dropdown">
+          <div class="user-avatar" id="user-avatar-btn" onclick="toggleUserMenu()">
+            <span id="user-initials">??</span>
+          </div>
+          <div class="dropdown-menu" id="user-menu">
+            <div class="dropdown-header" id="menu-user-name">Usuário</div>
+            <div class="dropdown-item" onclick="openPerfilModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Meu Perfil
+            </div>
+            <div class="dropdown-sep"></div>
+            <div class="dropdown-item" onclick="doLogout()" style="color:var(--danger)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Sair
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <nav class="nav-tabs" id="nav-tabs-container">
+      <!-- tabs renderizados por JS -->
+    </nav>
+  </div>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <div class="content-area" id="main-content">
+    <!-- renderizado por JS -->
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- MODAL: FICHA FR-IMOB-05 — Solicitação -->
+<div class="modal-overlay" id="modal-ficha-sol">
+  <div class="modal" style="max-width:820px;max-height:92vh">
+    <div class="modal-header">
+      <span class="modal-title">FR-IMOB-05 — Solicitação de Ensaios/Estudos</span>
+      <button class="modal-close" onclick="closeModal('modal-ficha-sol')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-ficha-sol-body" style="padding:12px">carregando…</div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="imprimirFichaSOL()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimir / PDF
+      </button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-ficha-sol')">Fechar</button>
+      <button class="btn btn-teal" onclick="salvarFichaSOL()">Salvar Ficha</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: FICHA FR-IMOB-04 — Ordem de Serviço -->
+<div class="modal-overlay" id="modal-ficha-os">
+  <div class="modal" style="max-width:820px;max-height:92vh">
+    <div class="modal-header">
+      <span class="modal-title">FR-IMOB-04 — Ordem de Serviço</span>
+      <button class="modal-close" onclick="closeModal('modal-ficha-os')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-ficha-os-body" style="padding:12px">carregando…</div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="imprimirFichaOS()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimir / PDF
+      </button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-ficha-os')">Fechar</button>
+      <button class="btn btn-teal" onclick="salvarFichaOS()">Salvar O.S.</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DEVOLVER AO CAMPO -->
+<div class="modal-overlay" id="modal-devolver-campo">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <span class="modal-title">Devolver ao Campo</span>
+      <button class="modal-close" onclick="closeModal('modal-devolver-campo')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12.5px;color:var(--text-2);margin-bottom:14px">Informe o motivo da devolução. O inspetor verá esta mensagem e poderá corrigir o pedido.</p>
+      <label class="field-label">Motivo da devolução</label>
+      <textarea class="field-textarea" id="devolver-campo-motivo" placeholder="Descreva o que precisa ser corrigido…" rows="4"></textarea>
+      <input type="hidden" id="devolver-campo-id">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-devolver-campo')">Cancelar</button>
+      <button class="btn btn-danger" onclick="executarDevolverCampo(document.getElementById('devolver-campo-id').value, document.getElementById('devolver-campo-motivo').value)">Devolver</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ATRIBUIR ENSAIOS -->
+<div class="modal-overlay" id="modal-atribuir">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <span class="modal-title">Atribuir Ensaios</span>
+      <button class="modal-close" onclick="closeModal('modal-atribuir')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-atribuir-body">carregando…</div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-atribuir')">Cancelar</button>
+      <button class="btn btn-teal" onclick="salvarAtribuicoes()">Salvar Atribuições</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: FINALIZAR OS -->
+<div class="modal-overlay" id="modal-finalizar">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-header">
+      <span class="modal-title">Finalizar O.S.</span>
+      <button class="modal-close" onclick="closeModal('modal-finalizar')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-finalizar-body">carregando…</div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-finalizar')">Cancelar</button>
+      <button class="btn btn-teal" onclick="confirmarFinalizar()">Confirmar Finalização</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: EDITAR PEDIDO DEVOLVIDO -->
+<div class="modal-overlay" id="modal-editar-pedido">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <span class="modal-title">Corrigir Pedido</span>
+      <button class="modal-close" onclick="closeModal('modal-editar-pedido')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-editar-pedido-body">carregando…</div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-editar-pedido')">Cancelar</button>
+      <button class="btn btn-teal" onclick="salvarEdicaoPedido()">Corrigir e Reenviar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: FORMULÁRIO DE ENSAIO (Assistente) -->
+<div class="modal-overlay" id="modal-form-ensaio">
+  <div class="modal" style="max-width:720px;max-height:92vh">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-form-ensaio-title">Formulário de Ensaio</span>
+      <button class="modal-close" onclick="closeModal('modal-form-ensaio')">&times;</button>
+    </div>
+    <div class="modal-body" id="modal-form-ensaio-body" style="padding:16px">carregando…</div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-form-ensaio')">Cancelar</button>
+      <button class="btn btn-teal" onclick="salvarFormularioEnsaio()">Salvar e Enviar para Revisão</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: UPLOAD FOTO / IA (Assistente) -->
+<div class="modal-overlay" id="modal-upload-foto">
+  <div class="modal" style="max-width:640px;max-height:92vh">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-upload-foto-title">Upload de Resultado</span>
+      <button class="modal-close" onclick="closeModal('modal-upload-foto')">&times;</button>
+    </div>
+    <div class="modal-body" style="padding:16px">
+      <div class="upload-area" onclick="document.getElementById('upload-foto-input').click()" style="margin-bottom:14px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Toque para selecionar foto ou PDF da ficha
+        <input type="file" id="upload-foto-input" accept="image/*,.pdf" style="display:none" onchange="previewFotoUpload()">
+      </div>
+      <div id="modal-upload-foto-preview" style="margin-bottom:14px"></div>
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <button class="btn btn-navy" id="btn-ler-ia" onclick="lerFichaComIA()" style="flex:1;justify-content:center">🤖 Ler com IA — Extrair Resultados Automaticamente</button>
+      </div>
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:14px;padding:8px 12px;background:var(--info-bg);border-radius:var(--r-sm)">💡 A IA analisa a foto e preenche os campos automaticamente. Revise os valores antes de confirmar.</div>
+      <div id="modal-upload-foto-resultado"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-upload-foto')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PERFIL -->
+<div class="modal-overlay" id="modal-perfil">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <span class="modal-title">Meu Perfil</span>
+      <button class="modal-close" onclick="closeModal('modal-perfil')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="perfil-modal-body">carregando…</div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-perfil')">Fechar</button>
+      <button class="btn btn-teal" onclick="savePerfilChanges()">Salvar alterações</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SUPABASE + APP LOGIC
+     ============================================================ -->
+<script>
+/* ──────────────────────────────────────────────────────────────
+   CONFIGURAÇÃO SUPABASE
+   ────────────────────────────────────────────────────────────── */
+const SUPABASE_URL  = 'https://xydmajjwfnfvzwlugzlk.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_zfJiVD1XveHwNa63_72nLw_zMirfcNt';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+/* ──────────────────────────────────────────────────────────────
+   ESTADO GLOBAL
+   ────────────────────────────────────────────────────────────── */
+let APP = {
+  user: null,       // auth user (Supabase)
+  profile: null,    // dados da tabela usuarios
+  currentTab: null,
+  online: true,
+};
+
+/* ──────────────────────────────────────────────────────────────
+   INICIALIZAÇÃO
+   ────────────────────────────────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', async () => {
+  // Verificar conexão
+  window.addEventListener('online',  () => setConn(true));
+  window.addEventListener('offline', () => setConn(false));
+
+  // Verificar sessão existente
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    await loadUserProfile(session.user);
+    showApp();
+  } else {
+    showLogin();
+  }
+
+  // Listener de mudança de auth
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      await loadUserProfile(session.user);
+      showApp();
+    } else if (event === 'SIGNED_OUT') {
+      showLogin();
+    }
+  });
+});
+
+function setConn(online) {
+  APP.online = online;
+  document.getElementById('conn-dot').className = 'conn-dot' + (online ? '' : ' off');
+  document.getElementById('conn-text').textContent = online ? 'Online' : 'Offline';
+}
+
+/* ──────────────────────────────────────────────────────────────
+   AUTH — LOGIN / LOGOUT
+   ────────────────────────────────────────────────────────────── */
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  const btn   = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+
+  if (!email || !pass) { showLoginError('Preencha e-mail e senha.'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="login-spinner"></span>Entrando…';
+  errEl.style.display = 'none';
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    showLoginError('E-mail ou senha incorretos.');
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+    return;
+  }
+  // onAuthStateChange cuida do resto
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  APP.user = null;
+  APP.profile = null;
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+/* ──────────────────────────────────────────────────────────────
+   PERFIL DO USUÁRIO
+   ────────────────────────────────────────────────────────────── */
+async function loadUserProfile(authUser) {
+  APP.user = authUser;
+  // Buscar perfil na tabela usuarios
+  const { data, error } = await sb
+    .from('usuarios')
+    .select('*')
+    .eq('auth_id', authUser.id)
+    .single();
+
+  if (error || !data) {
+    // Primeira vez (ex: DEV): criar perfil básico
+    APP.profile = {
+      auth_id: authUser.id,
+      nome: authUser.email.split('@')[0],
+      email: authUser.email,
+      perfil: 'DEV',
+      cargo: 'Desenvolvedor',
+      empresa: 'CNRO',
+      lote: null,
+      status: 'Ativo',
+    };
+  } else {
+    APP.profile = data;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   TRANSIÇÕES DE TELA
+   ────────────────────────────────────────────────────────────── */
+function showLogin() {
+  document.getElementById('app-loader').classList.remove('active');
+  document.getElementById('login-screen').style.display  = 'flex';
+  document.getElementById('app-shell').style.display = 'none';
+}
+
+function showApp() {
+  document.getElementById('app-loader').classList.remove('active');
+  document.getElementById('login-screen').style.display  = 'none';
+  const shell = document.getElementById('app-shell');
+  shell.style.display = 'flex';
+  shell.style.flexDirection = 'column';
+  renderAppForPerfil();
+}
+
+/* ──────────────────────────────────────────────────────────────
+   RENDERIZAÇÃO POR PERFIL
+   ────────────────────────────────────────────────────────────── */
+const PERFIL_TABS = {
+  DEV: [
+    { id: 'dashboard', label: 'Dashboard', icon: 'grid' },
+    { id: 'campo',     label: 'Campo',     icon: 'map-pin' },
+    { id: 'laboratorio', label: 'Laboratório', icon: 'flask' },
+    { id: 'assistente',  label: 'Assistente',  icon: 'clipboard' },
+    { id: 'gestor',      label: 'Gestor',      icon: 'settings' },
+    { id: 'admin',       label: 'Admin',       icon: 'shield' },
+  ],
+  GESTOR: [
+    { id: 'dashboard',   label: 'Dashboard',   icon: 'grid' },
+    { id: 'laboratorio', label: 'Laboratório',  icon: 'flask' },
+    { id: 'gestor',      label: 'Configurações', icon: 'settings' },
+  ],
+  LAB: [
+    { id: 'laboratorio', label: 'Laboratório', icon: 'flask' },
+    { id: 'historico',   label: 'Histórico',   icon: 'clock' },
+  ],
+  ASSIST: [
+    { id: 'assistente', label: 'Meus Ensaios', icon: 'clipboard' },
+    { id: 'historico',  label: 'Histórico',    icon: 'clock' },
+  ],
+  CAMPO: [
+    { id: 'campo',    label: 'Novo Pedido',  icon: 'plus-circle' },
+    { id: 'historico',label: 'Meus Pedidos', icon: 'list' },
+  ],
+};
+
+const TAB_ICONS = {
+  'grid':        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>',
+  'map-pin':     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+  'flask':       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6m-6 0v5l-4 6a5 5 0 0 0 .9 5.6A5 5 0 0 0 9 21h6a5 5 0 0 0 3.1-1.4A5 5 0 0 0 19 14l-4-6V3"/></svg>',
+  'clipboard':   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>',
+  'settings':    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  'shield':      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  'clock':       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  'list':        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>',
+  'plus-circle': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
+};
+
+function renderAppForPerfil() {
+  const p = APP.profile;
+  const tabs = PERFIL_TABS[p.perfil] || PERFIL_TABS['CAMPO'];
+
+  // Atualizar topbar
+  document.getElementById('topbar-perfil-label').textContent =
+    p.nome + ' · ' + p.perfil + (p.lote ? ' · Lote ' + p.lote : '');
+  const initials = p.nome.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('user-initials').textContent = initials;
+  document.getElementById('menu-user-name').textContent = p.nome;
+
+  // Render tabs
+  const nav = document.getElementById('nav-tabs-container');
+  nav.innerHTML = tabs.map(t => `
+    <button class="nav-tab${APP.currentTab === t.id ? ' active' : ''}" onclick="switchTab('${t.id}')">
+      ${TAB_ICONS[t.icon] || ''} ${t.label}
+    </button>
+  `).join('');
+
+  // Carregar primeira tab
+  if (!APP.currentTab || !tabs.find(t=>t.id===APP.currentTab)) {
+    switchTab(tabs[0].id);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   NAVEGAÇÃO ENTRE TABS
+   ────────────────────────────────────────────────────────────── */
+function switchTab(tabId) {
+  APP.currentTab = tabId;
+  // Atualizar nav
+  document.querySelectorAll('.nav-tab').forEach(el => {
+    el.classList.toggle('active', el.textContent.trim().toLowerCase().includes(tabId) || el.onclick?.toString().includes(`'${tabId}'`));
+  });
+  // Re-render nav (simples)
+  renderNavTabs();
+
+  // Renderizar conteúdo
+  const content = document.getElementById('main-content');
+  const renderers = {
+    dashboard:   renderDashboard,
+    campo:       renderCampo,
+    laboratorio: renderLaboratorio,
+    assistente:  renderAssistente,
+    gestor:      renderGestor,
+    admin:       renderAdmin,
+    historico:   renderHistorico,
+  };
+  if (renderers[tabId]) {
+    renderers[tabId](content);
+  } else {
+    content.innerHTML = `<div class="empty-state"><strong>Em desenvolvimento</strong><span>Módulo ${tabId} em breve.</span></div>`;
+  }
+}
+
+function renderNavTabs() {
+  const p = APP.profile;
+  const tabs = PERFIL_TABS[p.perfil] || PERFIL_TABS['CAMPO'];
+  const nav = document.getElementById('nav-tabs-container');
+  nav.innerHTML = tabs.map(t => `
+    <button class="nav-tab${APP.currentTab === t.id ? ' active' : ''}" onclick="switchTab('${t.id}')">
+      ${TAB_ICONS[t.icon] || ''} ${t.label}
+    </button>
+  `).join('');
+}
+
+/* ──────────────────────────────────────────────────────────────
+   NUMERAÇÃO DE DOCUMENTOS
+   ────────────────────────────────────────────────────────────── */
+async function gerarNumeroPE() {
+  const ano = new Date().getFullYear();
+  const { data } = await sb
+    .from('pedidos_ensaio')
+    .select('sequencial')
+    .eq('ano', ano)
+    .order('sequencial', { ascending: false })
+    .limit(1);
+  const seq = data && data.length > 0 ? data[0].sequencial + 1 : 1;
+  return { seq, num: String(seq).padStart(4, '0'), ano };
+}
+
+function gerarNumeroOS({ ano, mes, dia, lote, seq }) {
+  const m = String(mes).padStart(2,'0');
+  const d = String(dia).padStart(2,'0');
+  const l = String(lote).padStart(2,'0');
+  const s = String(seq).padStart(4,'0');
+  return `O.S. ${ano}.${m}.${d}.${l}.${s}`;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MÓDULO DASHBOARD
+   ────────────────────────────────────────────────────────────── */
+async function renderDashboard(el) {
+  el.innerHTML = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+    <div style="flex:1">
+      <h2 style="font-size:17px;font-weight:800;color:var(--navy)">Dashboard Geral</h2>
+      <p style="font-size:11.5px;color:var(--text-3);margin-top:2px">Visão consolidada das ordens de serviço</p>
+    </div>
+    <span class="perfil-badge perfil-${APP.profile.perfil}">${APP.profile.perfil}</span>
+  </div>
+  <div class="kpi-grid" id="kpi-grid">
+    <div class="kpi-card kpi-accent"><div class="kpi-label">Pedidos hoje</div><div class="kpi-value" id="kpi-hoje">—</div><div class="kpi-sub">aguardando lab</div></div>
+    <div class="kpi-card"><div class="kpi-label">Em andamento</div><div class="kpi-value" id="kpi-andamento">—</div><div class="kpi-sub">O.S. ativas</div></div>
+    <div class="kpi-card"><div class="kpi-label">Concluídos</div><div class="kpi-value" id="kpi-concluidos">—</div><div class="kpi-sub">este mês</div></div>
+    <div class="kpi-card"><div class="kpi-label">Usuários ativos</div><div class="kpi-value" id="kpi-usuarios">—</div><div class="kpi-sub">cadastrados</div></div>
+  </div>
+  <div class="section-title">O.S. Recentes</div>
+  <div id="os-recentes-list"><div class="empty-state">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-4"/><rect x="9" y="1" width="6" height="4" rx="1"/></svg>
+    <strong>Nenhuma O.S. ainda</strong>
+    <span>Os pedidos aparecerão aqui após criação no Módulo Campo</span>
+  </div></div>`;
+
+  // Carregar KPIs
+  loadDashboardKPIs();
+}
+
+async function loadDashboardKPIs() {
+  try {
+    const hoje = new Date().toISOString().slice(0,10);
+    const mesInicio = hoje.slice(0,7) + '-01';
+
+    const [rHoje, rAndamento, rMes, rUsuarios] = await Promise.all([
+      sb.from('pedidos_ensaio').select('id', {count:'exact'}).eq('status','aguardando_lab').gte('created_at', hoje),
+      sb.from('pedidos_ensaio').select('id', {count:'exact'}).in('status',['em_andamento','em_analise','aguardando_revisao']),
+      sb.from('pedidos_ensaio').select('id', {count:'exact'}).eq('status','concluido').gte('created_at', mesInicio),
+      sb.from('usuarios').select('id', {count:'exact'}).eq('status','Ativo'),
+    ]);
+
+    setKPI('kpi-hoje',      rHoje.count ?? 0);
+    setKPI('kpi-andamento', rAndamento.count ?? 0);
+    setKPI('kpi-concluidos',rMes.count ?? 0);
+    setKPI('kpi-usuarios',  rUsuarios.count ?? 0);
+
+    // Carregar OS recentes
+    const { data: osData } = await sb
+      .from('pedidos_ensaio')
+      .select('*, usuarios(nome)')
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (osData && osData.length > 0) {
+      document.getElementById('os-recentes-list').innerHTML = osData.map(renderOSCard).join('');
+    }
+  } catch(e) {
+    console.warn('KPIs:', e.message);
+  }
+}
+
+function setKPI(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MÓDULO CAMPO
+   ────────────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════
+   MÓDULO CAMPO — COMPLETO (conforme diretrizes PDF)
+   ══════════════════════════════════════════════════════════════ */
+
+const CAMPO_STATE = {
+  tipoAmostra: null,
+  subTipo: null,
+  amostras: [],
+  ensaiosSelecionados: new Set(),
+  todosEnsaios: [],
+  empresas: [],
+};
+
+async function renderCampo(el) {
+  const [resEnsaios, resEmpresas] = await Promise.all([
+    sb.from('ensaios').select('*').eq('ativo', true).order('ordem'),
+    sb.from('empresas').select('id,nome,lote').eq('ativo', true).order('nome').catch(() => ({ data: [] })),
+  ]);
+  CAMPO_STATE.todosEnsaios = resEnsaios.data || [];
+  CAMPO_STATE.empresas = resEmpresas.data || [];
+  CAMPO_STATE.tipoAmostra = null;
+  CAMPO_STATE.subTipo = null;
+  CAMPO_STATE.amostras = [];
+  CAMPO_STATE.ensaiosSelecionados = new Set();
+
+  el.innerHTML = `
+  <!-- CABEÇÁRIO DO SOLICITANTE -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-header">
+      <span class="card-title">👤 Dados do Solicitante</span>
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:10px;flex-wrap:wrap">
+        <div>
+          <label class="field-label">Nome</label>
+          <input class="field-input" id="c-nome" value="${APP.profile.nome||''}" readonly style="background:var(--surface-2)">
+        </div>
+        <div>
+          <label class="field-label">Área</label>
+          <input class="field-input" id="c-area" value="${APP.profile.empresa||''}" readonly style="background:var(--surface-2)">
+        </div>
+        <div>
+          <label class="field-label">Cargo / Função</label>
+          <input class="field-input" id="c-cargo" value="${APP.profile.cargo||''}" readonly style="background:var(--surface-2)">
+        </div>
+        <div>
+          <label class="field-label">Data da Solicitação</label>
+          <input class="field-input" id="c-data" value="${new Date().toLocaleDateString('pt-BR')}" readonly style="background:var(--surface-2)">
+        </div>
+        <div>
+          <label class="field-label">Nº da Solicitação</label>
+          <input class="field-input" id="c-num-sol" value="(gerado ao enviar)" readonly style="background:var(--surface-2);font-size:11px;color:var(--text-3)">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DADOS DA SOLICITAÇÃO -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-header">
+      <span class="card-title">📋 Dados da Solicitação</span>
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:2fr 1fr 2fr;gap:12px;margin-bottom:12px">
+        <div>
+          <label class="field-label">Obra / Empresa <span style="color:var(--danger)">*</span></label>
+          <select class="field-select" id="c-obra" onchange="campoSetLote()">
+            <option value="">Selecione a obra…</option>
+            ${(CAMPO_STATE.empresas.length > 0
+              ? CAMPO_STATE.empresas.map(e => `<option value="${e.id}" data-lote="${e.lote||''}">${e.nome}</option>`).join('')
+              : `<option value="cnro" data-lote="${APP.profile.lote||''}">CNRO — ${APP.profile.empresa||'Sede'}</option>`
+            )}
+          </select>
+        </div>
+        <div>
+          <label class="field-label">Lote</label>
+          <input class="field-input" id="c-lote" value="${APP.profile.lote||''}" readonly style="background:var(--surface-2)">
+        </div>
+        <div>
+          <label class="field-label">Tipo de Solicitação <span style="color:var(--danger)">*</span></label>
+          <select class="field-select" id="c-tipo-sol" onchange="campoTipoSolChange()">
+            <option value="">Selecione…</option>
+            <option value="Contraprova">Contraprova</option>
+            <option value="Estudo">Estudo</option>
+            <option value="Investigação">Investigação</option>
+            <option value="Ensaios Especiais">Ensaios Especiais</option>
+            <option value="Outros">Outros</option>
+          </select>
+        </div>
+      </div>
+      <div id="c-tipo-sol-outros" style="display:none;margin-bottom:12px">
+        <label class="field-label">Especifique o tipo de solicitação</label>
+        <input class="field-input" id="c-tipo-sol-texto" placeholder="Descreva o tipo de solicitação…">
+      </div>
+
+      <!-- TIPO DE AMOSTRA -->
+      <label class="field-label" style="margin-bottom:8px;display:block">Tipo de Amostra <span style="color:var(--danger)">*</span></label>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px" id="tipo-amostra-grid">
+        ${[
+          {id:'solos',     label:'Solos e Agregados', icon:'🪨', cor:'var(--solos)'},
+          {id:'asfalto',   label:'Asfalto',           icon:'🛣️', cor:'var(--asfalto)'},
+          {id:'concreto',  label:'Concreto',          icon:'🏗️', cor:'var(--concreto)'},
+          {id:'especiais', label:'Ensaios Especiais', icon:'🔬', cor:'var(--navy)'},
+        ].map(t => `
+          <button class="tipo-amostra-btn" data-tipo="${t.id}" onclick="campoSelecionarTipo('${t.id}')" style="
+            border:2px solid var(--border);background:var(--surface);border-radius:var(--r-md);
+            padding:14px 8px;cursor:pointer;font-size:11.5px;font-weight:700;
+            color:var(--text-2);transition:all .15s;text-align:center;line-height:1.4;">
+            <span style="font-size:22px;display:block;margin-bottom:5px">${t.icon}</span>${t.label}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBCATEGORIAS (dinâmico) -->
+  <div id="campo-subtipo" style="display:none"></div>
+
+  <!-- CABEÇÁRIO FIXO (dinâmico) -->
+  <div id="campo-cabecario-fixo" style="display:none"></div>
+
+  <!-- AMOSTRAS (dinâmico) -->
+  <div id="campo-amostras-container" style="display:none"></div>
+
+  <!-- BOTÃO ADICIONAR AMOSTRA -->
+  <div id="campo-btn-add-amostra" style="display:none;margin-bottom:14px">
+    <button class="btn btn-ghost" style="width:100%;justify-content:center;border:2px dashed var(--border)" onclick="campoAdicionarAmostra()">
+      + Adicionar Próxima Amostra (Herdar Dados)
+    </button>
+  </div>
+
+
+  <!-- ENSAIOS SOLICITADOS -->
+  <div id="campo-ensaios-section" style="display:none">
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-header">
+        <span class="card-title">2. Ensaios Solicitados</span>
+        <span style="font-size:10.5px;color:var(--text-3)" id="ensaios-count-label">0 selecionados</span>
+      </div>
+      <div class="card-body" id="campo-ensaios-lista" style="padding:8px 16px"></div>
+    </div>
+  </div>
+
+  <!-- OBSERVAÇÕES + ENVIO -->
+  <div id="campo-envio-section" style="display:none">
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-header"><span class="card-title">Observações</span></div>
+      <div class="card-body">
+        <textarea class="field-textarea" id="campo-obs" placeholder="Informações adicionais, ensaios 'Outros', especificações complementares…" rows="3"></textarea>
+      </div>
+    </div>
+    <button class="btn btn-teal" style="width:100%;justify-content:center;padding:14px;font-size:14px;gap:8px" onclick="campoenviarpedido()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Enviar Pedido de Ensaio
+    </button>
+  </div>
+  `;
+}
+
+function campoSetLote() {
+  const sel = document.getElementById('c-obra');
+  const opt = sel.options[sel.selectedIndex];
+  const lote = opt?.dataset?.lote || APP.profile.lote || '';
+  document.getElementById('c-lote').value = lote;
+}
+
+function campoTipoSolChange() {
+  const val = document.getElementById('c-tipo-sol').value;
+  document.getElementById('c-tipo-sol-outros').style.display = val === 'Outros' ? 'block' : 'none';
+}
+
+/* ── SELEÇÃO DO TIPO DE AMOSTRA ── */
+function campoSelecionarTipo(tipo) {
+  CAMPO_STATE.tipoAmostra = tipo;
+  CAMPO_STATE.subTipo = null;
+  CAMPO_STATE.amostras = [];
+
+  // Visual botões
+  document.querySelectorAll('.tipo-amostra-btn').forEach(b => {
+    const ativo = b.dataset.tipo === tipo;
+    b.style.borderColor = ativo ? 'var(--teal)' : 'var(--border)';
+    b.style.background  = ativo ? 'rgba(19,178,172,.09)' : 'var(--surface)';
+    b.style.color       = ativo ? 'var(--teal-dark)' : 'var(--text-2)';
+  });
+
+  // Montar subcategorias
+  const subtipos = {
+    solos:    [
+      {id:'jazida',        label:'Jazida',                      icon:'⛏️'},
+      {id:'emprestimo',    label:'Caixa de Empréstimo',         icon:'📦'},
+      {id:'segmento',      label:'Segmento',                    icon:'📍'},
+      {id:'solo_cimento',  label:'CPs Solo Cimento',            icon:'🧱'},
+      {id:'agregados',     label:'Agregados',                   icon:'🪨'},
+    ],
+    asfalto:  [
+      {id:'massa',         label:'Massa Asfáltica',             icon:'🛣️'},
+      {id:'cp_pista',      label:'CPs Extraídos de Pista',      icon:'🔩'},
+      {id:'ligante',       label:'Ligante Asfáltico',           icon:'🛢️'},
+    ],
+    concreto: [
+      {id:'cp_concreto',   label:'Corpos de Prova de Concreto', icon:'🏗️'},
+    ],
+    especiais:[
+      {id:'mancha_areia',  label:'Mancha de Areia',             icon:'🏖️'},
+      {id:'pendulo',       label:'Pêndulo Britânico',           icon:'⚖️'},
+      {id:'benkelman',     label:'Viga Benkelman',              icon:'📏'},
+      {id:'outros_esp',    label:'Outros',                      icon:'📋'},
+    ],
+  };
+
+  const subs = subtipos[tipo] || [];
+  const subEl = document.getElementById('campo-subtipo');
+
+  // Concreto tem só 1 subcategoria — seleciona direto
+  if (subs.length === 1) {
+    subEl.style.display = 'none';
+    campoSelecionarSubtipo(subs[0].id);
+    return;
+  }
+
+  subEl.style.display = 'block';
+  subEl.innerHTML = `
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-header"><span class="card-title">1. Subcategoria</span></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px">
+          ${subs.map(s => `
+            <button class="subtipo-btn" data-sub="${s.id}" onclick="campoSelecionarSubtipo('${s.id}')" style="
+              border:2px solid var(--border);background:var(--surface);border-radius:var(--r-md);
+              padding:12px 8px;cursor:pointer;font-size:11.5px;font-weight:600;
+              color:var(--text-2);transition:all .15s;text-align:center;line-height:1.4;">
+              <span style="font-size:20px;display:block;margin-bottom:4px">${s.icon}</span>${s.label}
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    </div>`;
+
+  // Esconder seções seguintes
+  document.getElementById('campo-cabecario-fixo').style.display = 'none';
+  document.getElementById('campo-amostras-container').style.display = 'none';
+  document.getElementById('campo-ensaios-section').style.display = 'none';
+  document.getElementById('campo-envio-section').style.display = 'none';
+}
+
+/* ── SELEÇÃO DA SUBCATEGORIA ── */
+function campoSelecionarSubtipo(sub) {
+  CAMPO_STATE.subTipo = sub;
+  CAMPO_STATE.amostras = [];
+
+  // Visual
+  document.querySelectorAll('.subtipo-btn').forEach(b => {
+    const ativo = b.dataset.sub === sub;
+    b.style.borderColor = ativo ? 'var(--teal)' : 'var(--border)';
+    b.style.background  = ativo ? 'rgba(19,178,172,.09)' : 'var(--surface)';
+    b.style.color       = ativo ? 'var(--teal-dark)' : 'var(--text-2)';
+  });
+
+  // Montar cabeçário fixo se aplicável
+  const cabEl = document.getElementById('campo-cabecario-fixo');
+  const cabHtml = campoCabecarioFixo(sub);
+  if (cabHtml) {
+    cabEl.style.display = 'block';
+    cabEl.innerHTML = `
+      <div class="card" style="margin-bottom:14px;border-left:3px solid var(--teal)">
+        <div class="card-header">
+          <span class="card-title">📍 Informações Gerais (preenchidas uma vez)</span>
+        </div>
+        <div class="card-body">${cabHtml}</div>
+      </div>`;
+  } else {
+    cabEl.style.display = 'none';
+  }
+
+  // Inicializar amostras
+  document.getElementById('campo-amostras-container').style.display = 'block';
+  document.getElementById('campo-btn-add-amostra').style.display = 'block';
+  CAMPO_STATE.amostras = [];
+  campoAdicionarAmostra();
+
+  // Ensaios
+  campoRenderEnsaios();
+  document.getElementById('campo-ensaios-section').style.display = 'block';
+  document.getElementById('campo-envio-section').style.display = 'block';
+}
+
+/* ── CABEÇÁRIO FIXO POR SUBCATEGORIA ── */
+function campoCabecarioFixo(sub) {
+  // Solos com Pista, Camada, Proctor
+  const solosPistaCamada = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div>
+        <label class="field-label">Camada</label>
+        <select class="field-select" id="cf-camada">
+          <option value="">Selecione…</option>
+          ${['Corpo de Aterro','1ª CFT','2ª CFT','3ª CFT','Subleito','Reforço do Subleito','Sub-base','Sub-base Melhorada','Base','Base Melhorada'].map(c=>`<option>${c}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Pista</label>
+        <select class="field-select" id="cf-pista">
+          <option value="">Selecione…</option>
+          ${['Norte','Sul','Marginal Norte','Marginal Sul'].map(p=>`<option>${p}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Proctor / Energia</label>
+        <select class="field-select" id="cf-proctor">
+          <option value="">Selecione…</option>
+          ${['Normal','Intermediário','Modificado'].map(p=>`<option>${p}</option>`).join('')}
+        </select>
+      </div>
+    </div>`;
+
+  if (sub === 'jazida') return solosPistaCamada + `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px">
+      <div><label class="field-label">Nome da Jazida</label><input class="field-input" id="cf-jazida-nome" placeholder="Ex: Jazida J6"></div>
+      <div><label class="field-label">KM da Jazida</label><input class="field-input" id="cf-jazida-km" placeholder="km 440+000"></div>
+      <div><label class="field-label">Data da Coleta</label><input type="date" class="field-input" id="cf-jazida-data" value="${new Date().toISOString().slice(0,10)}"></div>
+    </div>`;
+
+  if (sub === 'emprestimo') return solosPistaCamada + `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+      <div><label class="field-label">Data da Coleta</label><input type="date" class="field-input" id="cf-emp-data" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div><label class="field-label">KM da Caixa de Empréstimo</label><input class="field-input" id="cf-emp-km" placeholder="km 000+000"></div>
+    </div>`;
+
+  if (sub === 'segmento') return solosPistaCamada;
+
+  if (sub === 'solo_cimento') return solosPistaCamada + `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+      <div><label class="field-label">Data da Moldagem</label><input type="date" class="field-input" id="cf-sc-data" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div><label class="field-label">Camada (aplicação)</label><input class="field-input" id="cf-sc-camada-apl" placeholder="Ex: 1ª Camada"></div>
+    </div>`;
+
+  if (sub === 'agregados') return `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div>
+        <label class="field-label">Tipo de Material</label>
+        <select class="field-select" id="cf-agr-tipo" onchange="campoAgrTipoChange()">
+          <option value="">Selecione…</option>
+          ${['Seixo Rolado','Brita Calcária','Brita Granítica','Areia Natural','Areia Lavada','Outros'].map(t=>`<option>${t}</option>`).join('')}
+        </select>
+      </div>
+      <div><label class="field-label">Nome da Pedreira</label><input class="field-input" id="cf-agr-pedreira" placeholder="Nome da pedreira"></div>
+      <div><label class="field-label">Data da Coleta</label><input type="date" class="field-input" id="cf-agr-data" value="${new Date().toISOString().slice(0,10)}"></div>
+    </div>
+    <div id="cf-agr-outro" style="display:none;margin-top:10px">
+      <label class="field-label">Especifique o tipo de material</label>
+      <input class="field-input" id="cf-agr-tipo-texto" placeholder="Descreva o tipo de material…">
+    </div>`;
+
+  if (sub === 'cp_pista') return `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+      <div><label class="field-label">Data de Aplicação da Massa</label><input type="date" class="field-input" id="cf-cpp-dt-aplic" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div><label class="field-label">Data de Extração</label><input type="date" class="field-input" id="cf-cpp-dt-extr" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div>
+        <label class="field-label">Pista</label>
+        <select class="field-select" id="cf-cpp-pista">
+          <option value="">Selecione…</option>
+          ${['Norte','Sul','Marginal Norte','Marginal Sul'].map(p=>`<option>${p}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div>
+        <label class="field-label">Camada</label>
+        <select class="field-select" id="cf-cpp-camada">
+          <option value="">Selecione…</option>
+          ${['Binder','1ª Camada','2ª Camada','Capa'].map(c=>`<option>${c}</option>`).join('')}
+        </select>
+      </div>
+      <div><label class="field-label">Espessura de Projeto (cm)</label><input class="field-input" id="cf-cpp-espessura" placeholder="Ex: 5,0"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div><label class="field-label">KM Inicial</label><input class="field-input" id="cf-cpp-km-ini" placeholder="000+000"></div>
+        <div><label class="field-label">KM Final</label><input class="field-input" id="cf-cpp-km-fim" placeholder="000+000"></div>
+      </div>
+    </div>`;
+
+  // Ensaios especiais com medições
+  if (['mancha_areia','pendulo','benkelman','outros_esp'].includes(sub)) return `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+      <div><label class="field-label">Data do Ensaio</label><input type="date" class="field-input" id="cf-esp-data" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div>
+        <label class="field-label">Pista / Local</label>
+        <select class="field-select" id="cf-esp-pista">
+          <option value="">Selecione…</option>
+          ${['Norte','Sul','Marginal Norte','Marginal Sul'].map(p=>`<option>${p}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Faixa</label>
+        <select class="field-select" id="cf-esp-faixa">
+          <option value="">Selecione…</option>
+          ${['F1','F2','F3','Acostamento','Alça Aceleração','Alça Desaceleração','Retorno','Interseção'].map(f=>`<option>${f}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div><label class="field-label">KM Inicial</label><input class="field-input" id="cf-esp-km-ini" placeholder="000+000"></div>
+      <div><label class="field-label">KM Final</label><input class="field-input" id="cf-esp-km-fim" placeholder="000+000"></div>
+      <div>
+        <label class="field-label">Camada</label>
+        <select class="field-select" id="cf-esp-camada">
+          <option value="">Selecione…</option>
+          ${['CBUQ','Binder','Base','Sub-base','Outros'].map(c=>`<option>${c}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    ${sub === 'outros_esp' ? `<div style="margin-top:12px"><label class="field-label">Descrição do Ensaio</label><input class="field-input" id="cf-esp-descricao" placeholder="Descreva o ensaio a ser realizado…"></div>` : ''}`;
+
+  return ''; // massa, ligante, cp_concreto — sem cabeçário fixo
+}
+
+function campoAgrTipoChange() {
+  const val = document.getElementById('cf-agr-tipo')?.value;
+  const div = document.getElementById('cf-agr-outro');
+  if (div) div.style.display = val === 'Outros' ? 'block' : 'none';
+}
+
+/* ── AMOSTRAS ── */
+function campoAdicionarAmostra() {
+  const idx = CAMPO_STATE.amostras.length;
+  CAMPO_STATE.amostras.push({ idx });
+
+  const container = document.getElementById('campo-amostras-container');
+  const isFirst = idx === 0;
+
+  const div = document.createElement('div');
+  div.id = `amostra-bloco-${idx}`;
+  div.innerHTML = `
+    <div class="card" style="margin-bottom:10px;border-left:3px solid ${isFirst ? 'var(--navy)' : 'var(--teal)'}">
+      <div class="card-header" style="padding:10px 14px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:10px;font-weight:800;background:var(--navy);color:#fff;padding:2px 8px;border-radius:10px">
+            ${campoSubLabel(CAMPO_STATE.subTipo)} #${idx+1}
+          </span>
+          ${idx > 0 ? '<span style="font-size:10px;color:var(--teal-dark);font-weight:600">⟳ Herança</span>' : ''}
+        </div>
+        ${idx > 0 ? `<button class="btn btn-ghost btn-sm" onclick="campoRemoverAmostra(${idx})" style="color:var(--danger);padding:4px 8px">✕ Remover</button>` : ''}
+      </div>
+      <div class="card-body" id="amostra-campos-${idx}">
+        ${campoCamposAmostra(CAMPO_STATE.subTipo, idx)}
+      </div>
+    </div>`;
+
+  container.appendChild(div);
+
+  // Aplicar herança se não for a primeira
+  if (idx > 0) {
+    setTimeout(() => campoAplicarHeranca(idx), 80);
+  }
+
+  // Atualizar contador no header do card
+  campoAtualizarContador();
+}
+
+function campoSubLabel(sub) {
+  const labels = {
+    jazida:'Solo', emprestimo:'Solo', segmento:'Solo', solo_cimento:'CP Solo-Cimento',
+    agregados:'Agregado', massa:'Massa Asfáltica', cp_pista:'CP Pista', ligante:'Ligante',
+    cp_concreto:'CP Concreto', mancha_areia:'Leitura', pendulo:'Leitura',
+    benkelman:'Leitura', outros_esp:'Leitura',
+  };
+  return labels[sub] || 'Amostra';
+}
+
+function campoAtualizarContador() {
+  const n = CAMPO_STATE.amostras.length;
+  // Atualizar badge no card de amostras se existir
+}
+
+function campoRemoverAmostra(idx) {
+  document.getElementById(`amostra-bloco-${idx}`)?.remove();
+  CAMPO_STATE.amostras = CAMPO_STATE.amostras.filter(a => a.idx !== idx);
+}
+
+/* ── CAMPOS POR SUBCATEGORIA (por amostra) ── */
+function campoCamposAmostra(sub, idx) {
+  const g = (id) => `id="${id}-${idx}"`;
+
+  if (sub === 'jazida') return `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div><label class="field-label">Furo / Registro</label><input class="field-input" ${g('a-furo')} placeholder="Furo 01"></div>
+      <div><label class="field-label">Profundidade (m)</label><input class="field-input" ${g('a-prof')} placeholder="Ex: 0,00 – 1,50"></div>
+    </div>`;
+
+  if (sub === 'emprestimo') return `
+    <div><label class="field-label">Quantidade de Material (kg)</label><input class="field-input" ${g('a-qty')} placeholder="0,0 kg" type="number" min="0" step="0.1"></div>`;
+
+  if (sub === 'segmento') return `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div><label class="field-label">KM</label><input class="field-input" ${g('a-km')} placeholder="000+000"></div>
+      <div>
+        <label class="field-label">Posição / Lado</label>
+        <select class="field-select" ${g('a-pos')}>
+          <option value="">Selecione…</option>
+          ${['LD','LE','EX'].map(p=>`<option>${p}</option>`).join('')}
+        </select>
+      </div>
+      <div><label class="field-label">Quantidade (kg)</label><input class="field-input" ${g('a-qty')} placeholder="0,0 kg" type="number" min="0"></div>
+    </div>`;
+
+  if (sub === 'solo_cimento') return `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:10px">
+      <div><label class="field-label">KM da Coleta</label><input class="field-input" ${g('a-km')} placeholder="000+000"></div>
+      <div>
+        <label class="field-label">Posição (LD/LE/EX)</label>
+        <select class="field-select" ${g('a-pos')}>
+          <option value="">Selecione…</option>
+          ${['LD','LE','EX'].map(p=>`<option>${p}</option>`).join('')}
+        </select>
+      </div>
+      <div><label class="field-label">Código / Nº do CP</label><input class="field-input" ${g('a-cod')} placeholder="CP-001"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div><label class="field-label">% de Cimento</label><input class="field-input" ${g('a-cimento')} placeholder="Ex: 3,5" type="number" step="0.1"></div>
+      <div>
+        <label class="field-label">Plano de Rompimento</label>
+        <select class="field-select" ${g('a-plano')}>
+          <option value="">Selecione…</option>
+          <option>Axial</option><option>Diametral</option>
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Ruptura</label>
+        <select class="field-select" ${g('a-ruptura')} onchange="campoRupturaOutros('${idx}')">
+          <option value="">Selecione…</option>
+          <option>3 dias</option><option>7 dias</option><option>14 dias</option><option>28 dias</option><option>Outros</option>
+        </select>
+      </div>
+    </div>
+    <div id="a-ruptura-outros-${idx}" style="display:none;margin-top:10px">
+      <label class="field-label">Especifique a ruptura (dias)</label>
+      <input class="field-input" ${g('a-ruptura-txt')} placeholder="Ex: 21 dias">
+    </div>`;
+
+  if (sub === 'agregados') return `
+    <div style="font-size:11.5px;color:var(--text-3);padding:8px 0">Dados gerais preenchidos no cabeçário acima. Adicione observações específicas desta amostra no campo de observações ao final.</div>`;
+
+  if (sub === 'massa') return `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+      <div><label class="field-label">Data de Usinagem</label><input type="date" class="field-input" ${g('a-dt-usin')} value="${new Date().toISOString().slice(0,10)}"></div>
+      <div><label class="field-label">Hora da Coleta</label><input type="time" class="field-input" ${g('a-hr-coleta')}></div>
+      <div>
+        <label class="field-label">Pista / Local de Aplicação</label>
+        <select class="field-select" ${g('a-pista')}>
+          <option value="">Selecione…</option>
+          ${['Norte','Sul','Marginal Norte','Marginal Sul'].map(p=>`<option>${p}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+      <div>
+        <label class="field-label">Faixa</label>
+        <select class="field-select" ${g('a-faixa')}>
+          <option value="">Selecione…</option>
+          ${['F1','F2','F3','Acostamento'].map(f=>`<option>${f}</option>`).join('')}
+        </select>
+      </div>
+      <div><label class="field-label">KM Inicial</label><input class="field-input" ${g('a-km-ini')} placeholder="000+000"></div>
+      <div><label class="field-label">KM Final</label><input class="field-input" ${g('a-km-fim')} placeholder="000+000"></div>
+      <div>
+        <label class="field-label">Camada</label>
+        <select class="field-select" ${g('a-camada')}>
+          <option value="">Selecione…</option>
+          ${['Binder','1ª Camada','2ª Camada','Capa'].map(c=>`<option>${c}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div>
+      <label class="field-label">Projeto Adotado / Traço</label>
+      <input class="field-input" ${g('a-projeto')} placeholder="Ex: CBUQ Faixa C — Traço aprovado em 15/01/2026">
+    </div>`;
+
+  if (sub === 'cp_pista') return `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:10px">
+      <div><label class="field-label">KM de Extração</label><input class="field-input" ${g('a-km-ext')} placeholder="000+000"></div>
+      <div>
+        <label class="field-label">Faixa</label>
+        <select class="field-select" ${g('a-faixa')}>
+          <option value="">Selecione…</option>
+          ${['F1','F2','Alça Aceleração','Alça Desaceleração','Retorno','Interseção','Ramo Dispositivo','Acostamento'].map(f=>`<option>${f}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Posição (LD/LE/EX)</label>
+        <select class="field-select" ${g('a-pos')}>
+          <option value="">Selecione…</option>
+          ${['LD','LE','EX'].map(p=>`<option>${p}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div><label class="field-label">Identificação do CP</label><input class="field-input" ${g('a-id-cp')} placeholder="CP-01"></div>`;
+
+  if (sub === 'ligante') return `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div><label class="field-label">Data da Coleta</label><input type="date" class="field-input" ${g('a-dt-col')} value="${new Date().toISOString().slice(0,10)}"></div>
+      <div>
+        <label class="field-label">Fornecedor</label>
+        <select class="field-select" ${g('a-fornec')} onchange="campoLiganteFornecChange('${idx}')">
+          <option value="">Selecione…</option>
+          ${['Petrobras','Betunel','Stratura','Greca','Emam','Outros'].map(f=>`<option>${f}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div>
+        <label class="field-label">Tipo (CAP)</label>
+        <select class="field-select" ${g('a-tipo-cap')} onchange="campoLiganteTipoChange('${idx}')">
+          <option value="">Selecione…</option>
+          ${['30/45','50/70','85/100','Outros'].map(t=>`<option>${t}</option>`).join('')}
+        </select>
+      </div>
+      <div id="a-tipo-cap-outros-${idx}" style="display:none">
+        <label class="field-label">Especifique o tipo</label>
+        <input class="field-input" ${g('a-tipo-cap-txt')} placeholder="Ex: CAP 60/85">
+      </div>
+    </div>
+    <div id="a-fornec-outros-${idx}" style="display:none;margin-top:10px">
+      <label class="field-label">Especifique o fornecedor</label>
+      <input class="field-input" ${g('a-fornec-txt')} placeholder="Nome do fornecedor">
+    </div>
+    <div style="margin-top:12px">
+      <label class="field-label">Certificado do CAP (PDF / foto — opcional)</label>
+      <div class="upload-area" onclick="document.getElementById('a-cert-${idx}').click()" id="a-cert-label-${idx}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Selecionar certificado
+        <input type="file" id="a-cert-${idx}" accept=".pdf,image/*" style="display:none" onchange="mostrarAnexo('a-cert-${idx}','a-cert-label-${idx}')">
+      </div>
+    </div>`;
+
+  if (sub === 'cp_concreto') return `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+      <div><label class="field-label">Data de Concretagem</label><input type="date" class="field-input" ${g('a-dt-conc')} value="${new Date().toISOString().slice(0,10)}"></div>
+      <div><label class="field-label">KM de Aplicação</label><input class="field-input" ${g('a-km')} placeholder="000+000"></div>
+      <div><label class="field-label">Peça Concretada (OAE / Nome)</label><input class="field-input" ${g('a-peca')} placeholder="Ex: Viga Longarina 01, Laje Bloco B3"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div><label class="field-label">Identificação do Caminhão</label><input class="field-input" ${g('a-caminhao')} placeholder="Ex: Betoneira 03 — ABC-1234"></div>
+      <div><label class="field-label">Nota / Romaneio</label><input class="field-input" ${g('a-nota')} placeholder="Nº da nota fiscal"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+      <div>
+        <label class="field-label">Slump Projeto (mm)</label>
+        <input class="field-input" ${g('a-slump-val')} placeholder="Ex: 100" type="number">
+      </div>
+      <div>
+        <label class="field-label">Variação ±</label>
+        <input class="field-input" ${g('a-slump-var')} placeholder="Ex: 20" type="number">
+      </div>
+      <div><label class="field-label">MPA de Projeto</label><input class="field-input" ${g('a-mpa')} placeholder="Ex: 35" type="number"></div>
+      <div><label class="field-label">Temperatura (°C)</label><input class="field-input" ${g('a-temp')} placeholder="Ex: 26" type="number"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div><label class="field-label">Cód / Nº CP</label><input class="field-input" ${g('a-cod-cp')} placeholder="CP-C01"></div>
+      <div>
+        <label class="field-label">Idade de Ruptura</label>
+        <select class="field-select" ${g('a-ruptura')} onchange="campoRupturaOutros('${idx}')">
+          <option value="">Selecione…</option>
+          <option>3 dias</option><option>7 dias</option><option>14 dias</option><option>28 dias</option><option>Outros</option>
+        </select>
+      </div>
+    </div>
+    <div id="a-ruptura-outros-${idx}" style="display:none;margin-top:10px">
+      <label class="field-label">Especifique a ruptura (dias)</label>
+      <input class="field-input" ${g('a-ruptura-txt')} placeholder="Ex: 21 dias">
+    </div>`;
+
+  // Ensaios especiais — leituras
+  if (['mancha_areia','pendulo','benkelman','outros_esp'].includes(sub)) return `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div><label class="field-label">KM da Leitura</label><input class="field-input" ${g('a-km')} placeholder="000+000"></div>
+      <div>
+        <label class="field-label">Posição / Lado</label>
+        <select class="field-select" ${g('a-pos')}>
+          <option value="">Selecione…</option>
+          ${['LD','LE','EX','Centro'].map(p=>`<option>${p}</option>`).join('')}
+        </select>
+      </div>
+      <div><label class="field-label">Leitura / Resultado</label><input class="field-input" ${g('a-resultado')} placeholder="Ex: 0,25 mm"></div>
+    </div>`;
+
+  return '';
+}
+
+function campoRupturaOutros(idx) {
+  const val = document.getElementById(`a-ruptura-${idx}`)?.value;
+  const div = document.getElementById(`a-ruptura-outros-${idx}`);
+  if (div) div.style.display = val === 'Outros' ? 'block' : 'none';
+}
+
+function campoLiganteFornecChange(idx) {
+  const val = document.getElementById(`a-fornec-${idx}`)?.value;
+  const div = document.getElementById(`a-fornec-outros-${idx}`);
+  if (div) div.style.display = val === 'Outros' ? 'block' : 'none';
+}
+
+function campoLiganteTipoChange(idx) {
+  const val = document.getElementById(`a-tipo-cap-${idx}`)?.value;
+  const div = document.getElementById(`a-tipo-cap-outros-${idx}`);
+  if (div) div.style.display = val === 'Outros' ? 'block' : 'none';
+}
+
+/* ── HERANÇA DE DADOS ── */
+function campoAplicarHeranca(idx) {
+  if (idx === 0) return;
+  const prev = idx - 1;
+  const sub = CAMPO_STATE.subTipo;
+  const g = (field, i) => document.getElementById(`${field}-${i}`);
+  const copy = (field) => {
+    const src = g(field, prev);
+    const dst = g(field, idx);
+    if (src && dst && src.value) dst.value = src.value;
+  };
+
+  // Campos que herdam por subcategoria
+  const heranca = {
+    jazida:      ['a-furo'],   // só profundidade não herda, furo não herda também
+    emprestimo:  [],           // só qty — não herda
+    segmento:    ['a-pos'],
+    solo_cimento:['a-km','a-pos','a-plano','a-ruptura'],
+    massa:       ['a-dt-usin','a-pista','a-faixa','a-camada','a-km-ini','a-km-fim','a-projeto'],
+    cp_pista:    ['a-faixa','a-pos'],
+    ligante:     ['a-dt-col','a-fornec','a-tipo-cap'],
+    cp_concreto: ['a-dt-conc','a-km','a-peca','a-caminhao','a-nota','a-slump-val','a-slump-var','a-mpa','a-temp','a-ruptura'],
+    mancha_areia:['a-pos'], pendulo:['a-pos'], benkelman:['a-pos'], outros_esp:['a-pos'],
+  };
+
+  (heranca[sub] || []).forEach(f => copy(f));
+}
+
+/* ── ENSAIOS ── */
+function campoRenderEnsaios() {
+  const catMap = {
+    solos:    'Solos e Agregados',
+    asfalto:  'Asfalto',
+    concreto: 'Concreto',
+    especiais: null, // todos
+  };
+  const cat = catMap[CAMPO_STATE.tipoAmostra];
+  const filtrados = cat
+    ? CAMPO_STATE.todosEnsaios.filter(e => e.categoria === cat)
+    : CAMPO_STATE.todosEnsaios;
+
+  const el = document.getElementById('campo-ensaios-lista');
+  CAMPO_STATE.ensaiosSelecionados = new Set();
+  document.getElementById('ensaios-count-label').textContent = '0 selecionados';
+
+  if (!filtrados || filtrados.length === 0) {
+    el.innerHTML = `<p style="font-size:12px;color:var(--text-3);padding:8px 0">Nenhum ensaio cadastrado para este tipo. Verifique o catálogo no módulo Gestor.</p>`;
+    return;
+  }
+
+  el.innerHTML = filtrados.map(e => `
+    <label style="display:flex;align-items:flex-start;gap:10px;padding:9px 4px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s"
+      onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''">
+      <input type="checkbox" value="${e.id}" style="margin-top:2px;flex-shrink:0;accent-color:var(--teal);width:15px;height:15px"
+        onchange="campoToggleEnsaio('${e.id}')">
+      <div style="flex:1">
+        <div style="font-size:12.5px;font-weight:600;color:var(--text)">${e.nome}</div>
+        ${e.norma ? `<div style="font-size:10.5px;color:var(--text-3);margin-top:1px">${e.norma}</div>` : ''}
+      </div>
+    </label>
+  `).join('');
+}
+
+function campoToggleEnsaio(id) {
+  if (CAMPO_STATE.ensaiosSelecionados.has(id)) {
+    CAMPO_STATE.ensaiosSelecionados.delete(id);
+  } else {
+    CAMPO_STATE.ensaiosSelecionados.add(id);
+  }
+  const cnt = CAMPO_STATE.ensaiosSelecionados.size;
+  document.getElementById('ensaios-count-label').textContent = cnt + ' selecionado' + (cnt !== 1 ? 's' : '');
+}
+
+/* ── COLETA DE DADOS ── */
+function campoColetar() {
+  const get = id => document.getElementById(id)?.value || '';
+  const sub = CAMPO_STATE.subTipo;
+
+  // Cabeçário fixo
+  let cabecario = {};
+  if (['jazida','emprestimo','segmento','solo_cimento'].includes(sub)) {
+    cabecario = { camada: get('cf-camada'), pista: get('cf-pista'), proctor: get('cf-proctor') };
+  }
+  if (sub === 'jazida')       { cabecario.jazida_nome = get('cf-jazida-nome'); cabecario.jazida_km = get('cf-jazida-km'); cabecario.jazida_data = get('cf-jazida-data'); }
+  if (sub === 'emprestimo')   { cabecario.emp_data = get('cf-emp-data'); cabecario.emp_km = get('cf-emp-km'); }
+  if (sub === 'solo_cimento') { cabecario.sc_data = get('cf-sc-data'); cabecario.sc_camada_apl = get('cf-sc-camada-apl'); }
+  if (sub === 'agregados')    { cabecario.agr_tipo = get('cf-agr-tipo') === 'Outros' ? get('cf-agr-tipo-texto') : get('cf-agr-tipo'); cabecario.agr_pedreira = get('cf-agr-pedreira'); cabecario.agr_data = get('cf-agr-data'); }
+  if (sub === 'cp_pista')     { cabecario.cpp_dt_aplic = get('cf-cpp-dt-aplic'); cabecario.cpp_dt_extr = get('cf-cpp-dt-extr'); cabecario.cpp_pista = get('cf-cpp-pista'); cabecario.cpp_camada = get('cf-cpp-camada'); cabecario.cpp_espessura = get('cf-cpp-espessura'); cabecario.cpp_km_ini = get('cf-cpp-km-ini'); cabecario.cpp_km_fim = get('cf-cpp-km-fim'); }
+  if (['mancha_areia','pendulo','benkelman','outros_esp'].includes(sub)) { cabecario.esp_data = get('cf-esp-data'); cabecario.esp_pista = get('cf-esp-pista'); cabecario.esp_faixa = get('cf-esp-faixa'); cabecario.esp_km_ini = get('cf-esp-km-ini'); cabecario.esp_km_fim = get('cf-esp-km-fim'); cabecario.esp_camada = get('cf-esp-camada'); if (sub==='outros_esp') cabecario.esp_descricao = get('cf-esp-descricao'); }
+
+  // Amostras
+  const amostras = CAMPO_STATE.amostras.map(a => {
+    const i = a.idx;
+    const g2 = f => document.getElementById(`${f}-${i}`)?.value || '';
+    if (sub === 'jazida') return { furo: g2('a-furo'), profundidade: g2('a-prof') };
+    if (sub === 'emprestimo') return { quantidade_kg: g2('a-qty') };
+    if (sub === 'segmento') return { km: g2('a-km'), posicao: g2('a-pos'), quantidade: g2('a-qty') };
+    if (sub === 'solo_cimento') return { km: g2('a-km'), posicao: g2('a-pos'), codigo_cp: g2('a-cod'), pct_cimento: g2('a-cimento'), plano: g2('a-plano'), ruptura: g2('a-ruptura') === 'Outros' ? g2('a-ruptura-txt') : g2('a-ruptura') };
+    if (sub === 'massa') return { dt_usinagem: g2('a-dt-usin'), hr_coleta: g2('a-hr-coleta'), pista: g2('a-pista'), faixa: g2('a-faixa'), km_ini: g2('a-km-ini'), km_fim: g2('a-km-fim'), camada: g2('a-camada'), projeto: g2('a-projeto') };
+    if (sub === 'cp_pista') return { km_extracao: g2('a-km-ext'), faixa: g2('a-faixa'), posicao: g2('a-pos'), id_cp: g2('a-id-cp') };
+    if (sub === 'ligante') return { dt_coleta: g2('a-dt-col'), fornecedor: g2('a-fornec') === 'Outros' ? g2('a-fornec-txt') : g2('a-fornec'), tipo_cap: g2('a-tipo-cap') === 'Outros' ? g2('a-tipo-cap-txt') : g2('a-tipo-cap') };
+    if (sub === 'cp_concreto') return { dt_concretagem: g2('a-dt-conc'), km: g2('a-km'), peca: g2('a-peca'), caminhao: g2('a-caminhao'), nota: g2('a-nota'), slump_val: g2('a-slump-val'), slump_var: g2('a-slump-var'), mpa: g2('a-mpa'), temperatura: g2('a-temp'), cod_cp: g2('a-cod-cp'), ruptura: g2('a-ruptura') === 'Outros' ? g2('a-ruptura-txt') : g2('a-ruptura') };
+    if (['mancha_areia','pendulo','benkelman','outros_esp'].includes(sub)) return { km: g2('a-km'), posicao: g2('a-pos'), resultado: g2('a-resultado') };
+    return {};
+  });
+
+  return { cabecario, amostras };
+}
+
+/* ── ENVIAR PEDIDO ── */
+async function campoenviarpedido() {
+  // Validações básicas
+  const obra = document.getElementById('c-obra')?.value;
+  const tipoSol = document.getElementById('c-tipo-sol')?.value;
+  if (!obra) { toast('Selecione a obra / empresa', 'warn'); return; }
+  if (!tipoSol) { toast('Selecione o tipo de solicitação', 'warn'); return; }
+  if (!CAMPO_STATE.tipoAmostra) { toast('Selecione o tipo de amostra', 'warn'); return; }
+  if (!CAMPO_STATE.subTipo) { toast('Selecione a subcategoria', 'warn'); return; }
+  if (CAMPO_STATE.ensaiosSelecionados.size === 0) { toast('Selecione ao menos 1 ensaio', 'warn'); return; }
+
+  const btn = document.querySelector('button[onclick="campoenviarpedido()"]');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="login-spinner"></span>Enviando…'; }
+
+  try {
+    const { seq, num, ano } = await gerarNumeroPE();
+    const { cabecario, amostras } = campoColetar();
+    const now = new Date();
+
+    const tipoSolFinal = tipoSol === 'Outros'
+      ? (document.getElementById('c-tipo-sol-texto')?.value || 'Outros')
+      : tipoSol;
+
+    const lote = document.getElementById('c-lote')?.value || APP.profile.lote || '';
+
+    const pedido = {
+      numero_pe:      num,
+      sequencial:     seq,
+      ano:            ano,
+      status:         'aguardando_lab',
+      tipo_amostra:   CAMPO_STATE.tipoAmostra,
+      sub_tipo:       CAMPO_STATE.subTipo,
+      material:       campoSubLabel(CAMPO_STATE.subTipo),
+      tipo_solicitacao: tipoSolFinal,
+      solicitante_id: APP.profile.id,
+      empresa:        APP.profile.empresa,
+      lote:           lote,
+      observacoes:    document.getElementById('campo-obs')?.value || '',
+      dados_amostra:  { cabecario, amostras },
+      ensaios_ids:    [...CAMPO_STATE.ensaiosSelecionados],
+      created_at:     now.toISOString(),
+    };
+
+    const { error } = await sb.from('pedidos_ensaio').insert(pedido);
+    if (error) throw error;
+
+    toast(`PE ${num} criado com sucesso!`, 'ok');
+    CAMPO_STATE.amostras = [];
+    CAMPO_STATE.ensaiosSelecionados = new Set();
+    setTimeout(() => switchTab('historico'), 1500);
+  } catch(e) {
+    toast('Erro ao criar pedido: ' + e.message, 'danger');
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Enviar Pedido de Ensaio';
+    }
+  }
+}
+
+/* ── FUNÇÕES AUXILIARES REMANESCENTES ── */
+function mostrarAnexo(inputId, labelId) {
+  const input = document.getElementById(inputId);
+  const label = document.getElementById(labelId);
+  if (input?.files?.[0] && label) {
+    label.innerHTML = `<span style="color:var(--ok);font-weight:600">✓ ${input.files[0].name}</span>`;
+  }
+}
+
+// Manter compatibilidade com funções antigas referenciadas no código de devolução
+function selecionarMaterial(mat) { /* substituído por campoSelecionarTipo */ }
+function coletarDadosAmostra(mat) { return {}; }
+function coletarTodasAmostras(mat) { return []; }
+function adicionarAmostra() { campoAdicionarAmostra(); }
+function removerAmostra(idx) { campoRemoverAmostra(idx); }
+function toggleEnsaio(id) { campoToggleEnsaio(id); }
+function enviarPedido() { campoenviarpedido(); }
+/* ══════════════════════════════════════════════════════════════
+   MÓDULO LABORATÓRIO — COMPLETO
+   ══════════════════════════════════════════════════════════════ */
+
+/* SVG Logo Nova Rota (reconstituído do branding) */
+const LOGO_NR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 48" style="height:36px">
+  <g transform="translate(2,4)">
+    <!-- Ícone seta/rota -->
+    <rect x="0" y="8" width="14" height="14" rx="2" fill="#1B9CC4"/>
+    <rect x="4" y="4" width="14" height="14" rx="2" fill="#3DBFDC"/>
+    <rect x="8" y="0" width="14" height="14" rx="2" fill="#F5C800"/>
+    <!-- Texto Nova Rota -->
+    <text x="28" y="14" font-family="Arial,sans-serif" font-weight="800" font-size="13" fill="#283272">Nova Rota</text>
+    <text x="28" y="26" font-family="Arial,sans-serif" font-weight="400" font-size="9" fill="#666">do Oeste</text>
+  </g>
+</svg>`;
+
+/* ── RENDER PRINCIPAL ── */
+async function renderLaboratorio(el) {
+  el.innerHTML = `
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+    <div>
+      <h2 style="font-size:17px;font-weight:800;color:var(--navy)">Módulo Laboratório</h2>
+      <p style="font-size:11.5px;color:var(--text-3);margin-top:2px">Fila de pedidos — mais antigos primeiro</p>
+    </div>
+  </div>
+  <div class="filter-bar">
+    <input class="field-input" placeholder="Buscar PE / O.S. / material…" id="lab-search" oninput="filtrarLab()" style="max-width:260px">
+    <select class="field-select" id="lab-status-filter" onchange="filtrarLab()">
+      <option value="">Todos os status</option>
+      <option value="aguardando_lab">Aguardando Lab</option>
+      <option value="em_andamento">Em Andamento</option>
+      <option value="aguardando_revisao">Aguardando Revisão</option>
+      <option value="devolvido_campo">Devolvido — Campo</option>
+      <option value="concluido">Concluído</option>
+      <option value="cancelado">Cancelado</option>
+    </select>
+    <select class="field-select" id="lab-tipo-filter" onchange="filtrarLab()" style="max-width:160px">
+      <option value="">Todos os tipos</option>
+      <option value="solos">Solos e Agregados</option>
+      <option value="asfalto">Asfalto</option>
+      <option value="concreto">Concreto</option>
+      <option value="especiais">Ensaios Especiais</option>
+    </select>
+  </div>
+  <div id="lab-os-list">
+    <div class="empty-state">
+      <div class="loading-spin" style="width:28px;height:28px;border-width:2px"></div>
+    </div>
+  </div>`;
+
+  await carregarListaLab();
+}
+
+async function carregarListaLab() {
+  const el = document.getElementById('lab-os-list');
+  if (!el) return;
+
+  const { data, error } = await sb
+    .from('pedidos_ensaio')
+    .select('*, solicitante:usuarios!pedidos_ensaio_solicitante_id_fkey(nome, cargo, empresa, lote)')
+    .order('created_at', { ascending: true }) // mais antigos primeiro
+    .limit(50);
+
+  if (error || !data || data.length === 0) {
+    el.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;opacity:.3;display:block;margin:0 auto 12px"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-4"/><rect x="9" y="1" width="6" height="4" rx="1"/></svg>
+      <strong>Nenhum pedido recebido</strong>
+      <span>Os pedidos do campo aparecerão aqui</span>
+    </div>`;
+    return;
+  }
+
+  window._labData = data;
+  renderLabCards(data);
+}
+
+function filtrarLab() {
+  const q  = (document.getElementById('lab-search')?.value||'').toLowerCase();
+  const s  = document.getElementById('lab-status-filter')?.value||'';
+  const tp = document.getElementById('lab-tipo-filter')?.value||'';
+  const filtrado = (window._labData||[]).filter(os => {
+    const matchQ  = !q  || (os.numero_pe||'').includes(q) || (os.material||'').toLowerCase().includes(q) || (os.numero_os||'').toLowerCase().includes(q);
+    const matchS  = !s  || os.status === s;
+    const matchTp = !tp || (os.tipo_amostra||'') === tp;
+    return matchQ && matchS && matchTp;
+  });
+  renderLabCards(filtrado);
+}
+
+function renderLabCards(list) {
+  const el = document.getElementById('lab-os-list');
+  if (!el) return;
+  if (!list || list.length === 0) {
+    el.innerHTML = `<div class="empty-state"><strong>Nenhum resultado</strong><span>Ajuste os filtros acima</span></div>`;
+    return;
+  }
+  el.innerHTML = list.map(os => renderOSCard(os, true)).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FICHA FR-IMOB-05 — Solicitação de Ensaios/Estudos
+   ══════════════════════════════════════════════════════════════ */
+async function abrirFichaSOL(pedidoId) {
+  const { data: pedido } = await sb.from('pedidos_ensaio').select('*').eq('id', pedidoId).single();
+  if (!pedido) return;
+
+  // Buscar ficha existente ou preparar nova
+  let { data: ficha } = await sb.from('fichas_solicitacao').select('*').eq('pedido_id', pedidoId).single();
+
+  // Montar localizações a partir das amostras do pedido
+  const dados = pedido.dados_amostra || {};
+  const amostras = dados.amostras || [];
+  const localizacoes = ficha?.localizacoes || amostras.map(a => ({
+    km: a.km || a.km_extracao || a.km_ini || '',
+    pista: a.posicao || a.pista || '',
+    trilho: a.faixa || '',
+  })).filter(l => l.km);
+
+  // Gerar observação automática
+  const obsAuto = gerarObsSOL(pedido);
+  const obs = ficha?.observacao || obsAuto;
+
+  const tipoSol = pedido.tipo_solicitacao || '';
+
+  document.getElementById('modal-ficha-sol-body').innerHTML = `
+  <!-- FICHA FR-IMOB-05 -->
+  <div id="ficha-sol-doc" style="font-family:'Times New Roman',Times,serif;font-size:11px;color:#000;background:#fff;padding:20px 24px;border:1px solid #ccc;max-width:780px;margin:0 auto">
+
+    <!-- CABEÇALHO -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;padding-bottom:8px;border-bottom:2px solid #000">
+      <div>
+        <div style="font-size:12px;font-weight:bold">Título: <span style="font-weight:bold">Solicitação de Ensaios/Estudos</span></div>
+        <div style="margin-top:4px">Tipo de Documento: <strong>Formulário</strong> &nbsp;&nbsp;&nbsp; Codificação: <strong>FR-IMOB-05</strong></div>
+        <div>Data de Vigência: <strong>16/02/2026</strong> &nbsp;&nbsp;&nbsp; Versão: <strong>00</strong></div>
+        <div>Fase: <strong>Vigente</strong> &nbsp;&nbsp;&nbsp; Nível: <strong>Operacional</strong></div>
+      </div>
+      <div style="text-align:right">
+        ${LOGO_NR_SVG}
+      </div>
+    </div>
+
+    <!-- DADOS DO SOLICITANTE -->
+    <table style="width:100%;border-collapse:collapse;margin-bottom:0">
+      <tr style="background:#283272;color:#fff">
+        <td colspan="4" style="text-align:center;padding:5px;font-weight:bold;font-size:11px">Dados do Solicitante</td>
+      </tr>
+      <tr style="border:1px solid #999">
+        <td style="padding:4px 6px;font-weight:bold;border:1px solid #999;width:80px">Obra</td>
+        <td style="padding:4px 6px;color:#283272;font-weight:bold;border:1px solid #999">${pedido.empresa||'—'}</td>
+        <td style="padding:4px 6px;font-weight:bold;border:1px solid #999;width:40px">Lote</td>
+        <td style="padding:4px 6px;font-weight:bold;border:1px solid #999;width:40px;text-align:center">${pedido.lote||'—'}</td>
+      </tr>
+      <tr>
+        <td style="padding:4px 6px;font-weight:bold;border:1px solid #999">Solicitante</td>
+        <td colspan="3" style="padding:4px 6px;color:#283272;font-weight:bold;border:1px solid #999">${pedido.solicitante?.nome||'—'}</td>
+      </tr>
+      <tr>
+        <td style="padding:4px 6px;font-weight:bold;border:1px solid #999">Contato</td>
+        <td colspan="3" style="padding:4px 6px;border:1px solid #999">${pedido.solicitante?.cargo||'—'}</td>
+      </tr>
+    </table>
+
+    <!-- TIPO DE SOLICITAÇÃO -->
+    <div style="background:#1a5fa8;color:#fff;text-align:center;padding:4px;font-size:10px;margin-bottom:4px">
+      Solicitação (selecione detalhe demanda especificando locais dos ensaios/investigação)
+    </div>
+    <div style="margin-bottom:8px;padding:4px 0">
+      <div style="font-weight:bold;margin-bottom:4px">Selecione:</div>
+      ${[
+        {val:'Contraprova', label:'Contra-prova de ensaios realizados pelas terceiras'},
+        {val:'Investigação', label:'Investigação de patologia no pavimento'},
+        {val:'Estudo',      label:'Estudo de dosagem e/ou de materiais'},
+        {val:'Outros',      label:'Outros'},
+      ].map(t => `
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+          <input type="checkbox" ${tipoSol===t.val?'checked':''} onclick="return false" style="width:12px;height:12px">
+          <span>${t.label}</span>
+        </div>
+      `).join('')}
+    </div>
+
+    <!-- TABELA DE LOCALIZAÇÃO -->
+    <div style="font-weight:bold;margin-bottom:4px;font-size:10px">Detalhar demanda especificando locais dos ensaios/investigação:</div>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:8px" id="sol-loc-table">
+      <tr>
+        ${[1,2,3].map(() => `
+          <td style="width:33%">
+            <table style="width:100%;border-collapse:collapse">
+              <tr style="background:#e8e8e8">
+                <th style="border:1px solid #999;padding:3px;font-size:9px;width:30%">Km</th>
+                <th style="border:1px solid #999;padding:3px;font-size:9px;width:35%">Pista N/S</th>
+                <th style="border:1px solid #999;padding:3px;font-size:9px;width:35%">Trilho de roda</th>
+              </tr>
+              ${Array(8).fill(0).map((_,r) => `
+                <tr>
+                  <td style="border:1px solid #ccc;padding:2px;height:18px"><input type="text" class="sol-km" style="border:none;width:100%;font-size:10px;outline:none" placeholder=""></td>
+                  <td style="border:1px solid #ccc;padding:2px"><input type="text" class="sol-pista" style="border:none;width:100%;font-size:10px;outline:none" placeholder=""></td>
+                  <td style="border:1px solid #ccc;padding:2px"><input type="text" class="sol-trilho" style="border:none;width:100%;font-size:10px;outline:none" placeholder=""></td>
+                </tr>
+              `).join('')}
+            </table>
+          </td>
+        `).join('')}
+      </tr>
+    </table>
+
+    <!-- OBSERVAÇÃO -->
+    <div style="margin-bottom:8px">
+      <div style="font-size:10px;font-weight:bold;color:#c00;margin-bottom:2px">Observação:</div>
+      <textarea id="sol-obs" style="width:100%;min-height:60px;border:1px solid #999;font-family:inherit;font-size:10px;padding:4px;resize:vertical;color:#c00;font-weight:bold">${obs}</textarea>
+    </div>
+
+    <!-- RODAPÉ ASSINATURAS (fixo — não editável) -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;border-top:1px solid #999;padding-top:6px">
+      ${[
+        {label:'Elaborado por:', nome:'Thyago Biasin'},
+        {label:'Revisado por:',  nome:'Samara Rodrigues'},
+        {label:'Aprovado por:',  nome:'Rheno Tormin'},
+      ].map(a => `
+        <div>
+          <span style="font-size:10px">${a.label}</span>
+          <strong style="display:block;font-size:11px">${a.nome}</strong>
+        </div>
+      `).join('')}
+    </div>
+  </div>
+
+  <input type="hidden" id="sol-pedido-id" value="${pedidoId}">
+  <input type="hidden" id="sol-ficha-id" value="${ficha?.id||''}">
+  `;
+
+  // Preencher localizações existentes
+  if (localizacoes.length > 0) {
+    setTimeout(() => {
+      const kms    = document.querySelectorAll('.sol-km');
+      const pistas = document.querySelectorAll('.sol-pista');
+      const trilhos= document.querySelectorAll('.sol-trilho');
+      localizacoes.forEach((l, i) => {
+        if (i < kms.length) {
+          kms[i].value    = l.km    || '';
+          pistas[i].value = l.pista || '';
+          trilhos[i].value= l.trilho|| '';
+        }
+      });
+    }, 100);
+  }
+
+  openModal('modal-ficha-sol');
+}
+
+function gerarObsSOL(pedido) {
+  const dados = pedido.dados_amostra || {};
+  const cab = dados.cabecario || {};
+  const ano = new Date(pedido.created_at).getFullYear();
+  const num = String(pedido.sequencial||0).padStart(3,'0');
+
+  const sub = pedido.sub_tipo || '';
+  if (sub === 'cp_pista') {
+    return `FORAM EXTRAÍDOS PELA EQUIPE DO LABORATÓRIO CNRO CORPOS DE PROVA (CPs) DE C.A.U.Q. PROVENIENTES DO KM ${cab.cpp_km_ini||'---'} — ${pedido.empresa||'---'} / LOTE ${pedido.lote||'---'}. REGISTRADOS COM N° ${num}/${ano}.`;
+  }
+  if (sub === 'jazida') {
+    return `FOI ENTREGUE AO LABORATÓRIO AMOSTRA DE SOLO PARA A CARACTERIZAÇÃO COMPLETA. MATERIAL PROVENIENTE DA ${cab.jazida_nome||'JAZIDA'} / LOTE ${pedido.lote||'---'}. REGISTRADOS COM N° ${num}/${ano}.`;
+  }
+  if (sub === 'cp_concreto') {
+    return `FORAM ENTREGUES AO LABORATÓRIO CORPOS DE PROVA DE CONCRETO. CORPOS DE PROVA PROVENIENTES DO CONSÓRCIO ${pedido.empresa||'---'} / LOTE ${pedido.lote||'---'}. REGISTRADOS COM N° ${num}/${ano}.`;
+  }
+  if (sub === 'massa') {
+    return `FOI COLETADA AMOSTRA DE MASSA ASFÁLTICA PARA ENSAIOS DE CONTROLE. MATERIAL PROVENIENTE DO CONSÓRCIO ${pedido.empresa||'---'} / LOTE ${pedido.lote||'---'}. REGISTRADOS COM N° ${num}/${ano}.`;
+  }
+  if (sub === 'agregados') {
+    return `FOI ENTREGUE AO LABORATÓRIO AMOSTRA DE AGREGADO PARA CARACTERIZAÇÃO. MATERIAL PROVENIENTE DA PEDREIRA: ${cab.agr_pedreira||'---'}. CONSÓRCIO ${pedido.empresa||'---'} / LOTE ${pedido.lote||'---'}. REGISTRADOS COM N° ${num}/${ano}.`;
+  }
+  return `MATERIAL RECEBIDO NO LABORATÓRIO CNRO. PROVENIENTE DO CONSÓRCIO ${pedido.empresa||'---'} / LOTE ${pedido.lote||'---'}. REGISTRADOS COM N° ${num}/${ano}.`;
+}
+
+async function salvarFichaSOL() {
+  const pedidoId = document.getElementById('sol-pedido-id').value;
+  const fichaId  = document.getElementById('sol-ficha-id').value;
+  const obs      = document.getElementById('sol-obs').value;
+
+  // Coletar localizações
+  const kms    = [...document.querySelectorAll('.sol-km')].map(e=>e.value);
+  const pistas = [...document.querySelectorAll('.sol-pista')].map(e=>e.value);
+  const trilhos= [...document.querySelectorAll('.sol-trilho')].map(e=>e.value);
+  const localizacoes = kms.map((km,i) => ({
+    km: km||'', pista: pistas[i]||'', trilho: trilhos[i]||''
+  })).filter(l => l.km || l.pista || l.trilho);
+
+  const payload = {
+    pedido_id:  pedidoId,
+    observacao: obs,
+    observacao_editada: true,
+    localizacoes,
+    criado_por: APP.profile.id,
+    status: 'emitida',
+  };
+
+  let error;
+  if (fichaId) {
+    ({ error } = await sb.from('fichas_solicitacao').update(payload).eq('id', fichaId));
+  } else {
+    // Preencher campos do pedido automaticamente
+    const { data: pedido } = await sb.from('pedidos_ensaio').select('*').eq('id', pedidoId).single();
+    payload.obra        = pedido.empresa;
+    payload.lote        = pedido.lote;
+    payload.solicitante = pedido.solicitante?.nome || APP.profile.nome;
+    payload.tipo_contraprova  = pedido.tipo_solicitacao === 'Contraprova';
+    payload.tipo_investigacao = pedido.tipo_solicitacao === 'Investigação';
+    payload.tipo_estudo       = pedido.tipo_solicitacao === 'Estudo';
+    payload.tipo_outros       = pedido.tipo_solicitacao === 'Outros';
+    ({ error } = await sb.from('fichas_solicitacao').insert(payload));
+  }
+
+  if (error) { toast('Erro ao salvar ficha: ' + error.message, 'danger'); return; }
+  toast('Ficha FR-IMOB-05 salva!', 'ok');
+  closeModal('modal-ficha-sol');
+}
+
+function imprimirFichaSOL() {
+  const conteudo = document.getElementById('ficha-sol-doc').innerHTML;
+  const janela = window.open('', '_blank');
+  janela.document.write(`
+    <html><head><title>FR-IMOB-05 — Solicitação de Ensaios</title>
+    <style>
+      body { font-family: 'Times New Roman', serif; font-size: 11px; margin: 20px; }
+      input, textarea { border: none !important; outline: none; background: transparent; }
+      @media print { @page { size: A4; margin: 15mm; } }
+    </style></head>
+    <body onload="window.print()">${conteudo}</body></html>
+  `);
+  janela.document.close();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FICHA FR-IMOB-04 — Ordem de Serviço
+   ══════════════════════════════════════════════════════════════ */
+async function abrirFichaOS(pedidoId) {
+  const { data: pedido } = await sb.from('pedidos_ensaio').select('*, solicitante:usuarios!pedidos_ensaio_solicitante_id_fkey(nome,cargo)').eq('id', pedidoId).single();
+  if (!pedido) return;
+
+  let { data: ficha } = await sb.from('fichas_os').select('*').eq('pedido_id', pedidoId).single();
+
+  const obsAuto = gerarObsSOL(pedido);
+  const obs = ficha?.observacao || obsAuto;
+  const hoje = new Date().toLocaleDateString('pt-BR');
+
+  // Gerar número OS se ainda não existir
+  const numOS = pedido.numero_os || '(será gerado ao validar)';
+
+  // Ensaios selecionados para marcar checkboxes
+  const ensaiosSel = pedido.ensaios_ids || [];
+  const { data: ensaiosData } = await sb.from('ensaios').select('id,nome,categoria').in('id', ensaiosSel);
+  const nomes = (ensaiosData||[]).map(e => e.nome.toLowerCase());
+  const temEnsaio = (termo) => nomes.some(n => n.includes(termo.toLowerCase()));
+
+  document.getElementById('modal-ficha-os-body').innerHTML = `
+  <!-- FICHA FR-IMOB-04 -->
+  <div id="ficha-os-doc" style="font-family:'Times New Roman',Times,serif;font-size:10.5px;color:#000;background:#fff;padding:16px 20px;border:1px solid #ccc;max-width:780px;margin:0 auto">
+
+    <!-- CABEÇALHO -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #000">
+      <div>
+        <div style="font-size:11px">Título: <strong>Ordem de Serviço</strong></div>
+        <div>Tipo de Documento: <strong>Formulário</strong> &nbsp;&nbsp; Codificação: <strong>FR-IMOB-04</strong></div>
+        <div>Data de Vigência: <strong>16/02/2026</strong> &nbsp;&nbsp; Versão: <strong>00</strong></div>
+        <div>Fase: <strong>Vigente</strong> &nbsp;&nbsp; Nível: <strong>Operacional</strong></div>
+      </div>
+      <div>${LOGO_NR_SVG}</div>
+    </div>
+
+    <!-- BLOCO DATAS -->
+    <table style="width:100%;border-collapse:collapse;margin-bottom:0;border:1px solid #283272">
+      <tr style="background:#283272;color:#fff">
+        <td colspan="4" style="text-align:center;padding:4px;font-weight:bold;font-size:10.5px">Datas</td>
+      </tr>
+      <tr>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold;width:30%">Número da ordem de serviço:</td>
+        <td style="padding:3px 6px;border:1px solid #999;color:#283272;font-weight:bold;width:20%">${numOS}</td>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold;width:25%">Início dos ensaios:</td>
+        <td style="padding:3px 6px;border:1px solid #999;width:25%">
+          <input type="date" id="os-inicio" class="os-field" value="${ficha?.inicio_ensaios||''}" style="border:none;outline:none;width:100%;font-size:10.5px;font-family:inherit">
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold">Data da solicitação:</td>
+        <td style="padding:3px 6px;border:1px solid #999">${new Date(pedido.created_at).toLocaleDateString('pt-BR')}</td>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold">Fim dos ensaios:</td>
+        <td style="padding:3px 6px;border:1px solid #999">
+          <input type="date" id="os-fim" class="os-field" value="${ficha?.fim_ensaios||''}" style="border:none;outline:none;width:100%;font-size:10.5px;font-family:inherit">
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold">Previsão de entrega:</td>
+        <td style="padding:3px 6px;border:1px solid #999">
+          <input type="date" id="os-prev-entrega" class="os-field" value="${ficha?.previsao_entrega||''}" style="border:none;outline:none;width:100%;font-size:10.5px;font-family:inherit">
+        </td>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold">Análise dos ensaios:</td>
+        <td style="padding:3px 6px;border:1px solid #999">
+          <input type="date" id="os-analise" class="os-field" value="${ficha?.analise_ensaios||''}" style="border:none;outline:none;width:100%;font-size:10.5px;font-family:inherit">
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold">Repactuação data entrega:</td>
+        <td style="padding:3px 6px;border:1px solid #999">
+          <input type="date" id="os-repac-data" class="os-field" value="${ficha?.repactuacao_data||''}" style="border:none;outline:none;width:100%;font-size:10.5px;font-family:inherit">
+        </td>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold">Entrega da solicitação:</td>
+        <td style="padding:3px 6px;border:1px solid #999">
+          <input type="date" id="os-entrega-sol" class="os-field" value="${ficha?.entrega_solicitacao||''}" style="border:none;outline:none;width:100%;font-size:10.5px;font-family:inherit">
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold">Motivo repactuação:</td>
+        <td style="padding:3px 6px;border:1px solid #999">
+          <input type="text" id="os-motivo-repac" class="os-field" value="${ficha?.motivo_repactuacao||''}" style="border:none;outline:none;width:100%;font-size:10.5px;font-family:inherit">
+        </td>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold">Indicador:</td>
+        <td style="padding:3px 6px;border:1px solid #999">
+          <input type="text" id="os-indicador" class="os-field" value="${ficha?.indicador||'Entrega no prazo'}" style="border:none;outline:none;width:100%;font-size:10.5px;font-family:inherit">
+        </td>
+      </tr>
+    </table>
+
+    <!-- DADOS DO SOLICITANTE -->
+    <table style="width:100%;border-collapse:collapse;margin-top:0">
+      <tr style="background:#283272;color:#fff">
+        <td colspan="4" style="text-align:center;padding:4px;font-weight:bold;font-size:10.5px">Dados do Solicitante</td>
+      </tr>
+      <tr>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold;width:80px">Obra:</td>
+        <td style="padding:3px 6px;border:1px solid #999;color:#283272;font-weight:bold;text-align:center">${pedido.empresa||'—'}</td>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold;width:40px">Lote:</td>
+        <td style="padding:3px 6px;border:1px solid #999;text-align:center;font-weight:bold">${pedido.lote||'—'}</td>
+      </tr>
+      <tr>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold">Solicitante:</td>
+        <td colspan="3" style="padding:3px 6px;border:1px solid #999;color:#283272;font-weight:bold;text-align:center">${pedido.solicitante?.nome||'—'}</td>
+      </tr>
+      <tr>
+        <td style="padding:3px 6px;border:1px solid #999;font-weight:bold">Contato:</td>
+        <td colspan="3" style="padding:3px 6px;border:1px solid #999;text-align:center">${pedido.solicitante?.cargo||'—'}</td>
+      </tr>
+    </table>
+
+    <!-- ENSAIOS / ESTUDOS -->
+    <table style="width:100%;border-collapse:collapse;margin-top:0">
+      <tr style="background:#283272;color:#fff">
+        <td colspan="4" style="text-align:center;padding:4px;font-weight:bold;font-size:10.5px">Ensaios / Estudos</td>
+      </tr>
+    </table>
+
+    <!-- ESPECIFICAÇÃO -->
+    <div style="border:1px solid #999;padding:4px 6px;border-top:none">
+      <div style="font-weight:bold;margin-bottom:3px">Especificação:</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px">
+        ${[
+          {id:'espec_programar_coleta',     label:'Programar coleta dos materiais em campo'},
+          {id:'espec_caract_agregados',     label:'Caracterização dos agregados (brita, pedrisco, pó)'},
+          {id:'espec_caract_ligante',       label:'Caracterização do ligante'},
+          {id:'espec_caract_rap',           label:'Caracterização do RAP'},
+          {id:'espec_dosagem_asfaltica',    label:'Estudos de dosagem de misturas asfálticas'},
+          {id:'espec_investigativos',       label:'Ensaios investigativos do pavimento'},
+          {id:'espec_compressao',           label:'Compressão Axial / Diametral'},
+          {id:'espec_controle_campo',       label:'Controle em campo'},
+          {id:'espec_misturas_frescas',     label:'Misturas frescas'},
+          {id:'espec_misturas_endurecidas', label:'Misturas endurecidas'},
+          {id:'espec_outros',               label:'Outros'},
+        ].map(e => `
+          <div style="display:flex;align-items:center;gap:4px">
+            <input type="checkbox" id="${e.id}" ${ficha?.[e.id]?'checked':''} style="width:11px;height:11px">
+            <label for="${e.id}" style="font-size:10px;cursor:pointer">${e.label}</label>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- DETALHAR ENSAIOS -->
+    <div style="font-weight:bold;padding:3px 6px;border:1px solid #999;border-top:none;background:#f0f0f0">Detalhar ensaios:</div>
+    <table style="width:100%;border-collapse:collapse;border:1px solid #999;border-top:none">
+      <tr>
+        <th style="border:1px solid #999;padding:3px;text-align:center;font-size:10px;width:33%;background:#e8e8e8">Asfalto</th>
+        <th style="border:1px solid #999;padding:3px;text-align:center;font-size:10px;width:34%;background:#e8e8e8">Solos e Agregados</th>
+        <th style="border:1px solid #999;padding:3px;text-align:center;font-size:10px;width:33%;background:#e8e8e8">Concreto</th>
+      </tr>
+      <tr style="vertical-align:top">
+        <!-- ASFALTO -->
+        <td style="border:1px solid #999;padding:4px">
+          ${[
+            {id:'ens_rice',              label:'Densidade máxima teórica e massa específica máxima teórica - rice test', term:'rice'},
+            {id:'ens_equiv_areia',       label:'Determinação da equivalência de areia', term:'equivalência'},
+            {id:'ens_viscosidade',       label:'Viscosidade usando viscosímetro rotacional brookfield', term:'viscosidade'},
+            {id:'ens_penetracao',        label:'Penetração', term:'penetração'},
+            {id:'ens_ponto_fulgor',      label:'Ponto de fulgor - vaso aberto de cleveland', term:'fulgor'},
+            {id:'ens_ponto_amolecimento',label:'Ponto de amolecimento - método anel e bola', term:'amolecimento'},
+            {id:'ens_recuperacao_elastica',label:'Recuperação elástica', term:'recuperação'},
+            {id:'ens_ductilidade',       label:'Ductilidade a 25ºC 5 cm/min', term:'ductilidade'},
+            {id:'ens_conf_espessuras_asf',label:'Conferência de espessuras de amostras indeformadas', term:'espessura'},
+            {id:'ens_extracao_rotarex',  label:'Extração de betume (rotarex)', term:'rotarex'},
+            {id:'ens_extracao_soxhlet',  label:'Extração de betume (soxhlet)', term:'soxhlet'},
+            {id:'ens_marshall',          label:'Ensaios marshall (volumetria, fluência, estabilidade, tração)', term:'marshall'},
+            {id:'ens_dano_umidade',      label:'Dano por umidade induzida', term:'umidade induzida'},
+            {id:'ens_modulo_resiliencia',label:'Ensaio de módulo de resiliência', term:'resiliência'},
+            {id:'ens_fadiga',            label:'Ensaio de fadiga', term:'fadiga'},
+            {id:'ens_deformacao_perm',   label:'Ensaio de deformação permanente', term:'deformação'},
+            {id:'ens_outros_asfalto',    label:'Outros (Especificar na observação)', term:'__never__'},
+          ].map(e => `
+            <div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:3px">
+              <input type="checkbox" id="${e.id}" ${(ficha?.[e.id]||temEnsaio(e.term))?'checked':''} style="width:11px;height:11px;margin-top:1px;flex-shrink:0">
+              <label for="${e.id}" style="font-size:9.5px;cursor:pointer;line-height:1.3">${e.label}</label>
+            </div>
+          `).join('')}
+        </td>
+        <!-- SOLOS E AGREGADOS -->
+        <td style="border:1px solid #999;padding:4px">
+          ${[
+            {id:'ens_granulometria',      label:'Análise granulométrica por peneiramento', term:'granulométrica'},
+            {id:'ens_compactacao_nt',     label:'Compactação de amostras não trabalhadas', term:'não trabalhadas'},
+            {id:'ens_compactacao_t',      label:'Compactação de amostras trabalhadas', term:'trabalhadas'},
+            {id:'ens_teor_umidade',       label:'Teor de umidade', term:'umidade'},
+            {id:'ens_massa_esp_insitu',   label:'Massa específica aparente "in situ"', term:'in situ'},
+            {id:'ens_resistencia_tracao', label:'Resistência à tração', term:'tração'},
+            {id:'ens_conf_espessuras_solo',label:'Conferência de espessuras de amostras indeformadas', term:'indeformadas'},
+            {id:'ens_benkelman',          label:'Verificação deflectométrica - viga benkelman', term:'benkelman'},
+            {id:'ens_outros_solos',       label:'Outros (Especificar na observação)', term:'__never__'},
+            {id:'ens_dens_agr_graudo',    label:'Massa específica, densidade relativa, absorção de agregado graúdo', term:'graúdo'},
+            {id:'ens_dens_agr_miudo',     label:'Massa específica real, densidade relativa real de agregado miúdo', term:'miúdo'},
+          ].map(e => `
+            <div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:3px">
+              <input type="checkbox" id="${e.id}" ${(ficha?.[e.id]||temEnsaio(e.term))?'checked':''} style="width:11px;height:11px;margin-top:1px;flex-shrink:0">
+              <label for="${e.id}" style="font-size:9.5px;cursor:pointer;line-height:1.3">${e.label}</label>
+            </div>
+          `).join('')}
+        </td>
+        <!-- CONCRETO -->
+        <td style="border:1px solid #999;padding:4px">
+          <div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:3px">
+            <input type="checkbox" id="ens_compressao_axial" ${(ficha?.ens_compressao_axial||temEnsaio('compressão'))?'checked':''} style="width:11px;height:11px;margin-top:1px;flex-shrink:0">
+            <label for="ens_compressao_axial" style="font-size:9.5px;cursor:pointer;line-height:1.3">Compressão Axial de Corpo de Prova</label>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <!-- OBSERVAÇÃO -->
+    <div style="border:1px solid #999;border-top:none;padding:4px 6px">
+      <span style="font-size:10px;font-weight:bold;color:#c00">Observação: </span>
+      <textarea id="os-obs" style="width:100%;min-height:56px;border:none;font-family:inherit;font-size:9.5px;color:#c00;font-weight:bold;resize:vertical;outline:none;margin-top:2px">${obs}</textarea>
+    </div>
+
+    <!-- RODAPÉ -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;border-top:1px solid #999;padding-top:6px;margin-top:4px">
+      ${[
+        {label:'Elaborado por:', nome:'Thyago Biasin'},
+        {label:'Revisado por:',  nome:'Samara Rodrigues'},
+        {label:'Aprovado por:',  nome:'Rheno Tormin'},
+      ].map(a => `
+        <div>
+          <span style="font-size:10px">${a.label}</span>
+          <strong style="display:block;font-size:11px">${a.nome}</strong>
+        </div>
+      `).join('')}
+    </div>
+  </div>
+
+  <input type="hidden" id="os-pedido-id" value="${pedidoId}">
+  <input type="hidden" id="os-ficha-id" value="${ficha?.id||''}">
+  `;
+
+  openModal('modal-ficha-os');
+}
+
+async function salvarFichaOS() {
+  const pedidoId = document.getElementById('os-pedido-id').value;
+  const fichaId  = document.getElementById('os-ficha-id').value;
+  const get = id => document.getElementById(id);
+  const chk = id => document.getElementById(id)?.checked || false;
+
+  const payload = {
+    pedido_id:        pedidoId,
+    inicio_ensaios:   get('os-inicio')?.value      || null,
+    fim_ensaios:      get('os-fim')?.value          || null,
+    previsao_entrega: get('os-prev-entrega')?.value  || null,
+    analise_ensaios:  get('os-analise')?.value       || null,
+    repactuacao_data: get('os-repac-data')?.value    || null,
+    entrega_solicitacao: get('os-entrega-sol')?.value|| null,
+    motivo_repactuacao:  get('os-motivo-repac')?.value||null,
+    indicador:        get('os-indicador')?.value     || null,
+    observacao:       get('os-obs')?.value           || null,
+    observacao_editada: true,
+    criado_por:       APP.profile.id,
+    status:           'emitida',
+    // Especificação
+    espec_programar_coleta:     chk('espec_programar_coleta'),
+    espec_caract_agregados:     chk('espec_caract_agregados'),
+    espec_caract_ligante:       chk('espec_caract_ligante'),
+    espec_caract_rap:           chk('espec_caract_rap'),
+    espec_dosagem_asfaltica:    chk('espec_dosagem_asfaltica'),
+    espec_investigativos:       chk('espec_investigativos'),
+    espec_compressao:           chk('espec_compressao'),
+    espec_controle_campo:       chk('espec_controle_campo'),
+    espec_misturas_frescas:     chk('espec_misturas_frescas'),
+    espec_misturas_endurecidas: chk('espec_misturas_endurecidas'),
+    espec_outros:               chk('espec_outros'),
+    // Ensaios
+    ens_rice:                chk('ens_rice'),
+    ens_equiv_areia:         chk('ens_equiv_areia'),
+    ens_viscosidade:         chk('ens_viscosidade'),
+    ens_penetracao:          chk('ens_penetracao'),
+    ens_ponto_fulgor:        chk('ens_ponto_fulgor'),
+    ens_ponto_amolecimento:  chk('ens_ponto_amolecimento'),
+    ens_recuperacao_elastica:chk('ens_recuperacao_elastica'),
+    ens_ductilidade:         chk('ens_ductilidade'),
+    ens_conf_espessuras_asf: chk('ens_conf_espessuras_asf'),
+    ens_extracao_rotarex:    chk('ens_extracao_rotarex'),
+    ens_extracao_soxhlet:    chk('ens_extracao_soxhlet'),
+    ens_marshall:            chk('ens_marshall'),
+    ens_dano_umidade:        chk('ens_dano_umidade'),
+    ens_modulo_resiliencia:  chk('ens_modulo_resiliencia'),
+    ens_fadiga:              chk('ens_fadiga'),
+    ens_deformacao_perm:     chk('ens_deformacao_perm'),
+    ens_granulometria:       chk('ens_granulometria'),
+    ens_compactacao_nt:      chk('ens_compactacao_nt'),
+    ens_compactacao_t:       chk('ens_compactacao_t'),
+    ens_teor_umidade:        chk('ens_teor_umidade'),
+    ens_massa_esp_insitu:    chk('ens_massa_esp_insitu'),
+    ens_resistencia_tracao:  chk('ens_resistencia_tracao'),
+    ens_conf_espessuras_solo:chk('ens_conf_espessuras_solo'),
+    ens_benkelman:           chk('ens_benkelman'),
+    ens_dens_agr_graudo:     chk('ens_dens_agr_graudo'),
+    ens_dens_agr_miudo:      chk('ens_dens_agr_miudo'),
+    ens_outros_solos:        chk('ens_outros_solos'),
+    ens_compressao_axial:    chk('ens_compressao_axial'),
+  };
+
+  let error;
+  if (fichaId) {
+    ({ error } = await sb.from('fichas_os').update(payload).eq('id', fichaId));
+  } else {
+    const { data: pedido } = await sb.from('pedidos_ensaio').select('*').eq('id', pedidoId).single();
+    payload.numero_os    = pedido.numero_os || '';
+    payload.obra         = pedido.empresa;
+    payload.lote         = pedido.lote;
+    payload.solicitante  = pedido.solicitante?.nome || '';
+    payload.data_solicitacao = pedido.created_at?.slice(0,10);
+    ({ error } = await sb.from('fichas_os').insert(payload));
+  }
+
+  if (error) { toast('Erro ao salvar O.S.: ' + error.message, 'danger'); return; }
+  toast('Ficha FR-IMOB-04 salva!', 'ok');
+  closeModal('modal-ficha-os');
+  await carregarListaLab();
+}
+
+function imprimirFichaOS() {
+  const conteudo = document.getElementById('ficha-os-doc').innerHTML;
+  const janela = window.open('', '_blank');
+  janela.document.write(`
+    <html><head><title>FR-IMOB-04 — Ordem de Serviço</title>
+    <style>
+      body { font-family: 'Times New Roman', serif; font-size: 10.5px; margin: 15px; }
+      input[type="text"], input[type="date"], textarea { border: none !important; outline: none; background: transparent; font-family: inherit; }
+      @media print { @page { size: A4; margin: 12mm; } }
+    </style></head>
+    <body onload="window.print()">${conteudo}</body></html>
+  `);
+  janela.document.close();
+}
+
+/* ── LABEL MAP ── */
+const STATUS_MAP = {
+  'aguardando_lab':    ['Aguardando Lab',     'status-aguardando-lab'],
+  'em_analise':        ['Em Análise',          'status-em-analise'],
+  'em_andamento':      ['Em Andamento',        'status-em-andamento'],
+  'aguardando_revisao':['Aguard. Revisão',     'status-aguardando-rev'],
+  'concluido':         ['Concluído',           'status-concluido'],
+  'devolvido_campo':   ['Dev. Campo',          'status-devolvido-campo'],
+  'devolvido_assist':  ['Dev. Assistente',     'status-devolvido-assist'],
+  'cancelado':         ['Cancelado',           'status-cancelado'],
+};
+const MAT_TAG = {
+  'Solos':'solos','Agregados':'solos','Concreto':'concreto',
+  'Massa Asfáltica':'asfalto','Ligante Asfáltico':'asfalto','CPs / Extração':'cp'
+};
+const DADOS_LABEL = {
+  jazida:'Jazida', km_jazida:'KM Jazida', data_coleta:'Data Coleta',
+  furo:'Furo/Registro', profundidade:'Profundidade',
+  data_concretagem:'Data Concretagem', km:'KM', peca:'Peça Concretada',
+  cod_cp:'Código CP', mpa_proj:'fck Projeto', slump_proj:'Slump Projeto',
+  slump_dia:'Slump Dia', temperatura:'Temperatura', idade_ruptura:'Idade Ruptura',
+  data_usinagem:'Data Usinagem', traco_faixa:'Traço/Faixa',
+  fornecedor_cap:'Fornecedor/CAP', data_extracao:'Data Extração',
+  faixa:'Faixa', lado:'Lado', camada:'Camada',
+};
+
+function renderOSCard(os, labMode=false, campoMode=false) {
+  const [statusLabel, statusCls] = STATUS_MAP[os.status] || ['—',''];
+  const matTag = MAT_TAG[os.material] || 'solos';
+  const dt = os.created_at ? new Date(os.created_at).toLocaleDateString('pt-BR') : '—';
+  const solicNome = os.solicitante?.nome || '—';
+  const osId = 'os-' + (os.id || Math.random().toString(36).slice(2));
+
+  return `
+  <div class="os-card" id="card-${os.id}">
+    <div class="os-card-header" onclick="toggleCard('${osId}')">
+      <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0">
+        <span class="os-card-num">PE ${os.numero_pe||'????'}</span>
+        ${os.numero_os ? `<span style="font-size:9px;color:var(--text-3);font-family:monospace">${os.numero_os}</span>` : ''}
+      </div>
+      <div class="os-card-info">
+        <div class="os-card-title">${os.material||'—'}</div>
+        <div class="os-card-meta">${solicNome} · ${dt} · ${os.empresa||''} ${os.lote?'· Lote '+os.lote:''}</div>
+      </div>
+      <span class="tag tag-${matTag}" style="flex-shrink:0;margin-right:4px">${os.material?.split(' ')[0]||''}</span>
+      <span class="status ${statusCls}" style="flex-shrink:0">${statusLabel}</span>
+      <svg class="os-card-chevron" id="${osId}-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="os-card-body" id="${osId}-body">
+      <div style="padding-top:12px">
+        ${renderOSCardBody(os, labMode, campoMode)}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderOSCardBody(os, labMode, campoMode) {
+  // Dados da amostra — pode ser array (múltiplas) ou objeto (simples)
+  const amostras = Array.isArray(os.dados_amostra) ? os.dados_amostra : [os.dados_amostra || {}];
+
+  const amostrasHtml = amostras.map((dados, idx) => {
+    const dadosHtml = Object.entries(dados).filter(([k,v])=>v).map(([k,v]) =>
+      `<div>
+        <span style="font-size:10px;color:var(--text-3);text-transform:uppercase;font-weight:600">${DADOS_LABEL[k]||k.replace(/_/g,' ')}</span>
+        <div style="font-size:12.5px;color:var(--text);margin-top:1px">${v}</div>
+      </div>`
+    ).join('');
+    return amostras.length > 1
+      ? `<div style="background:var(--surface-2);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:8px;border:1px solid var(--border)">
+          <div style="font-size:10px;font-weight:700;color:var(--teal-dark);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Amostra ${idx+1}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px">${dadosHtml}</div>
+        </div>`
+      : `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;margin-bottom:12px">${dadosHtml}</div>`;
+  }).join('');
+
+  // Ensaios listados
+  const ensaiosNomes = (os.ensaios_nomes||[]);
+  const ensaiosHtml = ensaiosNomes.length > 0
+    ? `<div style="margin-bottom:12px">
+        <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">Ensaios solicitados</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">
+          ${ensaiosNomes.map(n=>`<span style="background:var(--surface-2);border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:11px;color:var(--text-2)">${n}</span>`).join('')}
+        </div>
+      </div>`
+    : '';
+
+  // Motivo devolução
+  const motivoHtml = os.motivo_devolucao
+    ? `<div style="background:var(--warn-bg);border:1px solid #FCD34D;border-radius:var(--r-sm);padding:8px 12px;font-size:12px;color:var(--warn);margin-bottom:12px">
+        <strong>⚠️ Motivo da devolução:</strong> ${os.motivo_devolucao}
+      </div>`
+    : '';
+
+  // Observações
+  const obsHtml = os.observacoes
+    ? `<div style="background:var(--info-bg);border-radius:var(--r-sm);padding:8px 12px;font-size:12px;color:var(--info);margin-bottom:12px">
+        <strong>Obs:</strong> ${os.observacoes}
+      </div>`
+    : '';
+
+  return `
+    ${motivoHtml}
+    ${amostrasHtml}
+    ${ensaiosHtml}
+    ${obsHtml}
+    ${labMode   ? renderLabActions(os)   : ''}
+    ${campoMode ? renderCampoActions(os) : ''}
+  `;
+}
+
+/* ── AÇÕES DO CAMPO (para o inspetor no histórico) ── */
+function renderCampoActions(os) {
+  if (os.status === 'devolvido_campo') {
+    return `
+    <div style="margin-top:8px">
+      <button class="btn btn-teal btn-sm" onclick="editarPedidoDevolvido('${os.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Corrigir e Reenviar
+      </button>
+    </div>`;
+  }
+  return '';
+}
+
+/* ── AÇÕES DO LAB ── */
+function renderLabActions(os) {
+  if (os.status === 'aguardando_lab') {
+    return `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+      <button class="btn btn-ghost btn-sm" onclick="abrirFichaSOL('${os.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        FR-IMOB-05
+      </button>
+      <button class="btn btn-teal btn-sm" onclick="abrirFichaOS('${os.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        FR-IMOB-04 + Abrir O.S.
+      </button>
+      <button class="btn btn-ghost btn-sm" onclick="abrirModalDevolverCampo('${os.id}')">Devolver ao Campo</button>
+      <button class="btn btn-danger btn-sm" onclick="cancelarPedido('${os.id}')">Cancelar</button>
+    </div>`;
+  }
+  if (os.status === 'em_andamento' || os.status === 'em_analise') {
+    return `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+      <button class="btn btn-ghost btn-sm" onclick="abrirFichaSOL('${os.id}')">FR-IMOB-05</button>
+      <button class="btn btn-ghost btn-sm" onclick="abrirFichaOS('${os.id}')">FR-IMOB-04</button>
+      <button class="btn btn-navy btn-sm" onclick="abrirModalAtribuir('${os.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Atribuir Ensaios
+      </button>
+      <button class="btn btn-teal btn-sm" onclick="abrirModalFinalizar('${os.id}')">Finalizar O.S.</button>
+      <button class="btn btn-ghost btn-sm" onclick="abrirModalDevolverCampo('${os.id}')">Devolver ao Campo</button>
+    </div>`;
+  }
+  if (os.status === 'aguardando_revisao') {
+    return `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+      <button class="btn btn-teal btn-sm" onclick="abrirModalFinalizar('${os.id}')">Revisar e Finalizar</button>
+      <button class="btn btn-ghost btn-sm" onclick="devolverAssistente('${os.id}')">Devolver ao Assistente</button>
+    </div>`;
+  }
+  if (os.status === 'concluido') {
+    return `
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn btn-ghost btn-sm">Ver PDF</button>
+    </div>`;
+  }
+  return '';
+}
+
+/* ── FUNÇÕES LAB ── */
+async function abrirOS(pedidoId) {
+  const now = new Date();
+  const { data: pedido } = await sb.from('pedidos_ensaio').select('*').eq('id', pedidoId).single();
+  if (!pedido) return;
+
+  const lote = pedido.lote || APP.profile.lote || '01';
+  const numOS = gerarNumeroOS({
+    ano: now.getFullYear(), mes: now.getMonth()+1,
+    dia: now.getDate(), lote, seq: pedido.sequencial
+  });
+
+  const historico = Array.isArray(pedido.historico) ? pedido.historico : [];
+  historico.push({ acao: 'OS aberta', usuario: APP.profile.nome, data: now.toISOString(), numero_os: numOS });
+
+  const { error } = await sb.from('pedidos_ensaio').update({
+    status: 'em_andamento',
+    numero_os: numOS,
+    aberto_por: APP.profile.id,
+    aberto_em: now.toISOString(),
+    historico,
+  }).eq('id', pedidoId);
+
+  if (error) { toast('Erro ao abrir O.S.: ' + error.message, 'danger'); return; }
+  toast(`${numOS} aberta com sucesso!`, 'ok');
+  await carregarListaLab();
+}
+
+function abrirModalDevolverCampo(pedidoId) {
+  const modal = document.getElementById('modal-devolver-campo');
+  if (modal) {
+    document.getElementById('devolver-campo-id').value = pedidoId;
+    document.getElementById('devolver-campo-motivo').value = '';
+    openModal('modal-devolver-campo');
+  } else {
+    // Fallback simples
+    const motivo = prompt('Motivo da devolução ao campo:');
+    if (motivo) executarDevolverCampo(pedidoId, motivo);
+  }
+}
+
+async function executarDevolverCampo(pedidoId, motivo) {
+  const now = new Date();
+  const { data: pedido } = await sb.from('pedidos_ensaio').select('historico').eq('id', pedidoId).single();
+  const historico = Array.isArray(pedido?.historico) ? pedido.historico : [];
+  historico.push({ acao: 'Devolvido ao campo', motivo, usuario: APP.profile.nome, data: now.toISOString() });
+
+  await sb.from('pedidos_ensaio').update({
+    status: 'devolvido_campo',
+    motivo_devolucao: motivo,
+    historico,
+  }).eq('id', pedidoId);
+
+  toast('Pedido devolvido ao campo', 'warn');
+  closeModal('modal-devolver-campo');
+  await carregarListaLab();
+}
+
+async function cancelarPedido(pedidoId) {
+  if (!confirm('Confirma o cancelamento deste pedido?')) return;
+  const now = new Date();
+  const { data: pedido } = await sb.from('pedidos_ensaio').select('historico').eq('id', pedidoId).single();
+  const historico = Array.isArray(pedido?.historico) ? pedido.historico : [];
+  historico.push({ acao: 'Cancelado', usuario: APP.profile.nome, data: now.toISOString() });
+  await sb.from('pedidos_ensaio').update({ status: 'cancelado', historico }).eq('id', pedidoId);
+  toast('Pedido cancelado', 'danger');
+  await carregarListaLab();
+}
+
+async function abrirModalAtribuir(pedidoId) {
+  const { data: pedido } = await sb.from('pedidos_ensaio').select('*').eq('id', pedidoId).single();
+  if (!pedido) return;
+
+  const { data: assistentes } = await sb.from('usuarios')
+    .select('id, nome, cargo')
+    .in('perfil', ['ASSIST','LAB','DEV'])
+    .eq('status', 'Ativo');
+
+  const { data: ensaiosData } = await sb.from('ensaios')
+    .select('id, nome')
+    .in('id', pedido.ensaios_ids || []);
+
+  const { data: jaAtribuidos } = await sb.from('ensaios_os')
+    .select('ensaio_id, assistente_id, usuarios(nome)')
+    .eq('pedido_id', pedidoId);
+
+  const atribMap = {};
+  (jaAtribuidos||[]).forEach(e => { atribMap[e.ensaio_id] = e; });
+
+  const body = document.getElementById('modal-atribuir-body');
+  body.innerHTML = `
+    <p style="font-size:12px;color:var(--text-3);margin-bottom:14px">Atribua cada ensaio a um assistente. O mesmo assistente pode receber vários ensaios.</p>
+    <div style="display:flex;flex-direction:column;gap:10px" id="atribuir-lista">
+      ${(ensaiosData||[]).map(e => {
+        const atual = atribMap[e.id];
+        return `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--surface-2);border-radius:var(--r-sm);border:1px solid var(--border)">
+          <div style="flex:1;font-size:12.5px;font-weight:600;color:var(--text)">${e.nome}</div>
+          <select class="field-select" id="assist-${e.id}" style="max-width:180px;font-size:12px">
+            <option value="">— Selecionar —</option>
+            ${(assistentes||[]).map(a=>`<option value="${a.id}" ${atual?.assistente_id===a.id?'selected':''}>${a.nome}</option>`).join('')}
+          </select>
+        </div>`;
+      }).join('')}
+    </div>
+    <input type="hidden" id="atribuir-pedido-id" value="${pedidoId}">
+    <input type="hidden" id="atribuir-ensaios-json" value='${JSON.stringify(ensaiosData||[])}'>
+  `;
+  openModal('modal-atribuir');
+}
+
+async function salvarAtribuicoes() {
+  const pedidoId = document.getElementById('atribuir-pedido-id').value;
+  const ensaios = JSON.parse(document.getElementById('atribuir-ensaios-json').value);
+  const now = new Date();
+  let count = 0;
+
+  for (const e of ensaios) {
+    const assistId = document.getElementById(`assist-${e.id}`)?.value;
+    if (!assistId) continue;
+
+    // Upsert — atualiza se já existe, cria se não
+    await sb.from('ensaios_os').upsert({
+      pedido_id: pedidoId,
+      ensaio_id: e.id,
+      nome_ensaio: e.nome,
+      assistente_id: assistId,
+      status: 'pendente',
+    }, { onConflict: 'pedido_id,ensaio_id' });
+    count++;
+  }
+
+  if (count > 0) {
+    await sb.from('pedidos_ensaio').update({ status: 'em_andamento' }).eq('id', pedidoId);
+    toast(`${count} ensaio(s) atribuído(s) com sucesso!`, 'ok');
+  }
+
+  closeModal('modal-atribuir');
+  await carregarListaLab();
+}
+
+async function abrirModalFinalizar(pedidoId) {
+  const { data: pedido } = await sb.from('pedidos_ensaio').select('*').eq('id', pedidoId).single();
+  if (!pedido) return;
+
+  const { data: ensaiosOS } = await sb.from('ensaios_os')
+    .select('*, assistente:usuarios(nome), assinatura_url:usuarios(assinatura_url)')
+    .eq('pedido_id', pedidoId);
+
+  const body = document.getElementById('modal-finalizar-body');
+  body.innerHTML = `
+    <p style="font-size:12px;color:var(--text-2);margin-bottom:14px">
+      Revise os ensaios, defina a visibilidade para o campo e finalize a O.S. <strong>${pedido.numero_os||'—'}</strong>.
+    </p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+      ${(ensaiosOS||[]).length === 0
+        ? `<p style="font-size:12px;color:var(--text-3)">Nenhum ensaio atribuído ainda.</p>`
+        : (ensaiosOS||[]).map(e => `
+          <div style="border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+              <div>
+                <div style="font-size:12.5px;font-weight:600;color:var(--text)">${e.nome_ensaio}</div>
+                <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">Assistente: ${e.assistente?.nome||'—'} · Status: ${e.status}</div>
+              </div>
+              <label class="toggle-group">
+                <label class="toggle">
+                  <input type="checkbox" id="vis-${e.id}" ${e.visivel_campo?'checked':''}>
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label">Visível ao campo</span>
+              </label>
+            </div>
+          </div>
+        `).join('')
+      }
+    </div>
+    <div style="background:var(--warn-bg);border:1px solid #FCD34D;border-radius:var(--r-sm);padding:10px 12px;font-size:12px;color:var(--warn);margin-bottom:4px">
+      ⚠️ Após finalizar, o documento fica bloqueado. Apenas o Gestor pode reabrir.
+    </div>
+    <input type="hidden" id="finalizar-pedido-id" value="${pedidoId}">
+    <input type="hidden" id="finalizar-ensaios-json" value='${JSON.stringify((ensaiosOS||[]).map(e=>({id:e.id})))}'>
+  `;
+  openModal('modal-finalizar');
+}
+
+async function confirmarFinalizar() {
+  const pedidoId = document.getElementById('finalizar-pedido-id').value;
+  const ensaios  = JSON.parse(document.getElementById('finalizar-ensaios-json').value);
+  const now = new Date();
+
+  // Salvar visibilidade de cada ensaio
+  for (const e of ensaios) {
+    const vis = document.getElementById(`vis-${e.id}`)?.checked || false;
+    await sb.from('ensaios_os').update({ visivel_campo: vis }).eq('id', e.id);
+  }
+
+  const { data: pedido } = await sb.from('pedidos_ensaio').select('historico').eq('id', pedidoId).single();
+  const historico = Array.isArray(pedido?.historico) ? pedido.historico : [];
+  historico.push({ acao: 'O.S. finalizada', usuario: APP.profile.nome, data: now.toISOString() });
+
+  await sb.from('pedidos_ensaio').update({
+    status: 'concluido',
+    finalizado_por: APP.profile.id,
+    finalizado_em: now.toISOString(),
+    historico,
+  }).eq('id', pedidoId);
+
+  toast('O.S. finalizada com sucesso!', 'ok');
+  closeModal('modal-finalizar');
+  await carregarListaLab();
+}
+
+async function devolverAssistente(pedidoId) {
+  const motivo = prompt('Motivo da devolução ao assistente:');
+  if (!motivo) return;
+  const now = new Date();
+  const { data: pedido } = await sb.from('pedidos_ensaio').select('historico').eq('id', pedidoId).single();
+  const historico = Array.isArray(pedido?.historico) ? pedido.historico : [];
+  historico.push({ acao: 'Devolvido ao assistente', motivo, usuario: APP.profile.nome, data: now.toISOString() });
+  await sb.from('pedidos_ensaio').update({ status: 'em_andamento', historico }).eq('id', pedidoId);
+  toast('Devolvido ao assistente', 'warn');
+  await carregarListaLab();
+}
+
+/* ── CAMPO: editar pedido devolvido ── */
+async function editarPedidoDevolvido(pedidoId) {
+  const { data: pedido } = await sb.from('pedidos_ensaio').select('*').eq('id', pedidoId).single();
+  if (!pedido) return;
+
+  // Carrega ensaios disponíveis para o material
+  const { data: todosEnsaios } = await sb.from('ensaios').select('*').eq('ativo', true).order('ordem');
+  const MATERIAIS = [
+    { id: 'Solos', catEnsaio: 'Solos e Agregados' },
+    { id: 'Agregados', catEnsaio: 'Solos e Agregados' },
+    { id: 'Massa Asfáltica', catEnsaio: 'Asfalto' },
+    { id: 'Ligante Asfáltico', catEnsaio: 'Asfalto' },
+    { id: 'CPs / Extração', catEnsaio: 'Asfalto' },
+    { id: 'Concreto', catEnsaio: 'Concreto' },
+  ];
+  const matObj = MATERIAIS.find(m => m.id === pedido.material);
+  const ensaiosFiltrados = (todosEnsaios||[]).filter(e => e.categoria === matObj?.catEnsaio);
+
+  const selecionados = new Set(pedido.ensaios_ids || []);
+  const dadosAtual = Array.isArray(pedido.dados_amostra) ? pedido.dados_amostra[0] : (pedido.dados_amostra || {});
+
+  document.getElementById('modal-editar-pedido-body').innerHTML = `
+    <div style="background:var(--warn-bg);border:1px solid #FCD34D;border-radius:var(--r-sm);padding:8px 12px;font-size:12px;color:var(--warn);margin-bottom:14px">
+      <strong>⚠️ Motivo da devolução:</strong> ${pedido.motivo_devolucao||'—'}
+    </div>
+    <div class="section-title" style="margin-bottom:10px">Dados da Amostra</div>
+    <div id="editar-campos-amostra">
+      ${campoFieldsPreenchidos(pedido.material, dadosAtual)}
+    </div>
+    <div class="section-title" style="margin:14px 0 10px">Ensaios Solicitados</div>
+    <div style="display:flex;flex-direction:column;gap:2px;margin-bottom:12px">
+      ${ensaiosFiltrados.map(e=>`
+        <label style="display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px solid var(--border);cursor:pointer">
+          <input type="checkbox" value="${e.id}" ${selecionados.has(e.id)?'checked':''}
+            style="accent-color:var(--teal);width:14px;height:14px"
+            onchange="toggleEnsaioEditar('${e.id}')">
+          <span style="font-size:12.5px;color:var(--text);font-weight:500">${e.nome}</span>
+        </label>
+      `).join('')}
+    </div>
+    <div class="section-title" style="margin-bottom:8px">Observações</div>
+    <textarea class="field-textarea" id="editar-obs" rows="2" placeholder="Observações…">${pedido.observacoes||''}</textarea>
+    <input type="hidden" id="editar-pedido-id" value="${pedidoId}">
+    <input type="hidden" id="editar-material" value="${pedido.material}">
+  `;
+  window._editarSelecionados = new Set(selecionados);
+  openModal('modal-editar-pedido');
+}
+
+function campoFieldsPreenchidos(mat, dados) {
+  // Reutiliza campoFieldsPorMaterial mas preenchido com valores existentes
+  const html = campoFieldsPorMaterial(mat);
+  // Injetar via JS após render
+  setTimeout(() => {
+    const get = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+    if (mat === 'Solos' || mat === 'Agregados') {
+      get('f-jazida', dados.jazida); get('f-km-jazida', dados.km_jazida);
+      get('f-data-coleta', dados.data_coleta); get('f-furo', dados.furo);
+      get('f-profundidade', dados.profundidade);
+    }
+    if (mat === 'Concreto') {
+      get('f-data-conc', dados.data_concretagem); get('f-km', dados.km);
+      get('f-peca', dados.peca); get('f-cod-cp', dados.cod_cp);
+      get('f-mpa-proj', dados.mpa_proj); get('f-slump-proj', dados.slump_proj);
+      get('f-slump-dia', dados.slump_dia); get('f-temp', dados.temperatura);
+      get('f-idade', dados.idade_ruptura);
+    }
+    if (mat === 'Massa Asfáltica') {
+      get('f-data-usin', dados.data_usinagem); get('f-traco', dados.traco_faixa);
+    }
+    if (mat === 'Ligante Asfáltico') {
+      get('f-data-col-lig', dados.data_coleta); get('f-cap', dados.fornecedor_cap);
+    }
+    if (mat === 'CPs / Extração') {
+      get('f-cod-cp-ext', dados.cod_cp); get('f-km-ext', dados.km);
+      get('f-faixa', dados.faixa); get('f-lado', dados.lado);
+      get('f-camada', dados.camada); get('f-data-ext', dados.data_extracao);
+    }
+  }, 50);
+  return html;
+}
+
+function toggleEnsaioEditar(id) {
+  if (window._editarSelecionados.has(id)) {
+    window._editarSelecionados.delete(id);
+  } else {
+    window._editarSelecionados.add(id);
+  }
+}
+
+async function salvarEdicaoPedido() {
+  const pedidoId = document.getElementById('editar-pedido-id').value;
+  const mat = document.getElementById('editar-material').value;
+  if (window._editarSelecionados.size === 0) { toast('Selecione ao menos 1 ensaio', 'warn'); return; }
+
+  const dados = coletarDadosAmostra(mat);
+  const now = new Date();
+  const { data: pedido } = await sb.from('pedidos_ensaio').select('historico').eq('id', pedidoId).single();
+  const historico = Array.isArray(pedido?.historico) ? pedido.historico : [];
+  historico.push({ acao: 'Corrigido e reenviado pelo campo', usuario: APP.profile.nome, data: now.toISOString() });
+
+  const { error } = await sb.from('pedidos_ensaio').update({
+    status: 'aguardando_lab',
+    dados_amostra: dados,
+    ensaios_ids: [...window._editarSelecionados],
+    observacoes: document.getElementById('editar-obs')?.value || '',
+    motivo_devolucao: null,
+    historico,
+  }).eq('id', pedidoId);
+
+  if (error) { toast('Erro ao salvar: ' + error.message, 'danger'); return; }
+  toast('Pedido corrigido e reenviado!', 'ok');
+  closeModal('modal-editar-pedido');
+  await renderHistorico(document.getElementById('main-content'));
+}
+
+function toggleCard(id) {
+  const body = document.getElementById(id+'-body');
+  const chev  = document.getElementById(id+'-chev');
+  if (!body) return;
+  body.classList.toggle('open');
+  chev?.classList.toggle('open');
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MÓDULO ASSISTENTE
+   ────────────────────────────────────────────────────────────── */
+async function renderAssistente(el) {
+  el.innerHTML = `
+  <div style="margin-bottom:18px">
+    <h2 style="font-size:17px;font-weight:800;color:var(--navy)">Meus Ensaios</h2>
+    <p style="font-size:11.5px;color:var(--text-3);margin-top:2px">Ensaios atribuídos a você — ordenados por urgência</p>
+  </div>
+  <div id="assist-list">
+    <div class="empty-state"><div class="loading-spin" style="width:28px;height:28px;border-width:2px"></div></div>
+  </div>`;
+
+  const { data, error } = await sb
+    .from('ensaios_os')
+    .select('*, pedido:pedidos_ensaio(numero_pe,numero_os,material,tipo_amostra,sub_tipo,dados_amostra,empresa,lote), ensaio:ensaios(nome,categoria,norma), ficha:fichas_ensaio(codigo,nome,arquivo_url)')
+    .eq('assistente_id', APP.profile.id)
+    .in('status', ['pendente','em_execucao'])
+    .order('created_at', { ascending: true });
+
+  const el2 = document.getElementById('assist-list');
+  if (error || !data || data.length === 0) {
+    el2.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;opacity:.3;display:block;margin:0 auto 12px"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+      <strong>Nenhum ensaio atribuído</strong>
+      <span>Aguarde o laboratorista atribuir ensaios a você</span>
+    </div>`;
+    return;
+  }
+  window._assistData = data;
+  el2.innerHTML = data.map(e => renderAssistCard(e)).join('');
+}
+
+function renderAssistCard(e) {
+  const cId = 'assist-card-' + e.id;
+  const pedido = e.pedido || {};
+  const ensaio = e.ensaio || {};
+  const statusLabel = { pendente:'⏳ Pendente', em_execucao:'🔬 Em Execução' }[e.status] || e.status;
+  return `
+  <div class="os-card" id="${cId}">
+    <div class="os-card-header" onclick="toggleCard('${cId}')">
+      <div style="flex:1;min-width:0">
+        <div class="os-card-title">${ensaio.nome||'—'}</div>
+        <div class="os-card-meta">O.S. ${pedido.numero_os||pedido.numero_pe||'—'} · ${pedido.empresa||''} ${pedido.lote?'· Lote '+pedido.lote:''}${e.ficha?' · <span style="color:var(--teal-dark);font-weight:600">'+e.ficha.codigo+'</span>':''}</div>
+      </div>
+      <span class="status status-em-andamento" style="flex-shrink:0">${statusLabel}</span>
+      <svg class="os-card-chevron" id="${cId}-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="os-card-body" id="${cId}-body">
+      <div style="padding-top:12px">
+        ${renderDadosOS(pedido)}
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+          <button class="btn btn-teal btn-sm" onclick="abrirFormularioEnsaio('${e.id}','${(ensaio.nome||'').replace(/'/g,"\\'")}')">✏️ Preencher Digitalmente</button>
+          <button class="btn btn-ghost btn-sm" onclick="abrirUploadFoto('${e.id}','${(ensaio.nome||'').replace(/'/g,"\\'")}')">📷 Upload Foto / PDF</button>
+          ${e.ficha?.arquivo_url?`<a href="${e.ficha.arquivo_url}" target="_blank" class="btn btn-ghost btn-sm">📋 Ver ${e.ficha.codigo}</a>`:''}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderDadosOS(pedido) {
+  const dados = pedido.dados_amostra || {};
+  const cab = dados.cabecario || {};
+  const amostras = dados.amostras || [];
+  const labels = {jazida_nome:'Jazida',jazida_km:'KM Jazida',jazida_data:'Data Coleta',cpp_dt_aplic:'Data Aplicação',cpp_dt_extr:'Data Extração',cpp_pista:'Pista',cpp_camada:'Camada',cpp_espessura:'Espessura',cpp_km_ini:'KM Inicial',cpp_km_fim:'KM Final',agr_tipo:'Tipo Agregado',agr_pedreira:'Pedreira',agr_data:'Data Coleta',camada:'Camada',pista:'Pista',proctor:'Proctor/Energia',emp_km:'KM Empréstimo',emp_data:'Data',sc_data:'Data Moldagem',sc_camada_apl:'Camada Aplicação',esp_data:'Data Ensaio',esp_pista:'Pista',esp_faixa:'Faixa',esp_km_ini:'KM Inicial',esp_km_fim:'KM Final',esp_camada:'Camada'};
+  const cabHtml = Object.entries(cab).filter(([k,v])=>v).map(([k,v])=>`<div><span style="font-size:10px;color:var(--text-3);text-transform:uppercase;font-weight:600">${labels[k]||k}</span><div style="font-size:12px;font-weight:600;color:var(--text)">${v}</div></div>`).join('');
+  const amostrasHtml = amostras.map((a,i)=>`<div style="background:var(--surface-2);border-radius:var(--r-sm);padding:8px 10px;border:1px solid var(--border);margin-top:6px"><div style="font-size:10px;font-weight:700;color:var(--teal-dark);margin-bottom:4px">Amostra ${i+1}</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:4px">${Object.entries(a).filter(([k,v])=>v).map(([k,v])=>`<div><span style="font-size:9px;color:var(--text-3);text-transform:uppercase">${k.replace(/_/g,' ')}</span><div style="font-size:11px">${v}</div></div>`).join('')}</div></div>`).join('');
+  return `<div style="background:var(--info-bg);border-radius:var(--r-sm);padding:10px 12px"><div style="font-size:10px;font-weight:700;color:var(--info);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Dados da O.S.</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">${cabHtml||'<span style="font-size:11px;color:var(--text-3)">Sem cabeçário</span>'}</div>${amostrasHtml}</div>`;
+}
+
+async function abrirFormularioEnsaio(ensaioOsId, nomeEnsaio) {
+  window._ensaioOsAtivo = ensaioOsId;
+  window._nomeEnsaioAtivo = nomeEnsaio;
+  document.getElementById('modal-form-ensaio-title').textContent = nomeEnsaio;
+  document.getElementById('modal-form-ensaio-body').innerHTML = '<div style="text-align:center;padding:24px"><div class="loading-spin" style="width:24px;height:24px;border-width:2px;margin:0 auto"></div></div>';
+  openModal('modal-form-ensaio');
+  document.getElementById('modal-form-ensaio-body').innerHTML = getFormularioEnsaio(nomeEnsaio, ensaioOsId);
+}
+
+async function abrirUploadFoto(ensaioOsId, nomeEnsaio) {
+  window._ensaioOsAtivo = ensaioOsId;
+  window._nomeEnsaioAtivo = nomeEnsaio;
+  document.getElementById('modal-upload-foto-title').textContent = nomeEnsaio;
+  document.getElementById('modal-upload-foto-preview').innerHTML = '';
+  document.getElementById('modal-upload-foto-resultado').innerHTML = '';
+  document.getElementById('upload-foto-input').value = '';
+  openModal('modal-upload-foto');
+}
+
+function previewFotoUpload() {
+  const input = document.getElementById('upload-foto-input');
+  const preview = document.getElementById('modal-upload-foto-preview');
+  if (!input?.files?.[0]) return;
+  const file = input.files[0];
+  if (file.type === 'application/pdf') {
+    preview.innerHTML = `<div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;text-align:center"><div style="font-size:12px;font-weight:600">${file.name}</div><div style="font-size:10.5px;color:var(--text-3)">${(file.size/1024).toFixed(1)} KB · PDF</div></div>`;
+  } else {
+    const url = URL.createObjectURL(file);
+    preview.innerHTML = `<img src="${url}" style="max-width:100%;max-height:280px;border-radius:var(--r-sm);border:1px solid var(--border);display:block;margin:0 auto">`;
+  }
+}
+
+async function lerFichaComIA() {
+  const input = document.getElementById('upload-foto-input');
+  if (!input?.files?.[0]) { toast('Selecione uma imagem primeiro', 'warn'); return; }
+  const file = input.files[0];
+  const nomeEnsaio = window._nomeEnsaioAtivo || '';
+  const btnIA = document.getElementById('btn-ler-ia');
+  if (btnIA) { btnIA.disabled = true; btnIA.textContent = '🤖 Analisando…'; }
+  const resEl = document.getElementById('modal-upload-foto-resultado');
+  resEl.innerHTML = `<div style="text-align:center;padding:16px;color:var(--text-3)"><div class="loading-spin" style="width:20px;height:20px;border-width:2px;margin:0 auto 8px"></div><div style="font-size:12px">Claude está lendo a ficha…</div></div>`;
+  try {
+    const base64 = await new Promise((res,rej) => { const r = new FileReader(); r.onload = ()=>res(r.result.split(',')[1]); r.onerror = rej; r.readAsDataURL(file); });
+    const mediaType = file.type || 'image/jpeg';
+    const prompt = buildPromptIA(nomeEnsaio);
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:1000, messages:[{ role:'user', content:[{ type:'image', source:{ type:'base64', media_type:mediaType, data:base64 }},{ type:'text', text:prompt }]}]})
+    });
+    const data = await response.json();
+    const texto = data.content?.[0]?.text || '';
+    let resultados = {};
+    try { const m = texto.match(/\{[\s\S]*\}/); if (m) resultados = JSON.parse(m[0]); } catch(e) {}
+    resEl.innerHTML = renderResultadosIA(resultados, nomeEnsaio, texto);
+  } catch(err) {
+    resEl.innerHTML = `<div style="color:var(--danger);font-size:12px;padding:12px">Erro: ${err.message}</div>`;
+  } finally {
+    if (btnIA) { btnIA.disabled = false; btnIA.textContent = '🤖 Ler com IA'; }
+  }
+}
+
+function buildPromptIA(nomeEnsaio) {
+  const base = `Você é um sistema de extração de dados de fichas de ensaio laboratorial. Analise esta ficha de "${nomeEnsaio}" e extraia TODOS os valores preenchidos. Retorne APENAS um objeto JSON válido com os campos encontrados, sem explicações. Use nomes em português sem acentos, separados por underscore. Se ilegível, omita o campo.`;
+  const map = {'marshall':'estabilidade_kgf, fluencia_mm, va_pct, vam_pct, rbv_pct, gmb, gmm, grau_compactacao_pct, temperatura_c','compactação':'energia, umidade_otima_pct, massa_esp_seca_max','cbr':'energia, umidade_moldagem_pct, isc_pct, expansao_pct','granulométrica':'p_4_pct, p_10_pct, p_40_pct, p_200_pct, classificacao_hrb','compressão axial':'codigo_cp, data_rompimento, idade_dias, diametro_mm, carga_ruptura_kn, fci_obtido_mpa, fck_projeto_mpa','rice':'temperatura_c, massa_amostra_seca_g, gmm_obtido','betume':'metodo, massa_amostra_g, teor_obtido_pct','penetração':'temperatura_c, leitura_1, leitura_2, leitura_3, penetracao_media','viscosidade':'viscosidade_135c_cp, viscosidade_150c_cp, viscosidade_177c_cp','benkelman':'km, pista, leitura_inicial_mm, leitura_final_mm, deflexao_obtida_001mm','mancha':'volume_areia_cm3, diametro_medio_mm, hmt_mm','pêndulo':'leitura_1, leitura_2, leitura_3, leitura_4, leitura_5, media_vrd','frasco':'km, posicao, umidade_obtida_pct, massa_esp_obtida, grau_compactacao_pct'};
+  for (const [k,v] of Object.entries(map)) {
+    if (nomeEnsaio.toLowerCase().includes(k)) return base + '\nExtraia: ' + v;
+  }
+  return base + '\nExtraia todos os valores numéricos e textuais encontrados.';
+}
+
+function renderResultadosIA(dados, nomeEnsaio, textoRaw) {
+  const campos = Object.entries(dados);
+  if (campos.length === 0) return `<div style="padding:12px"><div style="font-size:11px;color:var(--warn);font-weight:600;margin-bottom:8px">⚠️ Não foi possível extrair dados estruturados. Revise abaixo:</div><div style="font-size:11px;color:var(--text-2);background:var(--surface-2);padding:8px;border-radius:var(--r-sm);white-space:pre-wrap">${textoRaw}</div></div>`;
+  return `<div style="padding:12px"><div style="font-size:11px;font-weight:700;color:var(--ok);margin-bottom:10px">✅ ${campos.length} campos extraídos pela IA — revise antes de salvar</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">${campos.map(([k,v])=>`<div style="background:var(--surface-2);border-radius:var(--r-sm);padding:8px 10px;border:1px solid var(--border)"><label style="font-size:9.5px;color:var(--text-3);text-transform:uppercase;font-weight:600;display:block;margin-bottom:4px">${k.replace(/_/g,' ')}</label><input class="field-input" id="ia-${k}" value="${v}" style="padding:6px 8px;font-size:12px"></div>`).join('')}</div><button class="btn btn-teal btn-sm" onclick="salvarResultadoIA()">✓ Confirmar e Salvar</button><p style="font-size:10.5px;color:var(--text-3);margin-top:6px">Campos incorretos podem ser editados acima antes de confirmar.</p></div>`;
+}
+
+async function salvarResultadoIA() {
+  const dados = {};
+  document.querySelectorAll('[id^="ia-"]').forEach(inp => { dados[inp.id.replace('ia-','')] = inp.value; });
+  await salvarResultadoEnsaio(window._ensaioOsAtivo, window._nomeEnsaioAtivo, dados);
+}
+
+function cabecalhoForm(titulo, codigo, norma) {
+  return `<div style="font-family:'Times New Roman',serif;border:1px solid #999;margin-bottom:14px;border-radius:4px;overflow:hidden"><div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f8f8f8;border-bottom:1px solid #ddd"><div><div style="font-size:12px;font-weight:bold">${titulo}</div><div style="font-size:9.5px;color:#666">${codigo} · ${norma||''} · Nova Rota do Oeste</div></div><div style="font-size:11px;font-weight:800;color:#283272">CNRO</div></div></div>`;
+}
+function fieldForm(label, id, type='text', placeholder='', opts='') {
+  if (type==='select') return `<div><label class="field-label">${label}</label><select class="field-select" id="${id}" ${opts}>${placeholder}</select></div>`;
+  return `<div><label class="field-label">${label}</label><input type="${type}" class="field-input" id="${id}" placeholder="${placeholder}" ${opts}></div>`;
+}
+function sectionTitle(txt) { return `<div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;padding:8px 0 6px;border-bottom:1px solid var(--border);margin-bottom:10px">${txt}</div>`; }
+
+function getFormularioEnsaio(nome) {
+  const n = nome.toLowerCase();
+  if (n.includes('marshall')) return formMarshall();
+  if (n.includes('compactação')||n.includes('compactacao')||n.includes('proctor')) return formProctor();
+  if (n.includes('isc')||n.includes('cbr')) return formCBR();
+  if (n.includes('granulométrica')||n.includes('granulometria')||n.includes('granulometrica')) return formGranulometria();
+  if (n.includes('compressão axial')||n.includes('compressao axial')) return formCompressaoConcreto();
+  if (n.includes('rice')||n.includes('máxima teórica')||n.includes('maxima teorica')) return formRice();
+  if (n.includes('betume')||n.includes('extração')||n.includes('extracao')) return formTeorBetume();
+  if (n.includes('densidade')&&(n.includes('cbuq')||n.includes('compactação pista'))) return formDensidadeCBUQ();
+  if (n.includes('in situ')||n.includes('frasco')) return formFrascoAreia();
+  if (n.includes('liquidez')||n.includes('plasticidade')) return formLimites();
+  if (n.includes('equivalência')||n.includes('equivalencia')) return formEquivalenciaAreia();
+  if (n.includes('penetração')||n.includes('penetracao')) return formPenetracao();
+  if (n.includes('amolecimento')) return formPontoAmolecimento();
+  if (n.includes('viscosidade')||n.includes('brookfield')) return formViscosidade();
+  if (n.includes('recuperação')||n.includes('recuperacao')) return formRecuperacaoElastica();
+  if (n.includes('ductilidade')) return formDuctilidade();
+  if (n.includes('módulo')||n.includes('modulo')) return formModuloResiliencia();
+  if (n.includes('tração')&&!n.includes('marshall')||n.includes('rtcd')||n.includes('diametral')) return formRTCD();
+  if (n.includes('dano')||n.includes('lottman')) return formDanoUmidade();
+  if (n.includes('fadiga')) return formFadiga();
+  if (n.includes('deformação')||n.includes('deformacao')||n.includes('permanente')) return formDeformacaoPermanente();
+  if (n.includes('benkelman')||n.includes('deflect')) return formVigaBenkelman();
+  if (n.includes('mancha')) return formManchaAreia();
+  if (n.includes('pêndulo')||n.includes('pendulo')||n.includes('britânico')) return formPenduloBritanico();
+  if (n.includes('graúdo')||n.includes('graudo')) return formDensidadeAgregado('graudo');
+  if (n.includes('miúdo')||n.includes('miudo')) return formDensidadeAgregado('miudo');
+  if (n.includes('índice de forma')||n.includes('indice de forma')) return formIndiceFoma();
+  return `<div class="empty-state"><strong>Formulário em desenvolvimento</strong><span>Use o upload de foto para este ensaio</span></div>`;
+}
+
+function formMarshall() { return cabecalhoForm('Ensaio Marshall','FR-IMOB-13','DNER ME 043')+sectionTitle('Identificação')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Código CP','m-cod','text','CP-001')}${fieldForm('Temperatura Compactação (°C)','m-temp','number','140')}${fieldForm('Traço / Projeto','m-traco','text','CBUQ Faixa C')}</div>`+sectionTitle('Densidades')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Gmb Obtido','m-gmb','number','')}${fieldForm('Gmm (RICE)','m-gmm','number','')}${fieldForm('Va (%)','m-va','number','')}${fieldForm('GC (%)','m-gc','number','')}</div>`+sectionTitle('Volumetria')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('VAM (%)','m-vam','number','')}${fieldForm('RBV (%)','m-rbv','number','')}${fieldForm('Teor Betume Projeto (%)','m-tb-proj','number','')}</div>`+sectionTitle('Estabilidade e Fluência')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Estabilidade (kgf)','m-estab','number','')}${fieldForm('Fluência (mm)','m-fluencia','number','')}${fieldForm('RT (MPa)','m-rt','number','')}</div>`+sectionTitle('Limites Especificados')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Estab. Mín. (kgf)','m-min-estab','number','500')}${fieldForm('Va Mín. (%)','m-min-va','number','3')}${fieldForm('Va Máx. (%)','m-max-va','number','8')}${fieldForm('RBV Mín. (%)','m-min-rbv','number','65')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('RBV Máx. (%)','m-max-rbv','number','82')}${fieldForm('GC Mín. (%)','m-min-gc','number','97')}${fieldForm('VAM Mín. (%)','m-min-vam','number','16')}</div>`; }
+
+function formProctor() { return cabecalhoForm('Ensaio de Compactação','FR-IMOB-32/55','ABNT NBR 7182')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Energia','p-energia','select','<option>Normal</option><option>Intermediário</option><option>Modificado</option>')}${fieldForm('Umidade Ótima (%)','p-wot','number','')}${fieldForm('Massa Esp. Seca Máx. (g/cm³)','p-dsmax','number','')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Umidade Natural (%)','p-wnat','number','')}${fieldForm('Grau de Compactação (%)','p-gc','number','')}${fieldForm('GC Mínimo Especificado (%)','p-min-gc','number','100')}</div>`; }
+
+function formCBR() { return cabecalhoForm('ISC / CBR','FR-IMOB-52','ABNT NBR 9895')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Energia','cbr-energia','select','<option>Normal</option><option>Intermediário</option><option>Modificado</option>')}${fieldForm('Umidade Moldagem (%)','cbr-wmold','number','')}${fieldForm('Massa Esp. Seca (g/cm³)','cbr-ds','number','')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Grau Compactação (%)','cbr-gc','number','')}${fieldForm('ISC (%)','cbr-isc','number','')}${fieldForm('Expansão (%)','cbr-exp','number','')}${fieldForm('ISC Mínimo Esp. (%)','cbr-min-isc','number','2')}</div>`; }
+
+function formGranulometria() { return cabecalhoForm('Análise Granulométrica','FR-IMOB-34','ABNT NBR 7181')+sectionTitle('Percentuais Passantes (%)')+`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px">${['2"','1"','3/4"','3/8"','Nº 4','Nº 10','Nº 40','Nº 200'].map((p,i)=>fieldForm('Peneira '+p,['gran-2pol','gran-1pol','gran-34pol','gran-38pol','gran-4','gran-10','gran-40','gran-200'][i],'number','')).join('')}</div>`+sectionTitle('Classificação')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Pedregulho (%)','gran-pedregulho','number','')}${fieldForm('Areia Grossa (%)','gran-ag','number','')}${fieldForm('Areia Fina (%)','gran-af','number','')}${fieldForm('Silte+Argila (%)','gran-fino','number','')}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Classificação HRB','gran-hrb','text','')}${fieldForm('Classificação SUCS','gran-sucs','text','')}</div>`; }
+
+function formCompressaoConcreto() { return cabecalhoForm('Resistência à Compressão — Concreto','FR-IMOB-50','ABNT NBR 5739')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Código / Nº CP','cc-cod','text','CP-C01')}${fieldForm('Data de Moldagem','cc-dt-mold','date','')}${fieldForm('Data de Rompimento','cc-dt-romp','date','')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Diâmetro (mm)','cc-diam','number','100')}${fieldForm('Altura (mm)','cc-altura','number','200')}${fieldForm('Fator de Correção','cc-fator','number','1.000')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Carga Ruptura (kN)','cc-carga','number','')}${fieldForm('fci Obtido (MPa)','cc-fci','number','')}${fieldForm('fck Projeto (MPa)','cc-fck','number','35')}${fieldForm('% Atingido','cc-pct','number','')}${fieldForm('Idade','cc-idade','select','<option>7 dias</option><option>14 dias</option><option selected>28 dias</option><option>Outros</option>')}</div>`; }
+
+function formRice() { return cabecalhoForm('Densidade Máx. Teórica (RICE)','FR-IMOB-10','ASTM D 2041')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Temperatura (°C)','rice-temp','number','25')}${fieldForm('Massa Amostra Seca (g)','rice-massa','number','')}${fieldForm('Gmm Obtido','rice-gmm','number','')}${fieldForm('Gmm Referência','rice-gmm-ref','number','')}</div>${fieldForm('Diferença (%)','rice-dif','number','')}`; }
+
+function formTeorBetume() { return cabecalhoForm('Teor de Betume','FR-IMOB-22','DNER ME 053')+`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Método','tb-metodo','select','<option>Rotarex</option><option>Soxhlet</option>')}${fieldForm('Teor Betume Projeto (%)','tb-proj','number','')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Massa Amostra (g)','tb-massa','number','')}${fieldForm('Massa Após Extração (g)','tb-massa-ap','number','')}${fieldForm('Teor Obtido (%)','tb-obtido','number','')}${fieldForm('Diferença (%)','tb-dif','number','')}</div>${fieldForm('Tolerância (%)','tb-tol','number','0.3')}`; }
+
+function formDensidadeCBUQ() { return cabecalhoForm('Densidade Aparente CBUQ','FR-IMOB-46','DNIT 108/2009')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Código CP','dc-cod','text','')}${fieldForm('KM','dc-km','text','')}${fieldForm('Faixa','dc-faixa','select','<option>F1</option><option>F2</option><option>Acostamento</option>')}${fieldForm('Posição','dc-pos','select','<option>LD</option><option>LE</option><option>EX</option>')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Camada','dc-camada','select','<option>CBUQ</option><option>Binder</option><option>Base</option>')}${fieldForm('Espessura Projeto (mm)','dc-esp-proj','number','')}${fieldForm('Espessura Medida (mm)','dc-esp-med','number','')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Gmb Obtido','dc-gmb','number','')}${fieldForm('Gmm Referência','dc-gmm','number','')}${fieldForm('Va (%)','dc-va','number','')}${fieldForm('GC (%)','dc-gc','number','')}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('GC Mín. Especificado (%)','dc-min-gc','number','97')}${fieldForm('Va Máx. Especificado (%)','dc-max-va','number','8')}</div>`; }
+
+function formFrascoAreia() { return cabecalhoForm('Massa Esp. Aparente in situ','FR-IMOB-35','DNER ME 092')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('KM','fa-km','text','')}${fieldForm('Posição','fa-pos','select','<option>LD</option><option>LE</option><option>EX</option>')}${fieldForm('Camada','fa-camada','text','')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Umidade Obtida (%)','fa-umid','number','')}${fieldForm('Massa Esp. Obtida (g/cm³)','fa-ds','number','')}${fieldForm('Massa Esp. Ref. Proctor','fa-ds-ref','number','')}${fieldForm('Grau Compactação (%)','fa-gc','number','')}</div>${fieldForm('GC Mínimo Especificado (%)','fa-min-gc','number','100')}`; }
+
+function formLimites() { return cabecalhoForm('Limites de Atterberg','FR-IMOB-32','ABNT NBR 6459/7180')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('LL (%)','ll-ll','number','')}${fieldForm('LP (%)','ll-lp','number','')}${fieldForm('IP (%)','ll-ip','number','')}${fieldForm('Classificação HRB','ll-hrb','text','')}</div>`; }
+
+function formEquivalenciaAreia() { return cabecalhoForm('Equivalência de Areia','FR-IMOB-08','ABNT NBR 12052')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Ref. Amostra','ea-ref','text','')}${fieldForm('Leitura Argila (mm)','ea-argila','number','')}${fieldForm('Leitura Areia (mm)','ea-areia','number','')}${fieldForm('EA (%)','ea-ea','number','')}${fieldForm('Mínimo Esp. (%)','ea-min','number','55')}</div>`; }
+
+function formPenetracao() { return cabecalhoForm('Penetração','FR-IMOB-40','ABNT NBR 6576')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Temperatura (°C)','pen-temp','number','25')}${fieldForm('Leitura 1','pen-l1','number','')}${fieldForm('Leitura 2','pen-l2','number','')}${fieldForm('Leitura 3','pen-l3','number','')}${fieldForm('Média (0,1mm)','pen-media','number','')}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Faixa Mínima','pen-min','number','')}${fieldForm('Faixa Máxima','pen-max','number','')}</div>`; }
+
+function formPontoAmolecimento() { return cabecalhoForm('Ponto de Amolecimento','FR-IMOB-40','ABNT NBR 6560')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Leitura 1 (°C)','pa-l1','number','')}${fieldForm('Leitura 2 (°C)','pa-l2','number','')}${fieldForm('Média (°C)','pa-media','number','')}${fieldForm('Mínimo Esp. (°C)','pa-min','number','')}${fieldForm('Máximo Esp. (°C)','pa-max','number','')}</div>`; }
+
+function formViscosidade() { return cabecalhoForm('Viscosidade Brookfield','FR-IMOB-28','ABNT NBR 15184')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('135°C (cP)','visc-135','number','')}${fieldForm('150°C (cP)','visc-150','number','')}${fieldForm('177°C (cP)','visc-177','number','')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Temp. Usinagem Rec. (°C)','visc-t-usin','number','')}${fieldForm('Temp. Compactação Rec. (°C)','visc-t-comp','number','')}${fieldForm('Fuso Especificado','visc-fuso','text','')}</div>`; }
+
+function formRecuperacaoElastica() { return cabecalhoForm('Recuperação Elástica','FR-IMOB-40','ABNT NBR 15086')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Temperatura (°C)','re-temp','number','25')}${fieldForm('Elongação (cm)','re-elong','number','')}${fieldForm('Recuperação Obtida (%)','re-rec','number','')}${fieldForm('Mínimo Esp. (%)','re-min','number','60')}</div>`; }
+
+function formDuctilidade() { return cabecalhoForm('Ductilidade','FR-IMOB-40','ABNT NBR 6293')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Temperatura (°C)','duc-temp','number','25')}${fieldForm('Velocidade (cm/min)','duc-vel','number','5')}${fieldForm('Ductilidade Obtida (cm)','duc-obtida','number','')}${fieldForm('Mínimo Esp. (cm)','duc-min','number','60')}</div>`; }
+
+function formModuloResiliencia() { return cabecalhoForm('Módulo de Resiliência','FR-IMOB-52','ABNT NBR 16018')+`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Tipo de Material','mr-mat','text','')}${fieldForm('Temperatura (°C)','mr-temp','number','25')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Tensão Confinante (kPa)','mr-conf','number','')}${fieldForm('Tensão Desvio (kPa)','mr-desv','number','')}${fieldForm('MR Obtido (MPa)','mr-mr','number','')}${fieldForm('Frequência (Hz)','mr-freq','number','1')}</div>${fieldForm('Modelo Utilizado','mr-modelo','text','k1.σd^k2')}`; }
+
+function formRTCD() { return cabecalhoForm('Resistência à Tração — RTCD','FR-IMOB-33','ABNT NBR 15087')+`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Código CP','rtcd-cod','text','')}${fieldForm('Tipo de Material','rtcd-mat','text','')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Diâmetro (mm)','rtcd-diam','number','100')}${fieldForm('Altura (mm)','rtcd-altura','number','63')}${fieldForm('Carga Ruptura (kN)','rtcd-carga','number','')}${fieldForm('RT Obtida (MPa)','rtcd-rt','number','')}${fieldForm('RT Mínima Esp. (MPa)','rtcd-min','number','')}</div>`; }
+
+function formDanoUmidade() { return cabecalhoForm('Dano por Umidade Induzida','FR-IMOB-17','AASHTO T 283')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('RT Não Condicionada (MPa)','du-rt-nc','number','')}${fieldForm('RT Condicionada (MPa)','du-rt-c','number','')}${fieldForm('RRT (%)','du-rrt','number','')}${fieldForm('Mínimo Esp. (%)','du-min','number','70')}</div>`; }
+
+function formFadiga() { return cabecalhoForm('Ensaio de Fadiga','FR-IMOB-FA','ABNT NBR 16272')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Código CP','fad-cod','text','')}${fieldForm('Temperatura (°C)','fad-temp','number','25')}${fieldForm('Frequência (Hz)','fad-freq','number','10')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Tensão Aplicada (MPa)','fad-tensao','number','')}${fieldForm('Nº Ciclos até Ruptura','fad-ciclos','number','')}${fieldForm('Vida de Fadiga Estimada (N)','fad-vida','number','')}</div>${fieldForm('Deformação Inicial (mm)','fad-def','number','')}`; }
+
+function formDeformacaoPermanente() { return cabecalhoForm('Deformação Permanente','FR-IMOB-DP','ABNT NBR 16354')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Código CP','dp-cod','text','')}${fieldForm('Temperatura (°C)','dp-temp','number','60')}${fieldForm('Tensão (kPa)','dp-tensao','number','450')}${fieldForm('Flow Number (ciclos)','dp-fn','number','')}${fieldForm('Deformação Permanente (%)','dp-def','number','')}</div>`; }
+
+function formVigaBenkelman() { return cabecalhoForm('Deflexões — Viga Benkelman','FR-IMOB-29','DNER ME 024')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('KM','vb-km','text','')}${fieldForm('Pista','vb-pista','select','<option>Norte</option><option>Sul</option><option>Marginal Norte</option><option>Marginal Sul</option>')}${fieldForm('Faixa','vb-faixa','select','<option>F1</option><option>F2</option><option>Acostamento</option>')}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Temperatura Ar (°C)','vb-t-ar','number','')}${fieldForm('Temperatura Pavimento (°C)','vb-t-pav','number','')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Leitura Inicial (mm)','vb-li','number','')}${fieldForm('Leitura Final (mm)','vb-lf','number','')}${fieldForm('Deflexão Obtida (0,01mm)','vb-def','number','')}${fieldForm('Deflexão Admissível','vb-adm','number','')}</div>${fieldForm('Deflexão Corrigida (0,01mm)','vb-def-cor','number','')}`; }
+
+function formManchaAreia() { return cabecalhoForm('Macrotextura — Mancha de Areia','FR-IMOB-30','ASTM E 965')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('KM','ma-km','text','')}${fieldForm('Pista','ma-pista','select','<option>Norte</option><option>Sul</option>')}${fieldForm('Faixa','ma-faixa','select','<option>F1</option><option>F2</option>')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Volume Areia (cm³)','ma-vol','number','25')}${fieldForm('Diâmetro 1 (mm)','ma-d1','number','')}${fieldForm('Diâmetro 2 (mm)','ma-d2','number','')}${fieldForm('Diâmetro Médio (mm)','ma-dm','number','')}${fieldForm('HMT (mm)','ma-hmt','number','')}</div>${fieldForm('HMT Mínima Esp. (mm)','ma-min','number','0.6')}`; }
+
+function formPenduloBritanico() { return cabecalhoForm('Pêndulo Britânico','FR-IMOB-49','ASTM E 303')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('KM','pb-km','text','')}${fieldForm('Pista','pb-pista','select','<option>Norte</option><option>Sul</option>')}${fieldForm('Faixa','pb-faixa','select','<option>F1</option><option>F2</option>')}</div>${fieldForm('Condição da Superfície','pb-cond','select','<option>Úmida</option><option>Seca</option>')}<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:10px;margin-bottom:10px">${['pb-l1','pb-l2','pb-l3','pb-l4','pb-l5'].map((id,i)=>fieldForm('Leitura '+(i+1),id,'number','')).join('')}${fieldForm('Média VRD','pb-media','number','')}</div>${fieldForm('Mínimo Especificado','pb-min','number','47')}`; }
+
+function formDensidadeAgregado(tipo) {
+  const isG = tipo==='graudo';
+  return cabecalhoForm(isG?'Dens. Agregado Graúdo':'Dens. Agregado Miúdo', isG?'FR-IMOB-06':'FR-IMOB-07', isG?'ABNT NBR NM 53':'ABNT NBR NM 52')+`<div style="display:grid;grid-template-columns:${isG?'1fr 1fr 1fr':'1fr 1fr'};gap:10px;margin-bottom:10px">${fieldForm('Massa Seca (g)','dag-ms','number','')}${fieldForm('Massa Saturada (g)','dag-msat','number','')}${isG?fieldForm('Massa Submersa (g)','dag-msub','number',''):''}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Dens. Real','dag-dr','number','')}${fieldForm('Dens. Aparente','dag-da','number','')}${fieldForm('Dens. Efetiva','dag-de','number','')}${fieldForm('Absorção (%)','dag-abs','number','')}</div>`;
+}
+
+function formIndiceFoma() { return cabecalhoForm('Índice de Forma','FR-IMOB-31/37','DNER ME 086')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Método','if-met','select','<option>Crivos</option><option>Paquímetro</option>')}${fieldForm('Massa Total (g)','if-mt','number','')}${fieldForm('Massa Lamelar (g)','if-ml','number','')}${fieldForm('Índice de Forma (%)','if-if','number','')}</div>${fieldForm('Máximo Especificado (%)','if-max','number','35')}`; }
+
+async function salvarFormularioEnsaio() {
+  const ensaioOsId = window._ensaioOsAtivo;
+  const nomeEnsaio = window._nomeEnsaioAtivo || '';
+  if (!ensaioOsId) return;
+  const get = id => { const el = document.getElementById(id); if (!el) return null; const v = el.value; if (v===''||v===null) return null; return isNaN(v)?v:Number(v); };
+  const n = nomeEnsaio.toLowerCase();
+  let tabela = '', dados = {};
+  if (n.includes('marshall')) { tabela='resultado_marshall'; dados={gmb_obtido:get('m-gmb'),gmm_referencia:get('m-gmm'),va_pct:get('m-va'),vam_pct:get('m-vam'),rbv_pct:get('m-rbv'),grau_compactacao_pct:get('m-gc'),estabilidade_kgf:get('m-estab'),fluencia_mm:get('m-fluencia'),resistencia_tracao_mpa:get('m-rt'),temperatura_compactacao_c:get('m-temp'),teor_betume_projeto_pct:get('m-tb-proj'),min_estabilidade_kgf:get('m-min-estab'),min_va_pct:get('m-min-va'),max_va_pct:get('m-max-va'),min_rbv_pct:get('m-min-rbv'),max_rbv_pct:get('m-max-rbv'),min_gc_pct:get('m-min-gc'),min_vam_pct:get('m-min-vam')}; }
+  else if (n.includes('compactação')||n.includes('proctor')) { tabela='resultado_proctor'; dados={energia:get('p-energia'),umidade_otima_pct:get('p-wot'),massa_esp_seca_max:get('p-dsmax'),umidade_natural_pct:get('p-wnat'),grau_compactacao_pct:get('p-gc'),minimo_gc_especificado:get('p-min-gc')}; }
+  else if (n.includes('isc')||n.includes('cbr')) { tabela='resultado_cbr'; dados={energia:get('cbr-energia'),umidade_moldagem_pct:get('cbr-wmold'),massa_esp_seca:get('cbr-ds'),grau_compactacao_pct:get('cbr-gc'),isc_pct:get('cbr-isc'),expansao_pct:get('cbr-exp'),minimo_isc_especificado:get('cbr-min-isc')}; }
+  else if (n.includes('granulométrica')||n.includes('granulometria')) { tabela='resultado_granulometria'; dados={p_2pol_pct:get('gran-2pol'),p_1pol_pct:get('gran-1pol'),p_34pol_pct:get('gran-34pol'),p_38pol_pct:get('gran-38pol'),p_4_pct:get('gran-4'),p_10_pct:get('gran-10'),p_40_pct:get('gran-40'),p_200_pct:get('gran-200'),pedregulho_pct:get('gran-pedregulho'),areia_grossa_pct:get('gran-ag'),areia_fina_pct:get('gran-af'),silte_argila_pct:get('gran-fino'),classificacao_hrb:get('gran-hrb'),classificacao_sucs:get('gran-sucs')}; }
+  else if (n.includes('compressão axial')) { tabela='resultado_compressao_concreto'; dados={codigo_cp:get('cc-cod'),data_moldagem:get('cc-dt-mold'),data_rompimento:get('cc-dt-romp'),diametro_mm:get('cc-diam'),altura_mm:get('cc-altura'),fator_correcao:get('cc-fator'),carga_ruptura_kn:get('cc-carga'),fci_obtido_mpa:get('cc-fci'),fck_projeto_mpa:get('cc-fck'),percentual_atingido_pct:get('cc-pct')}; }
+  else if (n.includes('rice')) { tabela='resultado_rice'; dados={temperatura_c:get('rice-temp'),massa_amostra_seca_g:get('rice-massa'),gmm_obtido:get('rice-gmm'),gmm_referencia:get('rice-gmm-ref'),diferenca_pct:get('rice-dif')}; }
+  else if (n.includes('betume')||n.includes('extração')) { tabela='resultado_teor_betume'; dados={metodo:get('tb-metodo'),massa_amostra_g:get('tb-massa'),massa_apos_extracao_g:get('tb-massa-ap'),teor_obtido_pct:get('tb-obtido'),teor_projeto_pct:get('tb-proj'),tolerancia_pct:get('tb-tol'),diferenca_pct:get('tb-dif')}; }
+  else if (n.includes('in situ')||n.includes('frasco')) { tabela='resultado_frasco_areia'; dados={km:get('fa-km'),posicao:get('fa-pos'),camada:get('fa-camada'),umidade_obtida_pct:get('fa-umid'),massa_esp_obtida:get('fa-ds'),massa_esp_ref_proctor:get('fa-ds-ref'),grau_compactacao_pct:get('fa-gc'),minimo_gc_especificado:get('fa-min-gc')}; }
+  else if (n.includes('liquidez')||n.includes('plasticidade')) { tabela='resultado_limites_atterberg'; dados={ll_pct:get('ll-ll'),lp_pct:get('ll-lp'),ip_pct:get('ll-ip'),classificacao_hrb:get('ll-hrb')}; }
+  else if (n.includes('equivalência')) { tabela='resultado_equivalencia_areia'; dados={amostra_ref:get('ea-ref'),leitura_argila_mm:get('ea-argila'),leitura_areia_mm:get('ea-areia'),ea_pct:get('ea-ea'),minimo_especificado_pct:get('ea-min')}; }
+  else if (n.includes('penetração')) { tabela='resultado_penetracao'; dados={temperatura_c:get('pen-temp'),leitura_1:get('pen-l1'),leitura_2:get('pen-l2'),leitura_3:get('pen-l3'),penetracao_media:get('pen-media'),faixa_minima:get('pen-min'),faixa_maxima:get('pen-max')}; }
+  else if (n.includes('amolecimento')) { tabela='resultado_ponto_amolecimento'; dados={leitura_1_c:get('pa-l1'),leitura_2_c:get('pa-l2'),media_c:get('pa-media'),minimo_especificado_c:get('pa-min'),maximo_especificado_c:get('pa-max')}; }
+  else if (n.includes('viscosidade')) { tabela='resultado_viscosidade'; dados={viscosidade_135c_cp:get('visc-135'),viscosidade_150c_cp:get('visc-150'),viscosidade_177c_cp:get('visc-177'),temp_usinagem_c:get('visc-t-usin'),temp_compactacao_c:get('visc-t-comp'),fuso_especificado:get('visc-fuso')}; }
+  else if (n.includes('recuperação')) { tabela='resultado_recuperacao_elastica'; dados={temperatura_c:get('re-temp'),elongacao_cm:get('re-elong'),recuperacao_obtida_pct:get('re-rec'),minimo_especificado_pct:get('re-min')}; }
+  else if (n.includes('ductilidade')) { tabela='resultado_ductilidade'; dados={temperatura_c:get('duc-temp'),velocidade_cm_min:get('duc-vel'),ductilidade_obtida_cm:get('duc-obtida'),minimo_especificado_cm:get('duc-min')}; }
+  else if (n.includes('módulo')||n.includes('resiliência')) { tabela='resultado_modulo_resiliencia'; dados={tipo_material:get('mr-mat'),temperatura_c:get('mr-temp'),tensao_confinante_kpa:get('mr-conf'),tensao_desvio_kpa:get('mr-desv'),modulo_mr_mpa:get('mr-mr'),frequencia_hz:get('mr-freq'),modelo_utilizado:get('mr-modelo')}; }
+  else if (n.includes('tração')||n.includes('rtcd')) { tabela='resultado_rtcd'; dados={tipo_material:get('rtcd-mat'),codigo_cp:get('rtcd-cod'),diametro_mm:get('rtcd-diam'),altura_mm:get('rtcd-altura'),carga_ruptura_kn:get('rtcd-carga'),rt_obtida_mpa:get('rtcd-rt'),rt_minima_especificada:get('rtcd-min')}; }
+  else if (n.includes('dano')||n.includes('lottman')) { tabela='resultado_dano_umidade'; dados={rt_nao_condicionada_mpa:get('du-rt-nc'),rt_condicionada_mpa:get('du-rt-c'),rrt_pct:get('du-rrt'),minimo_rrt_especificado:get('du-min')}; }
+  else if (n.includes('fadiga')) { tabela='resultado_fadiga'; dados={codigo_cp:get('fad-cod'),temperatura_c:get('fad-temp'),frequencia_hz:get('fad-freq'),tensao_aplicada_mpa:get('fad-tensao'),n_ciclos_ruptura:get('fad-ciclos'),vida_fadiga_estimada_n:get('fad-vida'),deformacao_inicial_mm:get('fad-def')}; }
+  else if (n.includes('deformação')||n.includes('permanente')) { tabela='resultado_deformacao_permanente'; dados={codigo_cp:get('dp-cod'),temperatura_c:get('dp-temp'),tensao_kpa:get('dp-tensao'),flow_number_ciclos:get('dp-fn'),deformacao_permanente_pct:get('dp-def')}; }
+  else if (n.includes('benkelman')) { tabela='resultado_viga_benkelman'; dados={km:get('vb-km'),pista:get('vb-pista'),faixa:get('vb-faixa'),temperatura_ar_c:get('vb-t-ar'),temperatura_pavimento_c:get('vb-t-pav'),leitura_inicial_mm:get('vb-li'),leitura_final_mm:get('vb-lf'),deflexao_obtida_001mm:get('vb-def'),deflexao_corrigida_001mm:get('vb-def-cor'),deflexao_admissivel_001mm:get('vb-adm')}; }
+  else if (n.includes('mancha')) { tabela='resultado_mancha_areia'; dados={km:get('ma-km'),pista:get('ma-pista'),faixa:get('ma-faixa'),volume_areia_cm3:get('ma-vol'),diametro_1_mm:get('ma-d1'),diametro_2_mm:get('ma-d2'),diametro_medio_mm:get('ma-dm'),hmt_mm:get('ma-hmt'),minimo_hmt_especificado:get('ma-min')}; }
+  else if (n.includes('pêndulo')||n.includes('pendulo')) { tabela='resultado_pendulo_britanico'; dados={km:get('pb-km'),pista:get('pb-pista'),faixa:get('pb-faixa'),condicao_superficie:get('pb-cond'),leitura_1:get('pb-l1'),leitura_2:get('pb-l2'),leitura_3:get('pb-l3'),leitura_4:get('pb-l4'),leitura_5:get('pb-l5'),media_vrd:get('pb-media'),minimo_especificado:get('pb-min')}; }
+  else if (n.includes('graúdo')||n.includes('graudo')) { tabela='resultado_densidade_agregado_graudo'; dados={massa_seca_g:get('dag-ms'),massa_saturada_g:get('dag-msat'),massa_submersa_g:get('dag-msub'),densidade_real:get('dag-dr'),densidade_aparente:get('dag-da'),densidade_efetiva:get('dag-de'),absorcao_pct:get('dag-abs')}; }
+  else if (n.includes('miúdo')||n.includes('miudo')) { tabela='resultado_densidade_agregado_miudo'; dados={massa_seca_g:get('dag-ms'),massa_saturada_g:get('dag-msat'),densidade_real:get('dag-dr'),densidade_aparente:get('dag-da'),densidade_efetiva:get('dag-de'),absorcao_pct:get('dag-abs')}; }
+  else if (n.includes('índice de forma')||n.includes('forma')) { tabela='resultado_indice_forma'; dados={metodo:get('if-met'),massa_total_g:get('if-mt'),massa_lamelar_g:get('if-ml'),indice_forma_pct:get('if-if'),maximo_especificado_pct:get('if-max')}; }
+  else if (n.includes('densidade')&&n.includes('cbuq')) { tabela='resultado_densidade_cbuq'; dados={codigo_cp:get('dc-cod'),km:get('dc-km'),faixa:get('dc-faixa'),posicao:get('dc-pos'),camada:get('dc-camada'),espessura_projeto_mm:get('dc-esp-proj'),espessura_medida_mm:get('dc-esp-med'),gmb_obtido:get('dc-gmb'),gmm_referencia:get('dc-gmm'),va_pct:get('dc-va'),grau_compactacao_pct:get('dc-gc'),min_gc_especificado:get('dc-min-gc'),max_va_especificado:get('dc-max-va')}; }
+
+  if (!tabela) { toast('Tipo de ensaio não mapeado — use upload de foto', 'warn'); return; }
+  await salvarResultadoEnsaio(ensaioOsId, nomeEnsaio, dados, tabela);
+}
+
+async function salvarResultadoEnsaio(ensaioOsId, nomeEnsaio, dados, tabela) {
+  try {
+    const { data: resBase, error: errBase } = await sb.from('resultados').insert({ ensaio_os_id:ensaioOsId, assistente_id:APP.profile.id, status:'aguardando_revisao', conformidade:'Pendente', data_execucao:new Date().toISOString().slice(0,10) }).select().single();
+    if (errBase) throw errBase;
+    if (tabela && Object.keys(dados).length > 0) {
+      dados.resultado_id = resBase.id;
+      const { error: errDados } = await sb.from(tabela).insert(dados);
+      if (errDados) console.warn('Dados específicos:', errDados.message);
+    }
+    await sb.from('ensaios_os').update({ status:'aguardando_revisao', resultado_id:resBase.id, data_conclusao:new Date().toISOString() }).eq('id', ensaioOsId);
+    toast('✅ Resultado salvo e enviado para revisão!', 'ok');
+    closeModal('modal-form-ensaio');
+    closeModal('modal-upload-foto');
+    await renderAssistente(document.getElementById('main-content'));
+  } catch(err) {
+    toast('Erro ao salvar: ' + err.message, 'danger');
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MÓDULO GESTOR
+   ────────────────────────────────────────────────────────────── */
+async function renderGestor(el) {
+  el.innerHTML = `
+  <div style="margin-bottom:18px">
+    <h2 style="font-size:17px;font-weight:800;color:var(--navy)">Configurações do Sistema</h2>
+    <p style="font-size:11.5px;color:var(--text-3);margin-top:2px">Gerencie usuários, ensaios e fichas</p>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:24px">
+    ${[
+      {icon:'👥', label:'Usuários', sub:'Cadastros e perfis', fn:'gestorUsuarios'},
+      {icon:'🔬', label:'Catálogo de Ensaios', sub:'Tipos e categorias', fn:'gestorEnsaios'},
+      {icon:'📋', label:'Fichas ISO 9001', sub:'Templates e mapeamentos', fn:'gestorFichas'},
+      {icon:'🏗️', label:'Empresas e Lotes', sub:'Configurações de lote', fn:'gestorEmpresas'},
+      {icon:'⚙️', label:'Parâmetros', sub:'Configurações gerais', fn:'gestorParams'},
+    ].map(g=>`
+      <div class="card" style="cursor:pointer;transition:box-shadow .15s" onclick="${g.fn}()" onmouseover="this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.boxShadow='var(--shadow-sm)'">
+        <div class="card-body" style="display:flex;align-items:center;gap:14px;padding:18px">
+          <div style="font-size:28px;flex-shrink:0">${g.icon}</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text)">${g.label}</div>
+            <div style="font-size:11px;color:var(--text-3);margin-top:2px">${g.sub}</div>
+          </div>
+        </div>
+      </div>
+    `).join('')}
+  </div>
+  <div id="gestor-sub-content"></div>`;
+}
+
+async function gestorUsuarios() {
+  const { data } = await sb.from('usuarios').select('*').order('nome');
+  const el = document.getElementById('gestor-sub-content');
+  el.innerHTML = `
+  <div class="section-title">Usuários Cadastrados</div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+    <button class="btn btn-teal btn-sm" onclick="openNovoUsuario()">+ Novo Usuário</button>
+  </div>
+  <div class="card">
+    <table class="data-table">
+      <thead><tr>
+        <th>Nome</th><th>Perfil</th><th>Empresa / Lote</th><th>E-mail</th><th>Status</th><th></th>
+      </tr></thead>
+      <tbody>
+        ${(data||[]).map(u=>`
+          <tr>
+            <td><strong>${u.nome}</strong><br><span style="font-size:10.5px;color:var(--text-3)">${u.cargo||''}</span></td>
+            <td><span class="perfil-badge perfil-${u.perfil}">${u.perfil}</span></td>
+            <td style="font-size:11.5px">${u.empresa||'—'}${u.lote?' · Lote '+u.lote:''}</td>
+            <td style="font-size:11.5px">${u.email||''}</td>
+            <td><span class="status ${u.status==='Ativo'?'status-concluido':'status-cancelado'}">${u.status}</span></td>
+            <td><button class="btn btn-ghost btn-sm" onclick="editarUsuario('${u.id}')">Editar</button></td>
+          </tr>
+        `).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-3);padding:24px">Nenhum usuário cadastrado</td></tr>'}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+async function gestorEnsaios() {
+  const { data } = await sb.from('ensaios').select('*').order('categoria').order('ordem');
+  const el = document.getElementById('gestor-sub-content');
+  const cats = [...new Set((data||[]).map(e=>e.categoria))];
+
+  el.innerHTML = `
+  <div class="section-title">Catálogo de Ensaios</div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+    <button class="btn btn-teal btn-sm" onclick="openNovoEnsaio()">+ Novo Ensaio</button>
+  </div>
+  ${cats.map(cat => `
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-header">
+        <span class="card-title">${cat}</span>
+        <span class="tag tag-${cat.toLowerCase().split('/')[0].trim()}">${(data||[]).filter(e=>e.categoria===cat).length} ensaios</span>
+      </div>
+      <table class="data-table">
+        <tbody>
+          ${(data||[]).filter(e=>e.categoria===cat).map(e=>`
+            <tr>
+              <td><strong>${e.nome}</strong></td>
+              <td style="font-size:11px;color:var(--text-3)">${e.norma||'—'}</td>
+              <td><span class="status ${e.ativo?'status-concluido':'status-cancelado'}">${e.ativo?'Ativo':'Inativo'}</span></td>
+              <td><button class="btn btn-ghost btn-sm">Editar</button></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `).join('') || '<div class="empty-state"><strong>Nenhum ensaio cadastrado</strong></div>'}`;
+}
+
+function gestorFichas() {
+  document.getElementById('gestor-sub-content').innerHTML = `
+  <div class="section-title">Fichas ISO 9001</div>
+  <div class="card"><div class="card-body">
+    <p style="color:var(--text-2);font-size:13px;margin-bottom:14px">Upload dos templates Excel das fichas homologadas (55 fichas).</p>
+    <div class="upload-area" onclick="document.getElementById('ficha-upload').click()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Arraste ou clique para selecionar fichas Excel
+      <input type="file" id="ficha-upload" accept=".xlsx,.xls" multiple style="display:none">
+    </div>
+    <p style="font-size:11px;color:var(--text-3);margin-top:10px">⚠️ Os arquivos Excel originais são preservados sem alteração (ISO 9001).</p>
+  </div></div>`;
+}
+
+function gestorEmpresas() {
+  document.getElementById('gestor-sub-content').innerHTML = `
+  <div class="section-title">Empresas e Lotes</div>
+  <div class="card"><div class="card-body">
+    <div class="empty-state"><strong>Em desenvolvimento</strong><span>Módulo de configuração de empresas e lotes</span></div>
+  </div></div>`;
+}
+
+function gestorParams() {
+  document.getElementById('gestor-sub-content').innerHTML = `
+  <div class="section-title">Parâmetros do Sistema</div>
+  <div class="card"><div class="card-body">
+    <div class="empty-state"><strong>Em desenvolvimento</strong><span>Configurações gerais do sistema</span></div>
+  </div></div>`;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MÓDULO ADMIN (DEV)
+   ────────────────────────────────────────────────────────────── */
+async function renderAdmin(el) {
+  el.innerHTML = `
+  <div style="margin-bottom:18px">
+    <h2 style="font-size:17px;font-weight:800;color:var(--navy)">Admin / DEV</h2>
+    <p style="font-size:11.5px;color:var(--text-3);margin-top:2px">Ferramentas de desenvolvedor e configuração inicial</p>
+  </div>
+  <div class="card" style="margin-bottom:16px;border:2px solid #FCA5A5">
+    <div class="card-header" style="background:var(--danger-bg)">
+      <span class="card-title" style="color:var(--danger)">⚠️ Configuração Inicial do Banco</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:12.5px;color:var(--text-2);margin-bottom:14px">Execute os scripts SQL abaixo no Supabase para criar as tabelas necessárias. Faça isso apenas uma vez.</p>
+      <button class="btn btn-danger" onclick="mostrarSQLSetup()">Ver SQL de Setup</button>
+    </div>
+  </div>
+  <div id="sql-content"></div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Seed — Dados Iniciais</span></div>
+    <div class="card-body">
+      <p style="font-size:12px;color:var(--text-2);margin-bottom:12px">Após criar as tabelas, insira os dados iniciais (ensaios padrão, etc.)</p>
+      <button class="btn btn-navy btn-sm" onclick="seedEnsaios()">Inserir Ensaios Padrão</button>
+    </div>
+  </div>`;
+}
+
+function mostrarSQLSetup() {
+  const sql = `
+-- ============================================================
+-- CNRO LAB SYSTEM — SQL SETUP (Execute no Supabase SQL Editor)
+-- ============================================================
+
+-- TABELA: usuarios
+CREATE TABLE IF NOT EXISTS usuarios (
+  id          UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  auth_id     UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  nome        TEXT NOT NULL,
+  cargo       TEXT,
+  perfil      TEXT NOT NULL CHECK (perfil IN ('DEV','GESTOR','LAB','ASSIST','CAMPO')),
+  email       TEXT UNIQUE NOT NULL,
+  empresa     TEXT,
+  lote        TEXT,
+  assinatura_url  TEXT,
+  foto_url        TEXT,
+  status      TEXT DEFAULT 'Ativo' CHECK (status IN ('Ativo','Inativo')),
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+ALTER TABLE usuarios ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "usuarios_select" ON usuarios FOR SELECT USING (true);
+CREATE POLICY "usuarios_insert" ON usuarios FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY "usuarios_update" ON usuarios FOR UPDATE USING (auth.uid() = auth_id OR EXISTS (SELECT 1 FROM usuarios u WHERE u.auth_id = auth.uid() AND u.perfil IN ('DEV','GESTOR')));
+
+-- TABELA: ensaios (catálogo)
+CREATE TABLE IF NOT EXISTS ensaios (
+  id          UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  nome        TEXT NOT NULL,
+  categoria   TEXT NOT NULL,
+  norma       TEXT,
+  ordem       INT DEFAULT 0,
+  ativo       BOOLEAN DEFAULT true,
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+ALTER TABLE ensaios ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "ensaios_select" ON ensaios FOR SELECT USING (true);
+CREATE POLICY "ensaios_manage" ON ensaios FOR ALL USING (EXISTS (SELECT 1 FROM usuarios u WHERE u.auth_id = auth.uid() AND u.perfil IN ('DEV','GESTOR')));
+
+-- TABELA: pedidos_ensaio
+CREATE TABLE IF NOT EXISTS pedidos_ensaio (
+  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  numero_pe       TEXT,
+  numero_os       TEXT,
+  sequencial      INT,
+  ano             INT,
+  status          TEXT DEFAULT 'aguardando_lab',
+  material        TEXT,
+  solicitante_id  UUID REFERENCES usuarios(id),
+  empresa         TEXT,
+  lote            TEXT,
+  dados_amostra   JSONB DEFAULT '{}',
+  ensaios_ids     TEXT[] DEFAULT '{}',
+  observacoes     TEXT,
+  motivo_devolucao TEXT,
+  aberto_por      UUID REFERENCES usuarios(id),
+  aberto_em       TIMESTAMPTZ,
+  finalizado_por  UUID REFERENCES usuarios(id),
+  finalizado_em   TIMESTAMPTZ,
+  visibilidade_campo JSONB DEFAULT '{}',
+  historico       JSONB DEFAULT '[]',
+  created_at      TIMESTAMPTZ DEFAULT now(),
+  updated_at      TIMESTAMPTZ DEFAULT now()
+);
+ALTER TABLE pedidos_ensaio ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "pe_select" ON pedidos_ensaio FOR SELECT USING (true);
+CREATE POLICY "pe_insert" ON pedidos_ensaio FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY "pe_update" ON pedidos_ensaio FOR UPDATE USING (auth.uid() IS NOT NULL);
+
+-- TABELA: ensaios_os (ensaios individuais de uma O.S.)
+CREATE TABLE IF NOT EXISTS ensaios_os (
+  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  pedido_id       UUID REFERENCES pedidos_ensaio(id) ON DELETE CASCADE,
+  ensaio_id       UUID REFERENCES ensaios(id),
+  nome_ensaio     TEXT,
+  assistente_id   UUID REFERENCES usuarios(id),
+  status          TEXT DEFAULT 'pendente',
+  modo_preenchi   TEXT DEFAULT 'digital' CHECK (modo_preenchi IN ('digital','upload')),
+  dados_resultado JSONB DEFAULT '{}',
+  arquivo_url     TEXT,
+  visivel_campo   BOOLEAN DEFAULT false,
+  devolvido_motivo TEXT,
+  created_at      TIMESTAMPTZ DEFAULT now()
+);
+ALTER TABLE ensaios_os ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "ensaios_os_select" ON ensaios_os FOR SELECT USING (true);
+CREATE POLICY "ensaios_os_all"    ON ensaios_os FOR ALL USING (auth.uid() IS NOT NULL);
+
+-- FUNÇÃO: atualizar updated_at automaticamente
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS \$\$ BEGIN NEW.updated_at = now(); RETURN NEW; END; \$\$ LANGUAGE plpgsql;
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON pedidos_ensaio FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  `.trim();
+
+  document.getElementById('sql-content').innerHTML = `
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-header">
+      <span class="card-title">SQL de Setup — Cole no Supabase SQL Editor</span>
+      <button class="btn btn-ghost btn-sm" onclick="copiarSQL()">Copiar</button>
+    </div>
+    <div class="card-body">
+      <pre id="sql-pre" style="font-size:10.5px;color:var(--text-2);background:var(--surface-2);padding:14px;border-radius:var(--r-sm);overflow-x:auto;white-space:pre-wrap;border:1px solid var(--border);line-height:1.6;max-height:400px;overflow-y:auto">${sql}</pre>
+    </div>
+  </div>`;
+  window._sqlSetup = sql;
+}
+
+function copiarSQL() {
+  if (!window._sqlSetup) return;
+  navigator.clipboard.writeText(window._sqlSetup).then(() => toast('SQL copiado!', 'ok'));
+}
+
+async function seedEnsaios() {
+  const ensaiosPadrao = [
+    // SOLOS
+    {nome:'Granulometria por Peneiramento', categoria:'Solos', norma:'ABNT NBR 7181', ordem:1},
+    {nome:'Limite de Liquidez (LL)', categoria:'Solos', norma:'ABNT NBR 6459', ordem:2},
+    {nome:'Limite de Plasticidade (LP)', categoria:'Solos', norma:'ABNT NBR 7180', ordem:3},
+    {nome:'Proctor Normal (CBR)', categoria:'Solos', norma:'ABNT NBR 7182', ordem:4},
+    {nome:'ISC (CBR)', categoria:'Solos', norma:'ABNT NBR 9895', ordem:5},
+    {nome:'Mini-MCV', categoria:'Solos', norma:'DNER ME 258', ordem:6},
+    // CONCRETO
+    {nome:'Resistência à Compressão (CP)', categoria:'Concreto', norma:'ABNT NBR 5739', ordem:1},
+    {nome:'Resistência à Tração (RTCD)', categoria:'Concreto', norma:'ABNT NBR 7222', ordem:2},
+    {nome:'Abatimento (Slump)', categoria:'Concreto', norma:'ABNT NBR NM 67', ordem:3},
+    // ASFALTO / MASSA
+    {nome:'Marshall (Estabilidade e Fluência)', categoria:'Asfalto/Massa', norma:'DNER ME 043', ordem:1},
+    {nome:'Teor de Betume por Centrifugação', categoria:'Asfalto/Massa', norma:'DNER ME 053', ordem:2},
+    {nome:'Granulometria de Mistura Asfáltica', categoria:'Asfalto/Massa', norma:'DNER ME 083', ordem:3},
+    {nome:'Densidade RICE (Gmm)', categoria:'Asfalto/Massa', norma:'ASTM D 2041', ordem:4},
+    {nome:'Vazios (Va)', categoria:'Asfalto/Massa', norma:'DNER ME 117', ordem:5},
+    {nome:'RBV (Relação Betume/Vazios)', categoria:'Asfalto/Massa', norma:'DNER ME 117', ordem:6},
+    // ASFALTO / LIGANTE
+    {nome:'Penetração', categoria:'Asfalto/Ligante', norma:'ABNT NBR 6576', ordem:1},
+    {nome:'Ponto de Amolecimento', categoria:'Asfalto/Ligante', norma:'ABNT NBR 6560', ordem:2},
+    {nome:'Viscosidade Saybolt-Furol', categoria:'Asfalto/Ligante', norma:'ABNT NBR 14950', ordem:3},
+    // CPs
+    {nome:'Resistência à Compressão (CP Asfáltico)', categoria:'CPs/Extração', norma:'ABNT NBR 16505', ordem:1},
+    {nome:'RTCD (CP Extraído)', categoria:'CPs/Extração', norma:'ABNT NBR 15087', ordem:2},
+    {nome:'Espessura de Camada', categoria:'CPs/Extração', norma:'DNIT 108/2009', ordem:3},
+    {nome:'Densidade Aparente (Gmb)', categoria:'CPs/Extração', norma:'DNER ME 117', ordem:4},
+  ];
+
+  const { error } = await sb.from('ensaios').upsert(ensaiosPadrao, { onConflict: 'nome,categoria' });
+  if (error) { toast('Erro ao inserir ensaios: '+error.message, 'danger'); return; }
+  toast('Ensaios padrão inseridos com sucesso!', 'ok');
+}
+
+/* ──────────────────────────────────────────────────────────────
+   HISTÓRICO
+   ────────────────────────────────────────────────────────────── */
+async function renderHistorico(el) {
+  const isLab = ['DEV','GESTOR','LAB'].includes(APP.profile.perfil);
+  el.innerHTML = `
+  <div style="margin-bottom:18px">
+    <h2 style="font-size:17px;font-weight:800;color:var(--navy)">${isLab ? 'Histórico de O.S.' : 'Meus Pedidos'}</h2>
+    <p style="font-size:11.5px;color:var(--text-3);margin-top:2px">Consulte pedidos e acompanhe o status</p>
+  </div>
+  <div class="filter-bar">
+    <input class="field-input" placeholder="Buscar PE, material…" id="hist-search" oninput="filtrarHistorico()" style="max-width:240px">
+    <select class="field-select" id="hist-status-filter" onchange="filtrarHistorico()" style="max-width:180px">
+      <option value="">Todos os status</option>
+      <option value="aguardando_lab">Aguardando Lab</option>
+      <option value="em_andamento">Em Andamento</option>
+      <option value="aguardando_revisao">Aguard. Revisão</option>
+      <option value="devolvido_campo">Devolvido — Campo</option>
+      <option value="concluido">Concluído</option>
+      <option value="cancelado">Cancelado</option>
+    </select>
+  </div>
+  <div id="historico-list">
+    <div class="empty-state"><div class="loading-spin" style="width:24px;height:24px;border-width:2px"></div></div>
+  </div>`;
+
+  let query = sb.from('pedidos_ensaio')
+    .select('*, solicitante:usuarios!pedidos_ensaio_solicitante_id_fkey(nome)')
+    .order('created_at', { ascending: true })
+    .limit(100);
+  if (!isLab) query = query.eq('solicitante_id', APP.profile.id);
+
+  const { data } = await query;
+  window._histData = data || [];
+  const histEl = document.getElementById('historico-list');
+  if (!data || data.length === 0) {
+    histEl.innerHTML = `<div class="empty-state"><strong>Nenhum pedido encontrado</strong></div>`;
+    return;
+  }
+  histEl.innerHTML = data.map(os => renderOSCard(os, isLab, !isLab)).join('');
+}
+
+function filtrarHistorico() {
+  const q = (document.getElementById('hist-search')?.value||'').toLowerCase();
+  const s = document.getElementById('hist-status-filter')?.value||'';
+  const isLab = ['DEV','GESTOR','LAB'].includes(APP.profile.perfil);
+  const filtrado = (window._histData||[]).filter(os => {
+    const matchQ = !q || (os.numero_pe||'').includes(q) || (os.material||'').toLowerCase().includes(q);
+    const matchS = !s || os.status === s;
+    return matchQ && matchS;
+  });
+  const histEl = document.getElementById('historico-list');
+  if (!histEl) return;
+  histEl.innerHTML = filtrado.length > 0
+    ? filtrado.map(os => renderOSCard(os, isLab, !isLab)).join('')
+    : `<div class="empty-state"><strong>Nenhum resultado</strong><span>Ajuste os filtros</span></div>`;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MODAIS E UX
+   ────────────────────────────────────────────────────────────── */
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function openPerfilModal() {
+  const p = APP.profile;
+  document.getElementById('perfil-modal-body').innerHTML = `
+  <div class="form-row">
+    <div><label class="field-label">Nome</label><input class="field-input" id="pm-nome" value="${p.nome||''}"></div>
+    <div><label class="field-label">Cargo</label><input class="field-input" id="pm-cargo" value="${p.cargo||''}"></div>
+  </div>
+  <div class="form-row">
+    <div><label class="field-label">E-mail</label><input class="field-input" id="pm-email" value="${p.email||''}" disabled></div>
+    <div><label class="field-label">Perfil</label><input class="field-input" value="${p.perfil}" disabled style="background:var(--surface-2)"></div>
+  </div>
+  <div class="form-row">
+    <div><label class="field-label">Empresa</label><input class="field-input" id="pm-empresa" value="${p.empresa||''}"></div>
+    <div><label class="field-label">Lote</label><input class="field-input" id="pm-lote" value="${p.lote||''}"></div>
+  </div>
+  <div style="margin-top:8px">
+    <label class="field-label">Assinatura Digital (PNG fundo transparente)</label>
+    <div class="sign-box">
+      ${p.assinatura_url ? `<img src="${p.assinatura_url}" alt="assinatura">` : '<span style="font-size:12px;color:var(--text-3)">Sem assinatura cadastrada</span>'}
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById(\'upload-sign\').click()">Trocar</button>
+    </div>
+    <input type="file" id="upload-sign" accept="image/png" style="display:none" onchange="uploadAssinatura(this)">
+    <div class="field-hint">Obrigatório para perfis LAB e ASSIST. PNG com fundo transparente.</div>
+  </div>`;
+  openModal('modal-perfil');
+  closeUserMenu();
+}
+
+async function savePerfilChanges() {
+  const updates = {
+    nome:    document.getElementById('pm-nome')?.value || APP.profile.nome,
+    cargo:   document.getElementById('pm-cargo')?.value || '',
+    empresa: document.getElementById('pm-empresa')?.value || '',
+    lote:    document.getElementById('pm-lote')?.value || '',
+  };
+  if (APP.profile.id) {
+    const { error } = await sb.from('usuarios').update(updates).eq('id', APP.profile.id);
+    if (error) { toast('Erro ao salvar: '+error.message, 'danger'); return; }
+  }
+  Object.assign(APP.profile, updates);
+  renderAppForPerfil();
+  closeModal('modal-perfil');
+  toast('Perfil atualizado!', 'ok');
+}
+
+async function uploadAssinatura(input) {
+  const file = input.files[0];
+  if (!file || !APP.profile.id) return;
+  const path = `assinaturas/${APP.profile.id}.png`;
+  const { error } = await sb.storage.from('avatars').upload(path, file, { upsert: true });
+  if (error) { toast('Erro no upload: '+error.message, 'danger'); return; }
+  const { data: urlData } = sb.storage.from('avatars').getPublicUrl(path);
+  await sb.from('usuarios').update({ assinatura_url: urlData.publicUrl }).eq('id', APP.profile.id);
+  APP.profile.assinatura_url = urlData.publicUrl;
+  toast('Assinatura salva!', 'ok');
+  openPerfilModal();
+}
+
+function toggleUserMenu() {
+  document.getElementById('user-menu').classList.toggle('open');
+}
+function closeUserMenu() {
+  document.getElementById('user-menu').classList.remove('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.dropdown')) closeUserMenu();
+});
+
+/* ──────────────────────────────────────────────────────────────
+   TOAST
+   ────────────────────────────────────────────────────────────── */
+function toast(msg, type='') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => {
+    t.style.animation = 'slide-out .2s ease forwards';
+    setTimeout(() => t.remove(), 200);
+  }, 3200);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   STUBS (funções a implementar nas próximas fases)
+   ────────────────────────────────────────────────────────────── */
+function openNovoUsuario()   { toast('Cadastro de usuário — disponível na Fase 4', 'warn'); }
+function editarUsuario(id)   { toast('Edição de usuário — disponível na Fase 4', 'warn'); }
+function openNovoEnsaio()    { toast('Criação de ensaio — disponível na Fase 4', 'warn'); }
+function abrirFichaDigital(id){ toast('Ficha digital — disponível na Fase 3', 'warn'); }
+function uploadFoto(id)      { toast('Upload de resultado — disponível na Fase 3', 'warn'); }
+</script>
+</body>
+</html>
