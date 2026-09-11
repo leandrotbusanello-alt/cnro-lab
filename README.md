@@ -1,3 +1,8 @@
+# CNRO Lab Control — Sistema Operacional
+
+## Código-fonte
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -4110,3 +4115,4 @@ function uploadFoto(id)      { toast('Upload de resultado — disponível na Fas
 </script>
 </body>
 </html>
+```
