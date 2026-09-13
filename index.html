@@ -1137,17 +1137,13 @@ function renderAppForPerfil() {
 /* ──────────────────────────────────────────────────────────────
    NAVEGAÇÃO ENTRE TABS
    ────────────────────────────────────────────────────────────── */
-function switchTab(tabId) {
+async function switchTab(tabId) {
   APP.currentTab = tabId;
-  // Atualizar nav
-  document.querySelectorAll('.nav-tab').forEach(el => {
-    el.classList.toggle('active', el.textContent.trim().toLowerCase().includes(tabId) || el.onclick?.toString().includes(`'${tabId}'`));
-  });
-  // Re-render nav (simples)
   renderNavTabs();
 
-  // Renderizar conteúdo
   const content = document.getElementById('main-content');
+  content.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;padding:48px"><div class="loading-spin" style="width:28px;height:28px;border-width:2px"></div></div>';
+
   const renderers = {
     dashboard:   renderDashboard,
     campo:       renderCampo,
@@ -1157,10 +1153,16 @@ function switchTab(tabId) {
     admin:       renderAdmin,
     historico:   renderHistorico,
   };
-  if (renderers[tabId]) {
-    renderers[tabId](content);
-  } else {
-    content.innerHTML = `<div class="empty-state"><strong>Em desenvolvimento</strong><span>Módulo ${tabId} em breve.</span></div>`;
+
+  try {
+    if (renderers[tabId]) {
+      await renderers[tabId](content);
+    } else {
+      content.innerHTML = "<div class=\"empty-state\"><strong>Em desenvolvimento</strong><span>Módulo " + tabId + " em breve.</span></div>";
+    }
+  } catch(err) {
+    content.innerHTML = "<div class=\"empty-state\"><strong>Erro ao carregar módulo</strong><span>" + err.message + "</span></div>";
+    console.error('switchTab error:', err);
   }
 }
 
@@ -1280,12 +1282,19 @@ const CAMPO_STATE = {
 };
 
 async function renderCampo(el) {
-  const [resEnsaios, resEmpresas] = await Promise.all([
-    sb.from('ensaios').select('*').eq('ativo', true).order('ordem'),
-    sb.from('empresas').select('id,nome,lote').eq('ativo', true).order('nome').catch(() => ({ data: [] })),
-  ]);
-  CAMPO_STATE.todosEnsaios = resEnsaios.data || [];
-  CAMPO_STATE.empresas = resEmpresas.data || [];
+  // Carregar ensaios e empresas com tratamento de erro robusto
+  let ensaiosData = [], empresasData = [];
+  try {
+    const { data } = await sb.from('ensaios').select('*').eq('ativo', true).order('ordem');
+    ensaiosData = data || [];
+  } catch(e) { console.warn('Ensaios:', e.message); }
+  try {
+    const { data } = await sb.from('empresas').select('id,nome,lote').eq('ativo', true).order('nome');
+    empresasData = data || [];
+  } catch(e) { console.warn('Empresas (tabela pode não existir ainda):', e.message); }
+
+  CAMPO_STATE.todosEnsaios = ensaiosData;
+  CAMPO_STATE.empresas = empresasData;
   CAMPO_STATE.tipoAmostra = null;
   CAMPO_STATE.subTipo = null;
   CAMPO_STATE.amostras = [];
@@ -2984,6 +2993,19 @@ function renderLabActions(os) {
       <button class="btn btn-teal btn-sm" onclick="abrirModalFinalizar('${os.id}')">Revisar e Finalizar</button>
       <button class="btn btn-ghost btn-sm" onclick="devolverAssistente('${os.id}')">Devolver ao Assistente</button>
     </div>`;
+  }
+  if (os.status === 'devolvido_campo') {
+    return `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+      <div style="width:100%;background:var(--warn-bg);border:1px solid #FCD34D;border-radius:var(--r-sm);padding:6px 10px;font-size:11px;color:var(--warn)">
+        ⚠️ Aguardando correção do campo
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="abrirFichaSOL('${os.id}')">FR-IMOB-05</button>
+      <button class="btn btn-ghost btn-sm" onclick="cancelarPedido('${os.id}')" style="color:var(--danger)">Cancelar</button>
+    </div>`;
+  }
+  if (os.status === 'cancelado') {
+    return `<div style="margin-top:4px;font-size:11px;color:var(--text-3)">Pedido cancelado — histórico preservado.</div>`;
   }
   if (os.status === 'concluido') {
     return `
