@@ -2890,16 +2890,34 @@ function renderOSCard(os, labMode=false, campoMode=false) {
 }
 
 function renderOSCardBody(os, labMode, campoMode) {
-  // Dados da amostra — pode ser array (múltiplas) ou objeto (simples)
-  const amostras = Array.isArray(os.dados_amostra) ? os.dados_amostra : [os.dados_amostra || {}];
+  // Suporta novo formato { cabecario:{}, amostras:[] } e formato legado
+  const dadosRaw = os.dados_amostra || {};
+  const cabecario = dadosRaw.cabecario || {};
+  const amostras  = dadosRaw.amostras  || (Array.isArray(dadosRaw) ? dadosRaw : [dadosRaw]);
 
-  const amostrasHtml = amostras.map((dados, idx) => {
-    const dadosHtml = Object.entries(dados).filter(([k,v])=>v).map(([k,v]) =>
+  // Renderizar cabeçário (dados comuns a todas as amostras)
+  const cabHtml = Object.entries(cabecario).filter(([k,v])=>v && typeof v !== 'object').map(([k,v]) =>
+    `<div>
+      <span style="font-size:10px;color:var(--text-3);text-transform:uppercase;font-weight:600">${DADOS_LABEL[k]||k.replace(/_/g,' ')}</span>
+      <div style="font-size:12.5px;color:var(--text);margin-top:1px">${v}</div>
+    </div>`
+  ).join('');
+
+  const cabSecaoHtml = cabHtml ? `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;margin-bottom:12px;padding:10px;background:var(--surface-2);border-radius:var(--r-sm);border:1px solid var(--border)">
+      <div style="grid-column:1/-1;font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em">Dados Gerais</div>
+      ${cabHtml}
+    </div>` : '';
+
+  // Renderizar amostras individuais
+  const amostrasHtml = amostras.filter(a => a && typeof a === 'object').map((dados, idx) => {
+    const dadosHtml = Object.entries(dados).filter(([k,v])=>v && typeof v !== 'object').map(([k,v]) =>
       `<div>
         <span style="font-size:10px;color:var(--text-3);text-transform:uppercase;font-weight:600">${DADOS_LABEL[k]||k.replace(/_/g,' ')}</span>
         <div style="font-size:12.5px;color:var(--text);margin-top:1px">${v}</div>
       </div>`
     ).join('');
+    if (!dadosHtml) return '';
     return amostras.length > 1
       ? `<div style="background:var(--surface-2);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:8px;border:1px solid var(--border)">
           <div style="font-size:10px;font-weight:700;color:var(--teal-dark);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Amostra ${idx+1}</div>
@@ -2935,6 +2953,7 @@ function renderOSCardBody(os, labMode, campoMode) {
 
   return `
     ${motivoHtml}
+    ${cabSecaoHtml}
     ${amostrasHtml}
     ${ensaiosHtml}
     ${obsHtml}
