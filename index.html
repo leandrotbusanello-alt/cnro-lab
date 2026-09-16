@@ -1991,20 +1991,36 @@ function campoAplicarHeranca(idx) {
     if (src && dst && src.value) dst.value = src.value;
   };
 
-  // Campos que herdam por subcategoria
+  // Herança completa de dados — replicar TODOS os campos editáveis da amostra anterior
   const heranca = {
-    jazida:      ['a-furo'],   // só profundidade não herda, furo não herda também
-    emprestimo:  [],           // só qty — não herda
-    segmento:    ['a-pos'],
-    solo_cimento:['a-km','a-pos','a-plano','a-ruptura'],
-    massa:       ['a-dt-usin','a-pista','a-faixa','a-camada','a-km-ini','a-km-fim','a-projeto'],
-    cp_pista:    ['a-faixa','a-pos'],
+    jazida:      ['a-furo','a-prof'],
+    emprestimo:  ['a-qty'],
+    segmento:    ['a-km','a-pos','a-qty'],
+    solo_cimento:['a-km','a-pos','a-cod','a-cimento','a-plano','a-ruptura'],
+    agregados:   [],
+    massa:       ['a-dt-usin','a-hr-coleta','a-pista','a-faixa','a-km-ini','a-km-fim','a-camada','a-projeto'],
+    cp_pista:    ['a-km-ext','a-faixa','a-pos','a-id-cp'],
     ligante:     ['a-dt-col','a-fornec','a-tipo-cap'],
     cp_concreto: ['a-dt-conc','a-km','a-peca','a-caminhao','a-nota','a-slump-val','a-slump-var','a-mpa','a-temp','a-ruptura'],
-    mancha_areia:['a-pos'], pendulo:['a-pos'], benkelman:['a-pos'], outros_esp:['a-pos'],
+    mancha_areia:['a-km','a-pos'], pendulo:['a-km','a-pos'],
+    benkelman:   ['a-km','a-pos'], outros_esp:['a-km','a-pos','a-resultado'],
   };
 
+  // Copiar todos os campos listados da amostra anterior
   (heranca[sub] || []).forEach(f => copy(f));
+
+  // Copiar também campos select (não copiados automaticamente pelo copy)
+  setTimeout(() => {
+    const prev2 = idx - 1;
+    const selIds = heranca[sub] || [];
+    selIds.forEach(field => {
+      const src = document.getElementById(`${field}-${prev2}`);
+      const dst = document.getElementById(`${field}-${idx}`);
+      if (src && dst && src.tagName === 'SELECT' && src.value) {
+        dst.value = src.value;
+      }
+    });
+  }, 150);
 }
 
 /* ── ENSAIOS ── */
@@ -2268,13 +2284,13 @@ function renderLabCards(list) {
    FICHA FR-IMOB-05 — Solicitação de Ensaios/Estudos
    ══════════════════════════════════════════════════════════════ */
 async function abrirFichaSOL(pedidoId) {
-  const { data: pedido } = await sb.from('pedidos_ensaio').select('*').eq('id', pedidoId).single();
+  const { data: pedido } = await sb.from('pedidos_ensaio')
+    .select('*, solicitante:usuarios!pedidos_ensaio_solicitante_id_fkey(nome,cargo)')
+    .eq('id', pedidoId).single();
   if (!pedido) return;
 
-  // Buscar ficha existente ou preparar nova
-  let { data: ficha } = await sb.from('fichas_solicitacao').select('*').eq('pedido_id', pedidoId).single();
+  let { data: ficha } = await sb.from('fichas_solicitacao').select('*').eq('pedido_id', pedidoId).maybeSingle();
 
-  // Montar localizações a partir das amostras do pedido
   const dados = pedido.dados_amostra || {};
   const amostras = dados.amostras || [];
   const localizacoes = ficha?.localizacoes || amostras.map(a => ({
@@ -2283,11 +2299,11 @@ async function abrirFichaSOL(pedidoId) {
     trilho: a.faixa || '',
   })).filter(l => l.km);
 
-  // Gerar observação automática
   const obsAuto = gerarObsSOL(pedido);
   const obs = ficha?.observacao || obsAuto;
-
   const tipoSol = pedido.tipo_solicitacao || '';
+  const solicNome = ficha?.solicitante || pedido.solicitante?.nome || '';
+  const solicContato = ficha?.contato || pedido.solicitante?.cargo || '';
 
   document.getElementById('modal-ficha-sol-body').innerHTML = `
   <!-- FICHA FR-IMOB-05 -->
@@ -2319,11 +2335,15 @@ async function abrirFichaSOL(pedidoId) {
       </tr>
       <tr>
         <td style="padding:4px 6px;font-weight:bold;border:1px solid #999">Solicitante</td>
-        <td colspan="3" style="padding:4px 6px;color:#283272;font-weight:bold;border:1px solid #999">${pedido.solicitante?.nome||'—'}</td>
+        <td colspan="3" style="padding:4px 6px;border:1px solid #999">
+          <input type="text" id="sol-solicitante" value="${solicNome}" style="border:none;outline:none;width:100%;font-size:11px;color:#283272;font-weight:bold;font-family:inherit">
+        </td>
       </tr>
       <tr>
         <td style="padding:4px 6px;font-weight:bold;border:1px solid #999">Contato</td>
-        <td colspan="3" style="padding:4px 6px;border:1px solid #999">${pedido.solicitante?.cargo||'—'}</td>
+        <td colspan="3" style="padding:4px 6px;border:1px solid #999">
+          <input type="text" id="sol-contato" value="${solicContato}" style="border:none;outline:none;width:100%;font-size:11px;font-family:inherit">
+        </td>
       </tr>
     </table>
 
@@ -2441,9 +2461,11 @@ function gerarObsSOL(pedido) {
 }
 
 async function salvarFichaSOL() {
-  const pedidoId = document.getElementById('sol-pedido-id').value;
-  const fichaId  = document.getElementById('sol-ficha-id').value;
-  const obs      = document.getElementById('sol-obs').value;
+  const pedidoId   = document.getElementById('sol-pedido-id').value;
+  const fichaId    = document.getElementById('sol-ficha-id').value;
+  const obs        = document.getElementById('sol-obs').value;
+  const solicitante = document.getElementById('sol-solicitante')?.value || '';
+  const contato     = document.getElementById('sol-contato')?.value || '';
 
   // Coletar localizações
   const kms    = [...document.querySelectorAll('.sol-km')].map(e=>e.value);
@@ -2458,6 +2480,8 @@ async function salvarFichaSOL() {
     observacao: obs,
     observacao_editada: true,
     localizacoes,
+    solicitante,
+    contato,
     criado_por: APP.profile.id,
     status: 'emitida',
   };
@@ -2466,21 +2490,22 @@ async function salvarFichaSOL() {
   if (fichaId) {
     ({ error } = await sb.from('fichas_solicitacao').update(payload).eq('id', fichaId));
   } else {
-    // Preencher campos do pedido automaticamente
-    const { data: pedido } = await sb.from('pedidos_ensaio').select('*').eq('id', pedidoId).single();
-    payload.obra        = pedido.empresa;
-    payload.lote        = pedido.lote;
-    payload.solicitante = pedido.solicitante?.nome || APP.profile.nome;
+    const { data: pedido } = await sb.from('pedidos_ensaio')
+      .select('*, solicitante:usuarios!pedidos_ensaio_solicitante_id_fkey(nome)')
+      .eq('id', pedidoId).single();
+    payload.obra              = pedido.empresa;
+    payload.lote              = pedido.lote;
     payload.tipo_contraprova  = pedido.tipo_solicitacao === 'Contraprova';
     payload.tipo_investigacao = pedido.tipo_solicitacao === 'Investigação';
     payload.tipo_estudo       = pedido.tipo_solicitacao === 'Estudo';
     payload.tipo_outros       = pedido.tipo_solicitacao === 'Outros';
-    ({ error } = await sb.from('fichas_solicitacao').insert(payload));
+    const { data: novaFicha, error: errIns } = await sb.from('fichas_solicitacao').insert(payload).select().single();
+    error = errIns;
+    if (novaFicha) document.getElementById('sol-ficha-id').value = novaFicha.id;
   }
 
   if (error) { toast('Erro ao salvar ficha: ' + error.message, 'danger'); return; }
   toast('Ficha FR-IMOB-05 salva!', 'ok');
-  closeModal('modal-ficha-sol');
 }
 
 function imprimirFichaSOL() {
@@ -2502,10 +2527,14 @@ function imprimirFichaSOL() {
    FICHA FR-IMOB-04 — Ordem de Serviço
    ══════════════════════════════════════════════════════════════ */
 async function abrirFichaOS(pedidoId) {
-  const { data: pedido } = await sb.from('pedidos_ensaio').select('*, solicitante:usuarios!pedidos_ensaio_solicitante_id_fkey(nome,cargo)').eq('id', pedidoId).single();
+  const { data: pedido } = await sb.from('pedidos_ensaio')
+    .select('*, solicitante:usuarios!pedidos_ensaio_solicitante_id_fkey(nome,cargo)')
+    .eq('id', pedidoId).single();
   if (!pedido) return;
 
-  let { data: ficha } = await sb.from('fichas_os').select('*').eq('pedido_id', pedidoId).single();
+  let { data: ficha } = await sb.from('fichas_os').select('*').eq('pedido_id', pedidoId).maybeSingle();
+  const solicNomeOS    = ficha?.solicitante || pedido.solicitante?.nome || '';
+  const solicContatoOS = ficha?.contato     || pedido.solicitante?.cargo || '';
 
   const obsAuto = gerarObsSOL(pedido);
   const obs = ficha?.observacao || obsAuto;
@@ -2601,11 +2630,15 @@ async function abrirFichaOS(pedidoId) {
       </tr>
       <tr>
         <td style="padding:3px 6px;border:1px solid #999;font-weight:bold">Solicitante:</td>
-        <td colspan="3" style="padding:3px 6px;border:1px solid #999;color:#283272;font-weight:bold;text-align:center">${pedido.solicitante?.nome||'—'}</td>
+        <td colspan="3" style="padding:3px 6px;border:1px solid #999">
+          <input type="text" id="os-solicitante" value="${solicNomeOS}" style="border:none;outline:none;width:100%;font-size:10.5px;color:#283272;font-weight:bold;font-family:inherit;text-align:center">
+        </td>
       </tr>
       <tr>
         <td style="padding:3px 6px;border:1px solid #999;font-weight:bold">Contato:</td>
-        <td colspan="3" style="padding:3px 6px;border:1px solid #999;text-align:center">${pedido.solicitante?.cargo||'—'}</td>
+        <td colspan="3" style="padding:3px 6px;border:1px solid #999">
+          <input type="text" id="os-contato" value="${solicContatoOS}" style="border:none;outline:none;width:100%;font-size:10.5px;font-family:inherit;text-align:center">
+        </td>
       </tr>
     </table>
 
@@ -2737,23 +2770,27 @@ async function abrirFichaOS(pedidoId) {
 }
 
 async function salvarFichaOS() {
-  const pedidoId = document.getElementById('os-pedido-id').value;
-  const fichaId  = document.getElementById('os-ficha-id').value;
+  const pedidoId   = document.getElementById('os-pedido-id').value;
+  const fichaId    = document.getElementById('os-ficha-id').value;
   const get = id => document.getElementById(id);
   const chk = id => document.getElementById(id)?.checked || false;
+  const solicitante = get('os-solicitante')?.value || '';
+  const contato     = get('os-contato')?.value || '';
 
   const payload = {
     pedido_id:        pedidoId,
-    inicio_ensaios:   get('os-inicio')?.value      || null,
-    fim_ensaios:      get('os-fim')?.value          || null,
-    previsao_entrega: get('os-prev-entrega')?.value  || null,
-    analise_ensaios:  get('os-analise')?.value       || null,
-    repactuacao_data: get('os-repac-data')?.value    || null,
-    entrega_solicitacao: get('os-entrega-sol')?.value|| null,
-    motivo_repactuacao:  get('os-motivo-repac')?.value||null,
-    indicador:        get('os-indicador')?.value     || null,
-    observacao:       get('os-obs')?.value           || null,
+    inicio_ensaios:   get('os-inicio')?.value        || null,
+    fim_ensaios:      get('os-fim')?.value            || null,
+    previsao_entrega: get('os-prev-entrega')?.value   || null,
+    analise_ensaios:  get('os-analise')?.value        || null,
+    repactuacao_data: get('os-repac-data')?.value     || null,
+    entrega_solicitacao: get('os-entrega-sol')?.value || null,
+    motivo_repactuacao:  get('os-motivo-repac')?.value|| null,
+    indicador:        get('os-indicador')?.value      || null,
+    observacao:       get('os-obs')?.value            || null,
     observacao_editada: true,
+    solicitante,
+    contato,
     criado_por:       APP.profile.id,
     status:           'emitida',
     // Especificação
@@ -2802,20 +2839,45 @@ async function salvarFichaOS() {
   let error;
   if (fichaId) {
     ({ error } = await sb.from('fichas_os').update(payload).eq('id', fichaId));
+    if (!error) {
+      toast('O.S. atualizada com sucesso!', 'ok');
+      closeModal('modal-ficha-os');
+      await carregarListaLab();
+    } else {
+      toast('Erro ao salvar O.S.: ' + error.message, 'danger');
+    }
   } else {
+    // Buscar pedido e gerar número da O.S.
     const { data: pedido } = await sb.from('pedidos_ensaio').select('*').eq('id', pedidoId).single();
-    payload.numero_os    = pedido.numero_os || '';
-    payload.obra         = pedido.empresa;
-    payload.lote         = pedido.lote;
-    payload.solicitante  = pedido.solicitante?.nome || '';
+    const now = new Date();
+    const lote = pedido.lote || APP.profile.lote || '01';
+    const numOS = gerarNumeroOS({
+      ano: now.getFullYear(), mes: now.getMonth()+1,
+      dia: now.getDate(), lote, seq: pedido.sequencial
+    });
+    payload.numero_os        = numOS;
+    payload.obra             = pedido.empresa;
+    payload.lote             = pedido.lote;
     payload.data_solicitacao = pedido.created_at?.slice(0,10);
-    ({ error } = await sb.from('fichas_os').insert(payload));
-  }
 
-  if (error) { toast('Erro ao salvar O.S.: ' + error.message, 'danger'); return; }
-  toast('Ficha FR-IMOB-04 salva!', 'ok');
-  closeModal('modal-ficha-os');
-  await carregarListaLab();
+    const { data: novaFicha, error: errIns } = await sb.from('fichas_os').insert(payload).select().single();
+    if (errIns) { toast('Erro ao criar O.S.: ' + errIns.message, 'danger'); return; }
+
+    // Atualizar número da O.S. no pedido e mudar status
+    await sb.from('pedidos_ensaio').update({
+      status: 'em_andamento',
+      numero_os: numOS,
+      aberto_por: APP.profile.id,
+      aberto_em: now.toISOString(),
+      ficha_os_id: novaFicha.id,
+    }).eq('id', pedidoId);
+
+    // Atualizar modal com número gerado
+    document.getElementById('os-ficha-id').value = novaFicha.id;
+    toast('O.S. ' + numOS + ' gerada e salva!', 'ok');
+    closeModal('modal-ficha-os');
+    await carregarListaLab();
+  }
 }
 
 function imprimirFichaOS() {
@@ -2860,6 +2922,8 @@ const DADOS_LABEL = {
 };
 
 function renderOSCard(os, labMode=false, campoMode=false) {
+  // DEV vê ações de campo no histórico quando campoMode=true
+  if (APP.profile.perfil === 'DEV' && campoMode) labMode = true;
   const [statusLabel, statusCls] = STATUS_MAP[os.status] || ['—',''];
   const matTag = MAT_TAG[os.material] || 'solos';
   const dt = os.created_at ? new Date(os.created_at).toLocaleDateString('pt-BR') : '—';
@@ -2966,12 +3030,27 @@ function renderOSCardBody(os, labMode, campoMode) {
 function renderCampoActions(os) {
   if (os.status === 'devolvido_campo') {
     return `
-    <div style="margin-top:8px">
-      <button class="btn btn-teal btn-sm" onclick="editarPedidoDevolvido('${os.id}')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        Corrigir e Reenviar
-      </button>
+    <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px">
+      <div style="background:var(--warn-bg);border:1px solid #FCD34D;border-radius:var(--r-sm);padding:8px 12px;font-size:12px;color:var(--warn)">
+        <strong>⚠️ Devolvido pelo laboratório.</strong> Corrija e reenvie.
+        ${os.motivo_devolucao ? '<br><span style="font-weight:600">Motivo: ' + os.motivo_devolucao + '</span>' : ''}
+      </div>
+      <div>
+        <button class="btn btn-teal btn-sm" onclick="editarPedidoDevolvido('${os.id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Corrigir e Reenviar
+        </button>
+      </div>
     </div>`;
+  }
+  if (os.status === 'aguardando_lab') {
+    return `<div style="margin-top:8px;font-size:11px;color:var(--text-3)">✅ Pedido enviado — aguardando o laboratório.</div>`;
+  }
+  if (os.status === 'em_andamento') {
+    return `<div style="margin-top:8px;font-size:11px;color:var(--teal-dark)">🔬 Em análise no laboratório.</div>`;
+  }
+  if (os.status === 'concluido') {
+    return `<div style="margin-top:8px;font-size:11px;color:var(--ok)">✅ Ensaios concluídos.</div>`;
   }
   return '';
 }
@@ -3591,9 +3670,9 @@ function formRice() { return cabecalhoForm('Densidade Máx. Teórica (RICE)','FR
 
 function formTeorBetume() { return cabecalhoForm('Teor de Betume','FR-IMOB-22','DNER ME 053')+`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Método','tb-metodo','select','<option>Rotarex</option><option>Soxhlet</option>')}${fieldForm('Teor Betume Projeto (%)','tb-proj','number','')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Massa Amostra (g)','tb-massa','number','')}${fieldForm('Massa Após Extração (g)','tb-massa-ap','number','')}${fieldForm('Teor Obtido (%)','tb-obtido','number','')}${fieldForm('Diferença (%)','tb-dif','number','')}</div>${fieldForm('Tolerância (%)','tb-tol','number','0.3')}`; }
 
-function formDensidadeCBUQ() { return cabecalhoForm('Densidade Aparente CBUQ','FR-IMOB-46','DNIT 108/2009')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Código CP','dc-cod','text','')}${fieldForm('KM','dc-km','text','')}${fieldForm('Faixa','dc-faixa','select','<option>F1</option><option>F2</option><option>Acostamento</option>')}${fieldForm('Posição','dc-pos','select','<option>LD</option><option>LE</option><option>EX</option>')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Camada','dc-camada','select','<option>CBUQ</option><option>Binder</option><option>Base</option>')}${fieldForm('Espessura Projeto (mm)','dc-esp-proj','number','')}${fieldForm('Espessura Medida (mm)','dc-esp-med','number','')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Gmb Obtido','dc-gmb','number','')}${fieldForm('Gmm Referência','dc-gmm','number','')}${fieldForm('Va (%)','dc-va','number','')}${fieldForm('GC (%)','dc-gc','number','')}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('GC Mín. Especificado (%)','dc-min-gc','number','97')}${fieldForm('Va Máx. Especificado (%)','dc-max-va','number','8')}</div>`; }
+function formDensidadeCBUQ() { return cabecalhoForm('Densidade Aparente CBUQ','FR-IMOB-46','DNIT 108/2009')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Código CP','dc-cod','text','')}${fieldForm('KM','dc-km','text','')}${fieldForm('Faixa','dc-faixa','select','<option value="">Selecione…</option><option>F1</option><option>F2</option><option>F3</option><option>Acostamento</option><option>Alça Aceleração</option><option>Alça Desaceleração</option><option>Retorno</option><option>Interseção</option><option>Ramo Dispositivo</option>')}${fieldForm('Posição','dc-pos','select','<option value="">Selecione…</option><option>LD</option><option>LE</option><option>EX</option><option>Centro</option>')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Camada','dc-camada','select','<option>CBUQ</option><option>Binder</option><option>Base</option>')}${fieldForm('Espessura Projeto (mm)','dc-esp-proj','number','')}${fieldForm('Espessura Medida (mm)','dc-esp-med','number','')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Gmb Obtido','dc-gmb','number','')}${fieldForm('Gmm Referência','dc-gmm','number','')}${fieldForm('Va (%)','dc-va','number','')}${fieldForm('GC (%)','dc-gc','number','')}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('GC Mín. Especificado (%)','dc-min-gc','number','97')}${fieldForm('Va Máx. Especificado (%)','dc-max-va','number','8')}</div>`; }
 
-function formFrascoAreia() { return cabecalhoForm('Massa Esp. Aparente in situ','FR-IMOB-35','DNER ME 092')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('KM','fa-km','text','')}${fieldForm('Posição','fa-pos','select','<option>LD</option><option>LE</option><option>EX</option>')}${fieldForm('Camada','fa-camada','text','')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Umidade Obtida (%)','fa-umid','number','')}${fieldForm('Massa Esp. Obtida (g/cm³)','fa-ds','number','')}${fieldForm('Massa Esp. Ref. Proctor','fa-ds-ref','number','')}${fieldForm('Grau Compactação (%)','fa-gc','number','')}</div>${fieldForm('GC Mínimo Especificado (%)','fa-min-gc','number','100')}`; }
+function formFrascoAreia() { return cabecalhoForm('Massa Esp. Aparente in situ','FR-IMOB-35','DNER ME 092')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('KM','fa-km','text','')}${fieldForm('Posição','fa-pos','select','<option value="">Selecione…</option><option>LD</option><option>LE</option><option>EX</option><option>Centro</option>')}${fieldForm('Camada','fa-camada','text','')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Umidade Obtida (%)','fa-umid','number','')}${fieldForm('Massa Esp. Obtida (g/cm³)','fa-ds','number','')}${fieldForm('Massa Esp. Ref. Proctor','fa-ds-ref','number','')}${fieldForm('Grau Compactação (%)','fa-gc','number','')}</div>${fieldForm('GC Mínimo Especificado (%)','fa-min-gc','number','100')}`; }
 
 function formLimites() { return cabecalhoForm('Limites de Atterberg','FR-IMOB-32','ABNT NBR 6459/7180')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('LL (%)','ll-ll','number','')}${fieldForm('LP (%)','ll-lp','number','')}${fieldForm('IP (%)','ll-ip','number','')}${fieldForm('Classificação HRB','ll-hrb','text','')}</div>`; }
 
@@ -3619,11 +3698,11 @@ function formFadiga() { return cabecalhoForm('Ensaio de Fadiga','FR-IMOB-FA','AB
 
 function formDeformacaoPermanente() { return cabecalhoForm('Deformação Permanente','FR-IMOB-DP','ABNT NBR 16354')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Código CP','dp-cod','text','')}${fieldForm('Temperatura (°C)','dp-temp','number','60')}${fieldForm('Tensão (kPa)','dp-tensao','number','450')}${fieldForm('Flow Number (ciclos)','dp-fn','number','')}${fieldForm('Deformação Permanente (%)','dp-def','number','')}</div>`; }
 
-function formVigaBenkelman() { return cabecalhoForm('Deflexões — Viga Benkelman','FR-IMOB-29','DNER ME 024')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('KM','vb-km','text','')}${fieldForm('Pista','vb-pista','select','<option>Norte</option><option>Sul</option><option>Marginal Norte</option><option>Marginal Sul</option>')}${fieldForm('Faixa','vb-faixa','select','<option>F1</option><option>F2</option><option>Acostamento</option>')}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Temperatura Ar (°C)','vb-t-ar','number','')}${fieldForm('Temperatura Pavimento (°C)','vb-t-pav','number','')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Leitura Inicial (mm)','vb-li','number','')}${fieldForm('Leitura Final (mm)','vb-lf','number','')}${fieldForm('Deflexão Obtida (0,01mm)','vb-def','number','')}${fieldForm('Deflexão Admissível','vb-adm','number','')}</div>${fieldForm('Deflexão Corrigida (0,01mm)','vb-def-cor','number','')}`; }
+function formVigaBenkelman() { return cabecalhoForm('Deflexões — Viga Benkelman','FR-IMOB-29','DNER ME 024')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('KM','vb-km','text','')}${fieldForm('Pista','vb-pista','select','<option value="">Selecione…</option><option>Norte</option><option>Sul</option><option>Marginal Norte</option><option>Marginal Sul</option>')}${fieldForm('Faixa','vb-faixa','select','<option value="">Selecione…</option><option>F1</option><option>F2</option><option>F3</option><option>Acostamento</option><option>Alça Aceleração</option><option>Alça Desaceleração</option><option>Retorno</option><option>Interseção</option><option>Ramo Dispositivo</option>')}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Temperatura Ar (°C)','vb-t-ar','number','')}${fieldForm('Temperatura Pavimento (°C)','vb-t-pav','number','')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Leitura Inicial (mm)','vb-li','number','')}${fieldForm('Leitura Final (mm)','vb-lf','number','')}${fieldForm('Deflexão Obtida (0,01mm)','vb-def','number','')}${fieldForm('Deflexão Admissível','vb-adm','number','')}</div>${fieldForm('Deflexão Corrigida (0,01mm)','vb-def-cor','number','')}`; }
 
-function formManchaAreia() { return cabecalhoForm('Macrotextura — Mancha de Areia','FR-IMOB-30','ASTM E 965')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('KM','ma-km','text','')}${fieldForm('Pista','ma-pista','select','<option>Norte</option><option>Sul</option>')}${fieldForm('Faixa','ma-faixa','select','<option>F1</option><option>F2</option>')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Volume Areia (cm³)','ma-vol','number','25')}${fieldForm('Diâmetro 1 (mm)','ma-d1','number','')}${fieldForm('Diâmetro 2 (mm)','ma-d2','number','')}${fieldForm('Diâmetro Médio (mm)','ma-dm','number','')}${fieldForm('HMT (mm)','ma-hmt','number','')}</div>${fieldForm('HMT Mínima Esp. (mm)','ma-min','number','0.6')}`; }
+function formManchaAreia() { return cabecalhoForm('Macrotextura — Mancha de Areia','FR-IMOB-30','ASTM E 965')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('KM','ma-km','text','')}${fieldForm('Pista','ma-pista','select','<option value="">Selecione…</option><option>Norte</option><option>Sul</option><option>Marginal Norte</option><option>Marginal Sul</option>')}${fieldForm('Faixa','ma-faixa','select','<option>F1</option><option>F2</option>')}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('Volume Areia (cm³)','ma-vol','number','25')}${fieldForm('Diâmetro 1 (mm)','ma-d1','number','')}${fieldForm('Diâmetro 2 (mm)','ma-d2','number','')}${fieldForm('Diâmetro Médio (mm)','ma-dm','number','')}${fieldForm('HMT (mm)','ma-hmt','number','')}</div>${fieldForm('HMT Mínima Esp. (mm)','ma-min','number','0.6')}`; }
 
-function formPenduloBritanico() { return cabecalhoForm('Pêndulo Britânico','FR-IMOB-49','ASTM E 303')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('KM','pb-km','text','')}${fieldForm('Pista','pb-pista','select','<option>Norte</option><option>Sul</option>')}${fieldForm('Faixa','pb-faixa','select','<option>F1</option><option>F2</option>')}</div>${fieldForm('Condição da Superfície','pb-cond','select','<option>Úmida</option><option>Seca</option>')}<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:10px;margin-bottom:10px">${['pb-l1','pb-l2','pb-l3','pb-l4','pb-l5'].map((id,i)=>fieldForm('Leitura '+(i+1),id,'number','')).join('')}${fieldForm('Média VRD','pb-media','number','')}</div>${fieldForm('Mínimo Especificado','pb-min','number','47')}`; }
+function formPenduloBritanico() { return cabecalhoForm('Pêndulo Britânico','FR-IMOB-49','ASTM E 303')+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">${fieldForm('KM','pb-km','text','')}${fieldForm('Pista','pb-pista','select','<option value="">Selecione…</option><option>Norte</option><option>Sul</option><option>Marginal Norte</option><option>Marginal Sul</option>')}${fieldForm('Faixa','pb-faixa','select','<option>F1</option><option>F2</option>')}</div>${fieldForm('Condição da Superfície','pb-cond','select','<option>Úmida</option><option>Seca</option>')}<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:10px;margin-bottom:10px">${['pb-l1','pb-l2','pb-l3','pb-l4','pb-l5'].map((id,i)=>fieldForm('Leitura '+(i+1),id,'number','')).join('')}${fieldForm('Média VRD','pb-media','number','')}</div>${fieldForm('Mínimo Especificado','pb-min','number','47')}`; }
 
 function formDensidadeAgregado(tipo) {
   const isG = tipo==='graudo';
@@ -4028,7 +4107,15 @@ async function renderHistorico(el) {
     histEl.innerHTML = `<div class="empty-state"><strong>Nenhum pedido encontrado</strong></div>`;
     return;
   }
-  histEl.innerHTML = data.map(os => renderOSCard(os, isLab, !isLab)).join('');
+  // DEV vê tanto ações de lab quanto de campo
+  histEl.innerHTML = data.map(os => renderOSCard(os, isLab, true)).join('');
+
+  // Mostrar banner se há pedidos devolvidos ao campo
+  if (!isLab) {
+    const temDevolvido = data.some(os => os.status === 'devolvido_campo');
+    const banner = document.getElementById('banner-devolvidos');
+    if (banner && temDevolvido) banner.style.display = 'block';
+  }
 }
 
 function filtrarHistorico() {
