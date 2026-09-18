@@ -869,6 +869,21 @@ body {
   </div>
 </div>
 
+<!-- MODAL: REATRIBUIR ENSAIO / TRANSFERIR O.S. -->
+<div class="modal-overlay" id="modal-reatribuir">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <span class="modal-title">Reatribuir / Transferir</span>
+      <button class="modal-close" onclick="closeModal('modal-reatribuir')">&times;</button>
+    </div>
+    <div class="modal-body" id="modal-reatribuir-body" style="padding:16px">carregando…</div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-reatribuir')">Cancelar</button>
+      <button class="btn btn-teal" onclick="confirmarReatribuicao()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: FORMULÁRIO DE ENSAIO (Assistente) -->
 <div class="modal-overlay" id="modal-form-ensaio">
   <div class="modal" style="max-width:720px;max-height:92vh">
@@ -1451,6 +1466,20 @@ function campoSelecionarTipo(tipo) {
   CAMPO_STATE.tipoAmostra = tipo;
   CAMPO_STATE.subTipo = null;
   CAMPO_STATE.amostras = [];
+  CAMPO_STATE.ensaiosSelecionados = new Set();
+
+  // Limpar tudo ao trocar tipo
+  const cabEl = document.getElementById('campo-cabecario-fixo');
+  const amEl  = document.getElementById('campo-amostras-container');
+  const btnEl = document.getElementById('campo-btn-add-amostra');
+  const ensEl = document.getElementById('campo-ensaios-section');
+  const envEl = document.getElementById('campo-envio-section');
+  const subEl2 = document.getElementById('campo-subtipo');
+  if (cabEl)  { cabEl.style.display='none'; cabEl.innerHTML=''; }
+  if (amEl)   { amEl.style.display='none';  amEl.innerHTML=''; }
+  if (btnEl)    btnEl.style.display='none';
+  if (ensEl)    ensEl.style.display='none';
+  if (envEl)    envEl.style.display='none';
 
   // Visual botões
   document.querySelectorAll('.tipo-amostra-btn').forEach(b => {
@@ -2285,11 +2314,21 @@ function renderLabCards(list) {
    ══════════════════════════════════════════════════════════════ */
 async function abrirFichaSOL(pedidoId) {
   const { data: pedido } = await sb.from('pedidos_ensaio')
-    .select('*, solicitante:usuarios!pedidos_ensaio_solicitante_id_fkey(nome,cargo)')
+    .select('*')
     .eq('id', pedidoId).single();
   if (!pedido) return;
 
+  // Buscar solicitante separadamente para garantir dados
+  let solicNome = '', solicContato = '';
+  if (pedido.solicitante_id) {
+    const { data: sol } = await sb.from('usuarios').select('nome,cargo').eq('id', pedido.solicitante_id).maybeSingle();
+    solicNome    = sol?.nome    || pedido.empresa || '';
+    solicContato = sol?.cargo   || '';
+  }
+
   let { data: ficha } = await sb.from('fichas_solicitacao').select('*').eq('pedido_id', pedidoId).maybeSingle();
+  if (ficha?.solicitante) solicNome    = ficha.solicitante;
+  if (ficha?.contato)     solicContato = ficha.contato;
 
   const dados = pedido.dados_amostra || {};
   const amostras = dados.amostras || [];
@@ -2302,8 +2341,6 @@ async function abrirFichaSOL(pedidoId) {
   const obsAuto = gerarObsSOL(pedido);
   const obs = ficha?.observacao || obsAuto;
   const tipoSol = pedido.tipo_solicitacao || '';
-  const solicNome = ficha?.solicitante || pedido.solicitante?.nome || '';
-  const solicContato = ficha?.contato || pedido.solicitante?.cargo || '';
 
   document.getElementById('modal-ficha-sol-body').innerHTML = `
   <!-- FICHA FR-IMOB-05 -->
@@ -2360,8 +2397,8 @@ async function abrirFichaSOL(pedidoId) {
         {val:'Outros',      label:'Outros'},
       ].map(t => `
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-          <input type="checkbox" ${tipoSol===t.val?'checked':''} onclick="return false" style="width:12px;height:12px">
-          <span>${t.label}</span>
+          <input type="checkbox" id="sol-tipo-${t.val.toLowerCase()}" ${tipoSol===t.val||ficha?.['tipo_'+t.val.toLowerCase()]?'checked':''} style="width:12px;height:12px;cursor:pointer">
+          <label for="sol-tipo-${t.val.toLowerCase()}" style="cursor:pointer">${t.label}</label>
         </div>
       `).join('')}
     </div>
@@ -2515,8 +2552,14 @@ function imprimirFichaSOL() {
     <html><head><title>FR-IMOB-05 — Solicitação de Ensaios</title>
     <style>
       body { font-family: 'Times New Roman', serif; font-size: 11px; margin: 20px; }
-      input, textarea { border: none !important; outline: none; background: transparent; }
-      @media print { @page { size: A4; margin: 15mm; } }
+      input, textarea { border: none !important; outline: none; background: transparent; font-family: inherit; font-size: inherit; color: inherit; width: 100%; }
+      input[type="checkbox"] { width: auto !important; }
+      table { border-collapse: collapse; width: 100%; }
+      td, th { border: 1px solid #999; }
+      @media print {
+        @page { size: A4; margin: 12mm; }
+        input, textarea { -webkit-print-color-adjust: exact; }
+      }
     </style></head>
     <body onload="window.print()">${conteudo}</body></html>
   `);
@@ -2528,13 +2571,21 @@ function imprimirFichaSOL() {
    ══════════════════════════════════════════════════════════════ */
 async function abrirFichaOS(pedidoId) {
   const { data: pedido } = await sb.from('pedidos_ensaio')
-    .select('*, solicitante:usuarios!pedidos_ensaio_solicitante_id_fkey(nome,cargo)')
+    .select('*')
     .eq('id', pedidoId).single();
   if (!pedido) return;
 
+  // Buscar solicitante separadamente
+  let solicNomeOS = '', solicContatoOS = '';
+  if (pedido.solicitante_id) {
+    const { data: sol } = await sb.from('usuarios').select('nome,cargo').eq('id', pedido.solicitante_id).maybeSingle();
+    solicNomeOS    = sol?.nome  || '';
+    solicContatoOS = sol?.cargo || '';
+  }
+
   let { data: ficha } = await sb.from('fichas_os').select('*').eq('pedido_id', pedidoId).maybeSingle();
-  const solicNomeOS    = ficha?.solicitante || pedido.solicitante?.nome || '';
-  const solicContatoOS = ficha?.contato     || pedido.solicitante?.cargo || '';
+  if (ficha?.solicitante) solicNomeOS    = ficha.solicitante;
+  if (ficha?.contato)     solicContatoOS = ficha.contato;
 
   const obsAuto = gerarObsSOL(pedido);
   const obs = ficha?.observacao || obsAuto;
@@ -3083,6 +3134,7 @@ function renderLabActions(os) {
       </button>
       <button class="btn btn-teal btn-sm" onclick="abrirModalFinalizar('${os.id}')">Finalizar O.S.</button>
       <button class="btn btn-ghost btn-sm" onclick="abrirModalDevolverCampo('${os.id}')">Devolver ao Campo</button>
+      <button class="btn btn-ghost btn-sm" onclick="transferirOS('${os.id}')" style="color:var(--ligante)">↔ Transferir O.S.</button>
     </div>`;
   }
   if (os.status === 'aguardando_revisao') {
@@ -3236,12 +3288,15 @@ async function salvarAtribuicoes() {
     if (!assistId) continue;
 
     // Upsert — atualiza se já existe, cria se não
+    const fichaId = document.getElementById(`ficha-${e.id}`)?.value || null;
     await sb.from('ensaios_os').upsert({
-      pedido_id: pedidoId,
-      ensaio_id: e.id,
-      nome_ensaio: e.nome,
-      assistente_id: assistId,
-      status: 'pendente',
+      pedido_id:      pedidoId,
+      ensaio_id:      e.id,
+      nome_ensaio:    e.nome,
+      assistente_id:  assistId,
+      ficha_ensaio_id: fichaId || null,
+      status:         'pendente',
+      data_atribuicao: new Date().toISOString(),
     }, { onConflict: 'pedido_id,ensaio_id' });
     count++;
   }
@@ -3253,6 +3308,11 @@ async function salvarAtribuicoes() {
 
   closeModal('modal-atribuir');
   await carregarListaLab();
+}
+
+/* Reatribuir ensaio individual a partir do card do Lab */
+async function reatribuirEnsaioLab(ensaioOsId) {
+  await reatribuirEnsaio(ensaioOsId);
 }
 
 async function abrirModalFinalizar(pedidoId) {
@@ -3475,10 +3535,15 @@ async function renderAssistente(el) {
     <div class="empty-state"><div class="loading-spin" style="width:28px;height:28px;border-width:2px"></div></div>
   </div>`;
 
+  // Buscar todos os IDs do usuário (pode ter múltiplos registros)
+  const { data: todosUsuarios } = await sb.from('usuarios')
+    .select('id').eq('auth_id', APP.user.id);
+  const meuIds = (todosUsuarios||[]).map(u => u.id);
+
   const { data, error } = await sb
     .from('ensaios_os')
     .select('*, pedido:pedidos_ensaio(numero_pe,numero_os,material,tipo_amostra,sub_tipo,dados_amostra,empresa,lote), ensaio:ensaios(nome,categoria,norma), ficha:fichas_ensaio(codigo,nome,arquivo_url)')
-    .eq('assistente_id', APP.profile.id)
+    .in('assistente_id', meuIds.length > 0 ? meuIds : ['00000000-0000-0000-0000-000000000000'])
     .in('status', ['pendente','em_execucao'])
     .order('created_at', { ascending: true });
 
@@ -4230,6 +4295,83 @@ function toast(msg, type='') {
 /* ──────────────────────────────────────────────────────────────
    STUBS (funções a implementar nas próximas fases)
    ────────────────────────────────────────────────────────────── */
+/* ── TRANSFERÊNCIA DE ENSAIOS ── */
+async function devolverEnsaioParaFila(ensaioOsId) {
+  if (!confirm('Devolver este ensaio para a fila? Ele ficará disponível para reatribuição pelo laboratorista.')) return;
+  const { error } = await sb.from('ensaios_os').update({
+    assistente_id: null,
+    status: 'pendente',
+    data_atribuicao: null,
+  }).eq('id', ensaioOsId);
+  if (error) { toast('Erro: ' + error.message, 'danger'); return; }
+  toast('Ensaio devolvido para a fila', 'warn');
+  await renderAssistente(document.getElementById('main-content'));
+}
+
+async function reatribuirEnsaio(ensaioOsId) {
+  // Buscar assistentes disponíveis
+  const { data: assistentes } = await sb.from('usuarios')
+    .select('id,nome,cargo')
+    .in('perfil', ['ASSIST','LAB','DEV'])
+    .eq('status', 'Ativo');
+
+  const { data: ensaioOS } = await sb.from('ensaios_os').select('nome_ensaio,assistente_id').eq('id', ensaioOsId).single();
+
+  const body = document.getElementById('modal-reatribuir-body');
+  body.innerHTML = `
+    <p style="font-size:12.5px;color:var(--text-2);margin-bottom:14px">
+      Selecione o novo responsável para o ensaio: <strong>${ensaioOS?.nome_ensaio||'—'}</strong>
+    </p>
+    <div>
+      <label class="field-label">Atribuir para</label>
+      <select class="field-select" id="reatribuir-select">
+        <option value="">— Fila (sem atribuição) —</option>
+        ${(assistentes||[]).map(a=>`<option value="${a.id}" ${ensaioOS?.assistente_id===a.id?'selected':''}>${a.nome} · ${a.cargo||''}</option>`).join('')}
+      </select>
+    </div>
+    <input type="hidden" id="reatribuir-ensaio-id" value="${ensaioOsId}">
+  `;
+  openModal('modal-reatribuir');
+}
+
+async function confirmarReatribuicao() {
+  const ensaioOsId  = document.getElementById('reatribuir-ensaio-id').value;
+  const assistId    = document.getElementById('reatribuir-select').value;
+  const { error } = await sb.from('ensaios_os').update({
+    assistente_id:   assistId || null,
+    status:          assistId ? 'pendente' : 'pendente',
+    data_atribuicao: assistId ? new Date().toISOString() : null,
+  }).eq('id', ensaioOsId);
+  if (error) { toast('Erro: ' + error.message, 'danger'); return; }
+  toast(assistId ? 'Ensaio reatribuído com sucesso!' : 'Ensaio devolvido para a fila', 'ok');
+  closeModal('modal-reatribuir');
+  await carregarListaLab();
+}
+
+async function transferirOS(pedidoId) {
+  // Transferir O.S. para outro laboratorista
+  const { data: labs } = await sb.from('usuarios')
+    .select('id,nome,cargo')
+    .in('perfil', ['LAB','DEV','GESTOR'])
+    .eq('status', 'Ativo');
+
+  const body = document.getElementById('modal-reatribuir-body');
+  body.innerHTML = `
+    <p style="font-size:12.5px;color:var(--text-2);margin-bottom:14px">
+      Transferir esta O.S. para outro laboratorista responsável.
+    </p>
+    <div>
+      <label class="field-label">Transferir para</label>
+      <select class="field-select" id="reatribuir-select">
+        <option value="">Selecione…</option>
+        ${(labs||[]).map(a=>`<option value="${a.id}">${a.nome} · ${a.cargo||''}</option>`).join('')}
+      </select>
+    </div>
+    <input type="hidden" id="reatribuir-ensaio-id" value="os:${pedidoId}">
+  `;
+  openModal('modal-reatribuir');
+}
+
 function openNovoUsuario()   { toast('Cadastro de usuário — disponível na Fase 4', 'warn'); }
 function editarUsuario(id)   { toast('Edição de usuário — disponível na Fase 4', 'warn'); }
 function openNovoEnsaio()    { toast('Criação de ensaio — disponível na Fase 4', 'warn'); }
