@@ -1,0 +1,11 @@
+.qtd {
+  font-size: 12px; background: rgba(30, 58, 95, .1); padding: 1px 8px; border-radius: 999px;
+}
+.abas { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.aba {
+  border: 1px solid var(--border); background: #fff; border-radius: 6px;
+  padding: 5px 11px; font-size: 13px; cursor: pointer;
+}
+.abaAtiva { background: var(--navy); color: #fff; border-color: var(--navy); }
+.remover { color: #b91c1c; border-color: #fecaca; }
+.adicionar { color: var(--teal); border-style: dashed; border-color: var(--teal); }

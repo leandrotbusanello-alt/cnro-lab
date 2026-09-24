@@ -1,0 +1,86 @@
+/* Estilos compartilhados pelos componentes do Módulo Laboratório */
+
+/* ── Botões ── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border-radius: var(--radius); padding: 9px 16px;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  border: 1px solid transparent; white-space: nowrap;
+  transition: background .15s, border-color .15s, opacity .15s;
+}
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btnPrimario   { background: var(--navy); color: #fff; }
+.btnPrimario:hover:not(:disabled)   { background: #162d4a; }
+.btnAcao       { background: var(--teal); color: #fff; }
+.btnAcao:hover:not(:disabled)       { background: #0b7c72; }
+.btnSecundario { background: #fff; color: var(--navy); border-color: var(--border); }
+.btnSecundario:hover:not(:disabled) { border-color: var(--navy); }
+.btnPerigo     { background: #fff; color: #b91c1c; border-color: #fecaca; }
+.btnPerigo:hover:not(:disabled)     { background: #fef2f2; }
+.btnPequeno    { padding: 5px 10px; font-size: 12.5px; }
+.btnLink {
+  background: none; border: none; color: var(--navy); font-weight: 600;
+  cursor: pointer; padding: 0; font-size: 13px; text-decoration: underline;
+}
+
+/* ── Badges ── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 999px;
+  white-space: nowrap;
+}
+.pendente { background: #fef9c3; color: #854d0e; }
+.info     { background: #dbeafe; color: #1d4ed8; }
+.alerta   { background: #ffedd5; color: #9a3412; }
+.erro     { background: #fee2e2; color: #991b1b; }
+.ok       { background: #dcfce7; color: #166534; }
+.neutro   { background: #f3f4f6; color: #4b5563; }
+.offline  { background: #fef3c7; color: #92400e; }
+
+/* ── Formulário ── */
+.campo { display: flex; flex-direction: column; gap: 5px; }
+.rotulo { font-size: 13px; font-weight: 600; color: var(--text); }
+.obrigatorio { color: #dc2626; }
+.input {
+  width: 100%; border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 9px 11px; font-size: 14px; background: #fff; color: var(--text);
+  font-family: inherit;
+}
+.input:focus { outline: 2px solid rgba(13, 148, 136, .35); border-color: var(--teal); }
+.textarea { min-height: 84px; resize: vertical; }
+.ajuda { font-size: 12px; color: var(--muted); }
+.grade2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pilha  { display: flex; flex-direction: column; gap: 12px; }
+
+/* ── Avisos ── */
+.aviso {
+  border-radius: var(--radius); padding: 10px 12px; font-size: 13px;
+  display: flex; gap: 8px; align-items: flex-start; line-height: 1.45;
+}
+.avisoInfo    { background: #eff6ff; color: #1e3a8a; border: 1px solid #bfdbfe; }
+.avisoAlerta  { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+.avisoErro    { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.avisoOk      { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+
+/* ── Seções ── */
+.secao {
+  background: #fff; border: 1px solid var(--border); border-radius: 10px;
+  padding: 16px;
+}
+.secaoTitulo {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 12px;
+  text-transform: uppercase; letter-spacing: .4px;
+}
+
+/* ── Tabela chave/valor ── */
+.kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px 16px; }
+.kvItem { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.kvChave { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; }
+.kvValor { font-size: 14px; color: var(--text); overflow-wrap: anywhere; }
+
+.vazio { color: var(--muted); font-size: 13px; padding: 12px 0; }
+
+@media (max-width: 600px) {
+  .grade2 { grid-template-columns: 1fr; }
+}

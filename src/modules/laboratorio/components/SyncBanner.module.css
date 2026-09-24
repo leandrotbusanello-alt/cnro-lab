@@ -1,0 +1,18 @@
+.banner {
+  display: flex; align-items: center; gap: 12px;
+  border-radius: 10px; padding: 10px 14px; font-size: 13px;
+}
+.icone { font-size: 18px; flex-shrink: 0; }
+.texto { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.sub { font-size: 12px; opacity: .85; }
+.acoes { display: flex; gap: 8px; flex-shrink: 0; }
+
+.offline  { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+.pendente { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a8a; }
+.erro     { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+
+@media (max-width: 600px) {
+  .banner { flex-wrap: wrap; }
+  .acoes { width: 100%; }
+  .acoes > * { flex: 1; }
+}

@@ -1,0 +1,46 @@
+.wrapper { display: flex; flex-direction: column; gap: 12px; }
+
+.header { display: flex; align-items: flex-start; gap: 12px; }
+.titulos { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.titulo { font-size: 19px; font-weight: 800; color: var(--navy); line-height: 1.25; }
+.os { color: var(--teal); }
+.selos { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.acoes {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  position: sticky; top: 56px; z-index: 5;
+  background: var(--gray); padding: 6px 0;
+}
+
+.grade { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 14px; align-items: start; }
+.principal { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.lateral { display: flex; flex-direction: column; gap: 14px; }
+
+.obs { margin-top: 12px; }
+.obs p { font-size: 14px; white-space: pre-wrap; margin-top: 2px; }
+.faltando { color: #b91c1c; font-weight: 600; }
+.qtd {
+  font-size: 12px; background: rgba(30, 58, 95, .1); padding: 1px 8px; border-radius: 999px;
+}
+.listaEnsaios { list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.listaEnsaios li { padding: 8px 10px; background: #f9fafb; border-radius: 6px; }
+.listaEnsaios span { color: var(--muted); font-size: 12.5px; }
+
+.docs { display: flex; flex-direction: column; gap: 8px; }
+.docs button { justify-content: flex-start; }
+
+.naoEncontrado {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding: 60px 16px; color: var(--muted); text-align: center;
+}
+
+@media (max-width: 900px) {
+  .grade { grid-template-columns: 1fr; }
+}
+@media (max-width: 767px) {
+  .acoes {
+    position: sticky; top: auto; bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    order: 10; background: rgba(243, 244, 246, .96); padding: 8px 0;
+  }
+  .acoes > * { flex: 1 1 45%; }
+}

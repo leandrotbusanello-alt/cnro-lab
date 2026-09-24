@@ -1,0 +1,50 @@
+.qtd {
+  font-size: 12px; background: rgba(30, 58, 95, .1); padding: 1px 8px; border-radius: 999px;
+  text-transform: none; letter-spacing: 0; margin-left: 6px;
+}
+.avisoTopo { margin-bottom: 10px; }
+
+.lista { display: flex; flex-direction: column; min-width: 0; }
+.linha {
+  display: grid;
+  grid-template-columns: minmax(120px, 1.3fr) minmax(105px, 1fr) minmax(105px, 1fr) 128px 78px minmax(96px, auto);
+  gap: 10px; align-items: center;
+  padding: 10px 6px; border-bottom: 1px solid var(--border);
+}
+.linha:last-child { border-bottom: none; }
+.cabecalho {
+  font-size: 11.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .3px;
+  padding-top: 0;
+}
+.destaque { background: #fff7ed; border-radius: 8px; }
+
+.celEnsaio { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 14px; }
+.sub { font-size: 12px; color: var(--muted); }
+.motivo { font-size: 12px; color: #b91c1c; }
+.cel { min-width: 0; display: flex; align-items: center; gap: 6px; }
+.cel select { font-size: 13px; padding: 7px 8px; }
+.celAcoes { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; min-width: 0; }
+.toggle { cursor: pointer; font-size: 12.5px; color: var(--muted); }
+.toggle input { width: 16px; height: 16px; accent-color: var(--teal); }
+.rotuloMobile { display: none; }
+.statusWrap { display: inline-flex; align-self: flex-start; }
+
+@media (max-width: 1100px) {
+  .cabecalho { display: none; }
+  .linha {
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; padding: 12px;
+  }
+  .linha:last-child { border-bottom: 1px solid var(--border); }
+  .celEnsaio { grid-column: 1 / -1; }
+  .cel { flex-direction: column; align-items: stretch; }
+  .toggle { flex-direction: row; align-items: center; }
+  .rotuloMobile { display: block; font-size: 11.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+  .toggle .rotuloMobile { display: none; }
+.statusWrap { display: inline-flex; align-self: flex-start; }
+  .celAcoes { grid-column: 1 / -1; justify-content: stretch; }
+  .celAcoes > * { flex: 1; }
+}
+@media (max-width: 600px) {
+  .linha { grid-template-columns: 1fr; }
+}

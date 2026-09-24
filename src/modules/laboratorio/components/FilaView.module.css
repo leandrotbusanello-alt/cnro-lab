@@ -1,0 +1,60 @@
+.wrapper { display: flex; flex-direction: column; gap: 12px; }
+
+.header { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.titulo { font-size: 20px; color: var(--navy); font-weight: 800; }
+.subtitulo { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+
+/* Visões */
+.visoes {
+  display: flex; gap: 4px; background: #e5e7eb; padding: 4px; border-radius: 10px;
+  overflow-x: auto;
+}
+.visao {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: none; border: none; border-radius: 7px; padding: 9px 14px;
+  font-size: 14px; font-weight: 600; color: #4b5563; cursor: pointer; white-space: nowrap;
+}
+.visaoAtiva { background: #fff; color: var(--navy); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.contador {
+  font-size: 11.5px; background: rgba(30, 58, 95, .1); color: var(--navy);
+  padding: 1px 8px; border-radius: 999px;
+}
+.visaoAtiva .contador { background: var(--navy); color: #fff; }
+
+/* Chips */
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  background: #fff; border: 1px solid var(--border); border-radius: 999px;
+  padding: 6px 12px; font-size: 13px; color: var(--text); cursor: pointer;
+}
+.chip strong { margin-left: 4px; color: var(--navy); }
+.chipAtivo { background: var(--navy); border-color: var(--navy); color: #fff; }
+.chipAtivo strong { color: #fff; }
+.chipDestaque:not(.chipAtivo) { border-color: #fdba74; background: #fff7ed; }
+
+/* Filtros */
+.filtrosBar { display: flex; gap: 8px; }
+.busca { flex: 1; }
+.btnFiltros { flex-shrink: 0; }
+.filtros {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px;
+  background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 12px;
+}
+.filtrosAcoes { display: flex; align-items: flex-end; }
+
+/* Lista */
+.lista { display: flex; flex-direction: column; gap: 8px; }
+.dica { font-size: 12.5px; color: var(--muted); }
+.carregando { padding: 60px 0; }
+.vazio {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 48px 16px; color: var(--muted); text-align: center;
+  background: #fff; border: 1px dashed var(--border); border-radius: 10px;
+}
+.vazioIcone { font-size: 32px; }
+
+@media (max-width: 600px) {
+  .visao { padding: 8px 10px; font-size: 13px; }
+  .chips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
+  .chip { white-space: nowrap; }
+}

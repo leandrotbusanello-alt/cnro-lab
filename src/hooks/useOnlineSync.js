@@ -1,50 +1,48 @@
 import { useEffect, useState, useCallback } from 'react'
-import { supabase } from '../lib/supabase'
-import { getPedidosPendentes, marcarPedidoSincronizado } from '../lib/offlineDB'
+import { processarFila, contarPendencias, onFilaMudou } from '../lib/syncQueue'
 
+/**
+ * Detecta online/offline e envia a fila offline (pedidos do Campo + operações
+ * dos demais módulos) quando a conexão volta. Toda a lógica de envio fica em
+ * src/lib/syncQueue.js.
+ */
 export function useOnlineSync() {
   const [online, setOnline] = useState(navigator.onLine)
   const [syncing, setSyncing] = useState(false)
   const [pendingCount, setPendingCount] = useState(0)
 
+  const atualizarContagem = useCallback(async () => {
+    try { setPendingCount(await contarPendencias()) } catch { /* IndexedDB indisponível */ }
+  }, [])
+
   const syncPendentes = useCallback(async () => {
     if (!navigator.onLine) return
     setSyncing(true)
     try {
-      const pendentes = await getPedidosPendentes()
-      setPendingCount(pendentes.length)
-
-      for (const pedido of pendentes) {
-        const { id, status, ...dados } = pedido
-        const { error } = await supabase.from('pedidos_ensaio').insert(dados)
-        if (!error) {
-          await marcarPedidoSincronizado(id)
-          setPendingCount(c => Math.max(0, c - 1))
-        }
-      }
+      await processarFila()
     } finally {
       setSyncing(false)
+      atualizarContagem()
     }
-  }, [])
+  }, [atualizarContagem])
 
   useEffect(() => {
-    async function atualizarContagem() {
-      const p = await getPedidosPendentes()
-      setPendingCount(p.length)
-    }
-
-    function onOnline()  { setOnline(true);  syncPendentes(); atualizarContagem() }
+    function onOnline()  { setOnline(true); syncPendentes() }
     function onOffline() { setOnline(false) }
 
     window.addEventListener('online',  onOnline)
     window.addEventListener('offline', onOffline)
+    const parar = onFilaMudou(() => atualizarContagem())
+
     atualizarContagem()
+    if (navigator.onLine) syncPendentes()
 
     return () => {
       window.removeEventListener('online',  onOnline)
       window.removeEventListener('offline', onOffline)
+      parar()
     }
-  }, [syncPendentes])
+  }, [syncPendentes, atualizarContagem])
 
-  return { online, syncing, pendingCount }
+  return { online, syncing, pendingCount, syncPendentes }
 }

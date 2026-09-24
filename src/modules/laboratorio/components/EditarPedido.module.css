@@ -1,0 +1,11 @@
+.wrapper { display: flex; flex-direction: column; gap: 14px; }
+.mt { margin-top: 12px; }
+.rodape {
+  display: flex; justify-content: flex-end; gap: 8px;
+  position: sticky; bottom: 0; background: var(--gray); padding: 10px 0;
+}
+
+@media (max-width: 767px) {
+  .rodape { bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+  .rodape > * { flex: 1; }
+}
