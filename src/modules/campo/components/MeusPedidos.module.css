@@ -1,0 +1,103 @@
+.container { padding: 16px; max-width: 760px; margin: 0 auto; }
+
+.loading {
+  display: flex; justify-content: center; padding: 60px;
+}
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid #e5e7eb;
+  border-top-color: var(--navy, #1e3a5f);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.banner {
+  display: flex; align-items: center; gap: 10px;
+  background: #fef2f2; border: 1px solid #fca5a5;
+  color: #991b1b; border-radius: 8px;
+  padding: 12px 16px; margin-bottom: 20px;
+  font-size: 14px;
+}
+.bannerIcon { font-size: 18px; }
+
+.header {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 20px;
+}
+.title { font-size: 20px; font-weight: 700; color: var(--navy, #1e3a5f); margin: 0; }
+
+.btnNovo {
+  background: var(--teal, #0d9488); color: #fff;
+  border: none; border-radius: 8px;
+  padding: 9px 16px; font-size: 14px; font-weight: 600;
+  cursor: pointer;
+}
+.btnNovo:hover { background: #0b7a72; }
+
+.empty { text-align: center; padding: 60px 20px; color: #6b7280; }
+.empty p { margin-bottom: 16px; font-size: 15px; }
+
+.section { margin-bottom: 28px; }
+.sectionTitle { font-size: 14px; font-weight: 700; color: #374151; margin: 0 0 12px; text-transform: uppercase; letter-spacing: .5px; }
+
+.card {
+  background: #fff; border: 1px solid #e5e7eb;
+  border-radius: 10px; padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+}
+.cardDestaque { border-left: 4px solid #dc2626; }
+
+.cardTop {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 10px;
+}
+.numero { font-weight: 700; font-size: 15px; color: var(--navy, #1e3a5f); }
+
+.badge {
+  font-size: 11px; font-weight: 600; border-radius: 20px;
+  padding: 3px 10px;
+}
+.pending  { background: #fef9c3; color: #854d0e; }
+.info     { background: #dbeafe; color: #1d4ed8; }
+.success  { background: #dcfce7; color: #166534; }
+.error    { background: #fee2e2; color: #991b1b; }
+.offline  { background: #f3f4f6; color: #374151; }
+.cancelled{ background: #f3f4f6; color: #6b7280; }
+
+.cardInfo {
+  display: flex; flex-wrap: wrap; gap: 8px 20px;
+  font-size: 13px; color: #6b7280; margin-bottom: 8px;
+}
+
+.motivo {
+  font-size: 13px; color: #991b1b;
+  background: #fef2f2; border-radius: 6px;
+  padding: 8px 10px; margin: 8px 0;
+}
+
+.offlineTag {
+  font-size: 12px; color: #6b7280;
+  background: #f9fafb; border-radius: 6px;
+  padding: 6px 10px; margin: 8px 0;
+}
+
+.cardActions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+
+.btnCorrigir {
+  background: #dc2626; color: #fff;
+  border: none; border-radius: 7px;
+  padding: 8px 14px; font-size: 13px; font-weight: 600;
+  cursor: pointer;
+}
+.btnCorrigir:hover { background: #b91c1c; }
+
+.btnReenviar {
+  background: var(--navy, #1e3a5f); color: #fff;
+  border: none; border-radius: 7px;
+  padding: 8px 14px; font-size: 13px; font-weight: 600;
+  cursor: pointer;
+}
+.btnReenviar:hover { background: #162d4a; }
+.btnReenviar:disabled { opacity: .6; cursor: not-allowed; }

@@ -1,0 +1,22 @@
+.wrapper { padding: 4px 0; }
+
+.field {
+  display: flex; flex-direction: column; gap: 5px;
+}
+
+.label {
+  font-size: 12px; font-weight: 600;
+  color: #374151; text-transform: uppercase; letter-spacing: .3px;
+}
+
+.req { color: #dc2626; }
+
+.input {
+  border: 1.5px solid #d1d5db; border-radius: 7px;
+  padding: 9px 11px; font-size: 14px; outline: none;
+  width: 100%; background: #fff;
+  transition: border-color .15s;
+}
+.input:focus { border-color: #0d9488; }
+
+select.input { cursor: pointer; }

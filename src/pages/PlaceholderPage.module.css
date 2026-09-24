@@ -1,0 +1,16 @@
+.container {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 80px 20px; text-align: center;
+  color: #6b7280;
+}
+.icon { font-size: 52px; margin-bottom: 16px; }
+h2 { font-size: 22px; color: var(--navy, #1e3a5f); margin: 0 0 8px; }
+p  { font-size: 15px; margin: 0 0 24px; }
+.btn {
+  background: var(--navy, #1e3a5f); color: #fff;
+  border: none; border-radius: 8px;
+  padding: 10px 20px; font-size: 14px; font-weight: 600;
+  cursor: pointer;
+}
+.btn:hover { background: #162d4a; }
