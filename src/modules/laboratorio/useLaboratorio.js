@@ -166,6 +166,8 @@ export function useLaboratorio() {
       devolverAoAssistente: embrulhar(repo.devolverAoAssistente),
       alterarVisibilidade:  embrulhar(repo.alterarVisibilidade),
       finalizarOS:          embrulhar(repo.finalizarOS),
+      salvarFichaSolicitacao: embrulhar(repo.salvarFichaSolicitacao),
+      salvarFichaOS:          embrulhar(repo.salvarFichaOS),
     }
   }, [ctxAcao, carregar])
 

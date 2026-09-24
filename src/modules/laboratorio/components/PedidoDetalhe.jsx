@@ -18,7 +18,7 @@ import ModalGerarOS from './ModalGerarOS'
 import ModalTransferir from './ModalTransferir'
 import ModalFinalizar from './ModalFinalizar'
 import RevisaoEnsaio from './RevisaoEnsaio'
-import ImpressaoDocumento from './impressao/ImpressaoDocumento'
+import FichaDocumento from './fichas/FichaDocumento'
 import Toast from '../../../components/ui/Toast'
 import styles from './PedidoDetalhe.module.css'
 import ui from './ui.module.css'
@@ -221,16 +221,16 @@ export default function PedidoDetalhe() {
             <section className={ui.secao}>
               <div className={ui.secaoTitulo}>Documentos</div>
               <div className={styles.docs}>
-                <button className={`${ui.btn} ${ui.btnSecundario}`} onClick={() => setModal({ tipo: 'imprimir', doc: 'solicitacao' })}>
-                  🖨 FR-IMOB-05 · Solicitação
+                <button className={`${ui.btn} ${ui.btnSecundario}`} onClick={() => setModal({ tipo: 'ficha', doc: 'solicitacao' })}>
+                  📄 FR-IMOB-05 · Solicitação
                 </button>
                 <button
                   className={`${ui.btn} ${ui.btnSecundario}`}
-                  onClick={() => setModal({ tipo: 'imprimir', doc: 'os' })}
+                  onClick={() => setModal({ tipo: 'ficha', doc: 'os' })}
                   disabled={!temOS}
                   title={temOS ? '' : 'Disponível após gerar a O.S.'}
                 >
-                  🖨 FR-IMOB-04 · Ordem de Serviço
+                  📄 FR-IMOB-04 · Ordem de Serviço
                 </button>
               </div>
             </section>
@@ -301,8 +301,20 @@ export default function PedidoDetalhe() {
           onFechar={fechar}
         />
       )}
-      {modal?.tipo === 'imprimir' && (
-        <ImpressaoDocumento doc={modal.doc} pedido={pedido} ensaiosOs={ensaiosOs} onFechar={fechar} />
+      {modal?.tipo === 'ficha' && (
+        <FichaDocumento
+          doc={modal.doc}
+          pedido={pedido}
+          editavel={modal.doc === 'os' ? perm.podeGerenciarOS : (perm.podeAnalisar || perm.podeGerenciarOS)}
+          ocupado={ocupado}
+          onFechar={fechar}
+          onSalvar={dados => rodar(
+            () => (modal.doc === 'os'
+              ? lab.acoes.salvarFichaOS(pedido, dados)
+              : lab.acoes.salvarFichaSolicitacao(pedido, dados)),
+            'Ficha salva.',
+          )}
+        />
       )}
 
       {toast && <Toast key={toast.message + toast.type} {...toast} onClose={fecharToast} />}

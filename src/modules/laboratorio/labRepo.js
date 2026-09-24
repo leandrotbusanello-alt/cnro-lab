@@ -501,3 +501,43 @@ export async function finalizarOS(ctx, pedido) {
     status: 'concluido', finalizado_por: ctx.perfil.id, finalizado_em: new Date().toISOString(),
   }, eventoLocal(ctx, 'O.S. finalizada')))
 }
+
+// ── Fichas FR-IMOB-05 / FR-IMOB-04 ───────────────────────────────────────────
+
+export async function salvarFichaSolicitacao(ctx, pedido, dados) {
+  return executarSequencia([
+    ...passosAssumir(ctx, pedido),
+    {
+      op: {
+        tipo: 'rpc', rpc: 'salvar_ficha_solicitacao',
+        args: { p_pedido_id: pedido.id, p_dados: dados },
+        descricao: 'Salvar ficha FR-IMOB-05', pedidoId: pedido.id,
+      },
+      local: async () => {
+        const atual = (await obterPedidoLocal(pedido.id)) || pedido
+        await patchPedidoLocal(pedido.id, {
+          ficha_sol: {
+            ...(atual.ficha_sol || {}), ...dados,
+            observacao_editada: true, updated_at: new Date().toISOString(),
+          },
+        }, eventoLocal(ctx, 'Ficha FR-IMOB-05 salva'))
+      },
+    },
+  ])
+}
+
+export async function salvarFichaOS(ctx, pedido, dados) {
+  return executar({
+    tipo: 'rpc', rpc: 'salvar_ficha_os',
+    args: { p_pedido_id: pedido.id, p_dados: dados },
+    descricao: 'Salvar ficha FR-IMOB-04', pedidoId: pedido.id,
+  }, async () => {
+    const atual = (await obterPedidoLocal(pedido.id)) || pedido
+    await patchPedidoLocal(pedido.id, {
+      ficha_os: {
+        ...(atual.ficha_os || {}), ...dados,
+        observacao_editada: true, updated_at: new Date().toISOString(),
+      },
+    }, eventoLocal(ctx, 'Ficha FR-IMOB-04 salva'))
+  })
+}
