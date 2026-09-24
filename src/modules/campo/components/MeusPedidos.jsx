@@ -1,16 +1,29 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useCampo } from '../useCampo'
 import styles from './MeusPedidos.module.css'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
+// Bug 5 fix: lista completa de status (seção 7 do documento de referência)
 const STATUS_LABEL = {
-  pendente_sync: { label: 'Aguardando envio', cls: 'offline' },
-  aguardando_analise: { label: 'Aguardando análise', cls: 'pending' },
-  em_analise: { label: 'Em análise', cls: 'info' },
-  aprovado: { label: 'Aprovado', cls: 'success' },
-  devolvido: { label: 'Devolvido para correção', cls: 'error' },
-  cancelado: { label: 'Cancelado', cls: 'cancelled' },
+  pendente_sync:        { label: 'Aguardando envio',       cls: 'offline'    },
+  aguardando_analise:   { label: 'Aguardando análise',     cls: 'pending'    },
+  em_analise:           { label: 'Em análise',             cls: 'info'       },
+  em_andamento:         { label: 'Em andamento',           cls: 'info'       },
+  aguardando_revisao:   { label: 'Aguardando revisão',     cls: 'info'       },
+  devolvido:            { label: 'Devolvido para correção', cls: 'error'     },
+  devolvido_assistente: { label: 'Devolvido ao assistente', cls: 'error'    },
+  concluido:            { label: 'Concluído',              cls: 'success'    },
+  cancelado:            { label: 'Cancelado',              cls: 'cancelled'  },
+}
+
+// Bug 3 fix: formatar numero_pe retornado pelo banco
+function formatarNumeroPE(pedido) {
+  if (pedido.numero_pe && pedido.ano) {
+    return `PE-${pedido.ano}-${String(pedido.numero_pe).padStart(4, '0')}`
+  }
+  if (pedido.numero_os) return `O.S. ${pedido.numero_os}`
+  return `Pedido #${String(pedido.id).slice(0, 8)}`
 }
 
 export default function MeusPedidos({ onCorrigir, onNovoPedido }) {
@@ -22,8 +35,11 @@ export default function MeusPedidos({ onCorrigir, onNovoPedido }) {
 
   async function handleReenviar(pedido) {
     setReenviadoId(pedido.id)
-    await reenviarPedido(pedido.id)
-    setReenviadoId(null)
+    try {
+      await reenviarPedido(pedido.id)
+    } finally {
+      setReenviadoId(null)
+    }
   }
 
   if (loading) {
@@ -96,17 +112,16 @@ function PedidoCard({ pedido, onCorrigir, onReenviar, reenviadoId, destaque }) {
   return (
     <div className={`${styles.card} ${destaque ? styles.cardDestaque : ''}`}>
       <div className={styles.cardTop}>
-        <span className={styles.numero}>
-          {pedido.numero_os ? `O.S. ${pedido.numero_os}` : `Pedido #${String(pedido.id).slice(0, 8)}`}
-        </span>
+        {/* Bug 3 fix: exibir PE-{ano}-{numero_pe} quando disponível */}
+        <span className={styles.numero}>{formatarNumeroPE(pedido)}</span>
         <span className={`${styles.badge} ${styles[st.cls]}`}>{st.label}</span>
       </div>
 
       <div className={styles.cardInfo}>
         <span>📅 {data}</span>
         {pedido.empresa?.nome_fantasia && <span>🏢 {pedido.empresa.nome_fantasia}</span>}
+        {pedido.lote    && <span>📍 Lote {pedido.lote}</span>}
         {pedido.material && <span>🪨 {pedido.material}</span>}
-        {pedido.lote && <span>📍 {pedido.lote}</span>}
       </div>
 
       {pedido.status === 'devolvido' && pedido.motivo_devolucao && (

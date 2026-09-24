@@ -12,27 +12,30 @@ import styles from './NovoPedidoForm.module.css'
 const STEPS = ['Dados Gerais', 'Material', 'Ensaios', 'Amostra']
 
 export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCorrecao = false }) {
-  const { empresas, ensaios, enviarPedido } = useCampo()
+  const { empresas, ensaios, enviarPedido, corrigirPedido } = useCampo()
   const [step, setStep]           = useState(0)
   const [toast, setToast]         = useState(null)
   const [enviando, setEnviando]   = useState(false)
 
   const [geral, setGeral] = useState({
     empresa_id: pedidoInicial?.empresa_id || '',
-    solicitante: pedidoInicial?.solicitante || '',
+    lote:        pedidoInicial?.lote       || '',
     observacoes: pedidoInicial?.observacoes || '',
   })
-  const [tipoAmostra,   setTipoAmostra]   = useState(pedidoInicial?.tipo_amostra   || '')
-  const [subcategoria,  setSubcategoria]  = useState(pedidoInicial?.sub_tipo       || '')
-  const [ensaiosSel,    setEnsaiosSel]    = useState(pedidoInicial?.ensaios_ids    || [])
-  const [amostras, setAmostras] = useState(pedidoInicial?.amostras || [{}])
+  const [tipoAmostra,   setTipoAmostra]   = useState(pedidoInicial?.material      || '')
+  const [subcategoria,  setSubcategoria]  = useState(pedidoInicial?.sub_tipo      || '')
+  const [ensaiosSel,    setEnsaiosSel]    = useState(pedidoInicial?.ensaios_ids   || [])
+  const [amostras, setAmostras] = useState(pedidoInicial?.dados_amostra || [{}])
   const [amIdx, setAmIdx] = useState(0)
+
+  // Lote da empresa selecionada (preenche automaticamente se disponível)
+  const empresaSel = empresas.find(e => e.id === geral.empresa_id)
 
   const subcatOpcoes = SUBCATEGORIAS[tipoAmostra] || []
 
   // ── Navegação ──────────────────────────────────────────────────────────────
   function canNext() {
-    if (step === 0) return geral.empresa_id && geral.solicitante
+    if (step === 0) return geral.empresa_id && geral.lote
     if (step === 1) return tipoAmostra && (subcatOpcoes.length === 0 || subcategoria)
     if (step === 2) return ensaiosSel.length > 0
     return true
@@ -42,23 +45,45 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
   async function handleEnviar() {
     setEnviando(true)
     try {
-      const payload = {
-        empresa_id:   geral.empresa_id,
-        solicitante:  geral.solicitante,
-        observacoes:  geral.observacoes,
-        tipo_amostra: tipoAmostra,
-        sub_tipo:     subcategoria,
-        ensaios_ids:  ensaiosSel,
-        amostras,
-        material:     tipoAmostra,
-        ...(modoCorrecao && pedidoInicial ? { pedido_original_id: pedidoInicial.id } : {}),
+      let resultado
+
+      if (modoCorrecao && pedidoInicial) {
+        // Bug 4 fix: corrigir = UPDATE no pedido original, não INSERT
+        resultado = await corrigirPedido(pedidoInicial.id, {
+          empresa_id:    geral.empresa_id,
+          lote:          geral.lote,
+          observacoes:   geral.observacoes,
+          material:      tipoAmostra,
+          sub_tipo:      subcategoria,
+          ensaios_ids:   ensaiosSel,
+          dados_amostra: amostras,   // Bug 2 fix: nome correto no banco
+          status:        'aguardando_analise',
+        })
+      } else {
+        resultado = await enviarPedido({
+          empresa_id:    geral.empresa_id,
+          lote:          geral.lote,          // Bug 1 fix: lote obrigatório
+          observacoes:   geral.observacoes,
+          material:      tipoAmostra,          // Bug 2 fix: só material, sem tipo_amostra duplicado
+          sub_tipo:      subcategoria,
+          ensaios_ids:   ensaiosSel,
+          dados_amostra: amostras,             // Bug 2 fix: nome correto no banco
+          // solicitante_id é adicionado no hook (perfil.id)
+        })
       }
-      const resultado = await enviarPedido(payload)
+
+      // Bug 3: exibir numero_pe se retornado
+      const pe = resultado?.data?.numero_pe && resultado?.data?.ano
+        ? `PE-${resultado.data.ano}-${String(resultado.data.numero_pe).padStart(4, '0')}`
+        : null
+
       setToast({
         type: resultado.offline ? 'warning' : 'success',
         message: resultado.offline
           ? 'Pedido salvo localmente. Será enviado quando houver conexão.'
-          : 'Pedido enviado com sucesso!',
+          : pe
+            ? `Pedido ${pe} enviado com sucesso!`
+            : 'Pedido enviado com sucesso!',
       })
       setTimeout(onVoltar, 1800)
     } catch (e) {
@@ -109,20 +134,42 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
         {step === 0 && (
           <div className={styles.stepContent}>
             <h3 className={styles.sectionTitle}>Dados Gerais</h3>
+
             <label className={styles.field}>
               <span className={styles.label}>Empresa *</span>
-              <select className={styles.input} value={geral.empresa_id} onChange={e => setGeral({...geral, empresa_id: e.target.value})}>
+              <select
+                className={styles.input}
+                value={geral.empresa_id}
+                onChange={e => {
+                  const emp = empresas.find(x => x.id === e.target.value)
+                  setGeral({ ...geral, empresa_id: e.target.value, lote: emp?.lote || '' })
+                }}
+              >
                 <option value="">Selecione a empresa…</option>
                 {empresas.map(emp => <option key={emp.id} value={emp.id}>{emp.nome_fantasia}</option>)}
               </select>
             </label>
+
+            {/* Bug 1 fix: campo lote obrigatório */}
             <label className={styles.field}>
-              <span className={styles.label}>Solicitante / Responsável pela Coleta *</span>
-              <input className={styles.input} value={geral.solicitante} onChange={e => setGeral({...geral, solicitante: e.target.value})} placeholder="Nome do responsável" />
+              <span className={styles.label}>Lote *</span>
+              <input
+                className={styles.input}
+                value={geral.lote}
+                onChange={e => setGeral({ ...geral, lote: e.target.value })}
+                placeholder={empresaSel?.lote ? `Padrão: ${empresaSel.lote}` : 'Ex: Lote 3'}
+              />
             </label>
+
             <label className={styles.field}>
               <span className={styles.label}>Observações</span>
-              <textarea className={`${styles.input} ${styles.textarea}`} value={geral.observacoes} onChange={e => setGeral({...geral, observacoes: e.target.value})} rows={3} placeholder="Informações adicionais…" />
+              <textarea
+                className={`${styles.input} ${styles.textarea}`}
+                value={geral.observacoes}
+                onChange={e => setGeral({ ...geral, observacoes: e.target.value })}
+                rows={3}
+                placeholder="Informações adicionais…"
+              />
             </label>
           </div>
         )}
@@ -225,7 +272,7 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
           </button>
         ) : (
           <button className={styles.btnEnviar} onClick={handleEnviar} disabled={enviando}>
-            {enviando ? 'Enviando…' : '📤 Enviar Pedido'}
+            {enviando ? 'Enviando…' : modoCorrecao ? '📤 Reenviar Pedido' : '📤 Enviar Pedido'}
           </button>
         )}
       </div>

@@ -2,21 +2,26 @@ import { OPCOES_CAMADA, OPCOES_PISTA, OPCOES_FAIXA, OPCOES_LADO, OPCOES_PROCTOR 
 import FieldGroup from '../FieldGroup'
 import styles from './Subcategoria.module.css'
 
-export default function CampoSolos({ subcategoria, dados, onChange }) {
-  const set = (k, v) => onChange({ ...dados, [k]: v })
-  const F = ({ label, name, type = 'text', options, required }) => (
+// Declarado FORA do componente pai para evitar perda de foco ao digitar no mobile
+function FormField({ label, name, type = 'text', options, required, dados, onChange }) {
+  return (
     <label className={styles.field}>
       <span className={styles.label}>{label}{required && <span className={styles.req}> *</span>}</span>
       {options ? (
-        <select className={styles.input} value={dados[name] || ''} onChange={e => set(name, e.target.value)}>
+        <select className={styles.input} value={dados[name] || ''} onChange={e => onChange(name, e.target.value)}>
           <option value="">Selecione…</option>
           {options.map(o => <option key={o}>{o}</option>)}
         </select>
       ) : (
-        <input type={type} className={styles.input} value={dados[name] || ''} onChange={e => set(name, e.target.value)} />
+        <input type={type} className={styles.input} value={dados[name] || ''} onChange={e => onChange(name, e.target.value)} />
       )}
     </label>
   )
+}
+
+export default function CampoSolos({ subcategoria, dados, onChange }) {
+  const set = (k, v) => onChange({ ...dados, [k]: v })
+  const F = (props) => <FormField {...props} dados={dados} onChange={set} />
 
   const localizacaoComum = (
     <>
