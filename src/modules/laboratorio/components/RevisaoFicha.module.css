@@ -37,12 +37,12 @@
 .kv dd { color: var(--text); font-weight: 600; }
 
 .campo { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
-.campo select, .campo textarea {
+.campo select, .campo textarea, .campo input[type="date"] {
   font: inherit; font-size: 14px; color: var(--text);
   border: 1px solid var(--border); border-radius: 6px; padding: 7px 9px; background: #fff;
 }
 .campo textarea { resize: vertical; }
-.campo select:focus, .campo textarea:focus { outline: 2px solid var(--teal); outline-offset: 0; }
+.campo select:focus, .campo textarea:focus, .campo input[type="date"]:focus { outline: 2px solid var(--teal); outline-offset: 0; }
 
 .liberar { display: flex; gap: 8px; align-items: flex-start; font-size: 13.5px; cursor: pointer; }
 .liberar input { margin-top: 3px; }

@@ -1,5 +1,9 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useCampo } from '../useCampo'
+import { useAuthStore } from '../../../store/authStore'
+import { ehDev, dataParaISO, laboratoristasHistorico, rotuloUsuario } from '../../../lib/historico'
+import { hojeISO } from '../../laboratorio/utils'
 import { TIPOS_AMOSTRA, SUBCATEGORIAS } from '../constants'
 import EnsaiosSelector from './EnsaiosSelector'
 import CampoSolos    from './subcategorias/CampoSolos'
@@ -12,7 +16,14 @@ import styles from './NovoPedidoForm.module.css'
 const STEPS = ['Dados Gerais', 'Material', 'Ensaios', 'Amostra']
 
 export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCorrecao = false }) {
-  const { empresas, ensaios, enviarPedido, corrigirPedido } = useCampo()
+  const { empresas, ensaios, usuarios, enviarPedido, corrigirPedido } = useCampo()
+  const { perfil } = useAuthStore()
+  const navigate = useNavigate()
+  const podeHistorico = ehDev(perfil) && !modoCorrecao
+  // Lançamento histórico (DEV): pedido antigo, em nome de quem solicitou, com a data real
+  const [hist, setHist] = useState({ ativo: false, numero: '', data: '', solicitante_id: '', laboratorista_id: '' })
+  const histNumeroOk = !hist.numero || (/^\d{1,4}$/.test(hist.numero) && Number(hist.numero) >= 1)
+  const histOk = !hist.ativo || (hist.data && hist.data <= hojeISO() && hist.solicitante_id && hist.laboratorista_id && histNumeroOk)
   const [step, setStep]           = useState(0)
   const [toast, setToast]         = useState(null)
   const [enviando, setEnviando]   = useState(false)
@@ -35,7 +46,7 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
 
   // ── Navegação ──────────────────────────────────────────────────────────────
   function canNext() {
-    if (step === 0) return geral.empresa_id && geral.lote
+    if (step === 0) return geral.empresa_id && geral.lote && histOk
     if (step === 1) return tipoAmostra && (subcatOpcoes.length === 0 || subcategoria)
     if (step === 2) return ensaiosSel.length > 0
     return true
@@ -68,6 +79,12 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
           ensaios_ids:   ensaiosSel,
           dados_amostra: amostras,             // Bug 2 fix: nome correto no banco
           // solicitante_id é adicionado no hook (perfil.id)
+          historico: hist.ativo ? {
+            solicitante_id:   hist.solicitante_id,
+            laboratorista_id: hist.laboratorista_id,
+            created_at:       dataParaISO(hist.data),
+            sequencial:       hist.numero ? Number(hist.numero) : null,
+          } : null,
         })
       }
 
@@ -75,6 +92,13 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
       const pe = resultado?.data?.numero_pe && resultado?.data?.ano
         ? `PE-${resultado.data.ano}-${String(resultado.data.numero_pe).padStart(4, '0')}`
         : null
+
+      if (resultado.historico) {
+        // segue direto para o Laboratório, onde o lançamento continua (O.S., atribuição…)
+        setToast({ type: 'success', message: `Lançamento histórico ${pe || ''} criado. Abrindo no Laboratório…` })
+        setTimeout(() => navigate(`/laboratorio/${encodeURIComponent(resultado.data.id)}`), 1200)
+        return
+      }
 
       setToast({
         type: resultado.offline ? 'warning' : 'success',
@@ -132,6 +156,58 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
       <div className={styles.body}>
         {step === 0 && (
           <div className={styles.stepContent}>
+            {podeHistorico && (
+              <div className={styles.historicoBox}>
+                <label className={styles.historicoToggle}>
+                  <input type="checkbox" checked={hist.ativo} onChange={e => setHist({ ...hist, ativo: e.target.checked })} />
+                  <span>
+                    <strong>📜 Lançamento histórico (somente DEV)</strong>
+                    <small>Pedido antigo, já feito em papel. Fica em nome de quem solicitou, com a data e o número reais.
+                      As próximas etapas (O.S., execução, aprovação) serão feitas por você em nome das pessoas escolhidas.</small>
+                  </span>
+                </label>
+                {hist.ativo && (
+                  <>
+                    <div className={styles.historicoGrade}>
+                      <label className={styles.field}>
+                        <span className={styles.label}>Data da solicitação *</span>
+                        <input type="date" className={styles.input} value={hist.data} max={hojeISO()}
+                          onChange={e => setHist({ ...hist, data: e.target.value })} />
+                      </label>
+                      <label className={styles.field}>
+                        <span className={styles.label}>Nº do PE (papel)</span>
+                        <input className={styles.input} inputMode="numeric" value={hist.numero} placeholder="Ex.: 0350"
+                          onChange={e => setHist({ ...hist, numero: e.target.value.replace(/\D/g, '').slice(0, 4) })} />
+                      </label>
+                      <label className={styles.field}>
+                        <span className={styles.label}>Solicitante *</span>
+                        <select className={styles.input} value={hist.solicitante_id}
+                          onChange={e => setHist({ ...hist, solicitante_id: e.target.value })}>
+                          <option value="">Selecione…</option>
+                          {usuarios.map(u => <option key={u.id} value={u.id}>{rotuloUsuario(u)}</option>)}
+                        </select>
+                      </label>
+                      <label className={styles.field}>
+                        <span className={styles.label}>Laboratorista responsável *</span>
+                        <select className={styles.input} value={hist.laboratorista_id}
+                          onChange={e => setHist({ ...hist, laboratorista_id: e.target.value })}>
+                          <option value="">Selecione…</option>
+                          {laboratoristasHistorico(usuarios).map(u => <option key={u.id} value={u.id}>{rotuloUsuario(u)}</option>)}
+                        </select>
+                      </label>
+                    </div>
+                    <span className={styles.historicoAjuda}>
+                      {!histNumeroOk
+                        ? 'Número inválido (1 a 9999).'
+                        : hist.numero
+                          ? `Será o PE-${hist.data ? hist.data.slice(0, 4) : 'AAAA'}-${hist.numero.padStart(4, '0')}. Se for maior que o último número usado, os próximos pedidos do Campo continuam a partir dele.`
+                          : 'Sem número: o sistema usa o próximo número automático.'}
+                    </span>
+                  </>
+                )}
+              </div>
+            )}
+
             <h3 className={styles.sectionTitle}>Dados Gerais</h3>
 
             <label className={styles.field}>

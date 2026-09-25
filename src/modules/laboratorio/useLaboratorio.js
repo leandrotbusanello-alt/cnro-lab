@@ -5,6 +5,7 @@ import { useAuthStore } from '../../store/authStore'
 import * as repo from './labRepo'
 import { PERFIS_GESTAO, STATUS_ABERTOS } from './constants'
 import { porId } from './utils'
+import { ehDev as ehPerfilDev, ehHistorico, exigirOnlineHistorico } from '../../lib/historico'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Estado do Módulo Laboratório (compartilhado entre a lista e o detalhe)
@@ -31,6 +32,7 @@ export function useLaboratorio() {
   const [atualizadoEm, setAtualizadoEm] = useState(null)
   const carregandoRef = useRef(false)
   const pendenteRef = useRef(false)
+  const ehDev = ehPerfilDev(perfil)
 
   // ── Carregar ──────────────────────────────────────────────────────────────
   const carregar = useCallback(async ({ silencioso = false } = {}) => {
@@ -38,7 +40,7 @@ export function useLaboratorio() {
     carregandoRef.current = true
     if (!silencioso) setLoading(true)
     try {
-      const r = await repo.carregarDados()
+      const r = await repo.carregarDados({ ehDev })
       setDados({
         pedidos: r.pedidos, ensaiosOs: r.ensaiosOs, usuarios: r.usuarios,
         ensaios: r.ensaios, empresas: r.empresas, fichas: r.fichas, modelos: r.modelos || [],
@@ -56,7 +58,7 @@ export function useLaboratorio() {
         carregar({ silencioso: true })
       }
     }
-  }, [])
+  }, [ehDev])
 
   useEffect(() => { if (perfil) carregar() }, [perfil, carregar])
 
@@ -120,10 +122,27 @@ export function useLaboratorio() {
   const perfilSigla = String(perfil?.perfil || '').toUpperCase()
   const ehGestor = PERFIS_GESTAO.includes(perfilSigla)
 
+  /**
+   * "Eu" do ponto de vista de um pedido. No lançamento histórico o DEV age em nome
+   * do laboratorista do pedido (o banco faz o mesmo), então ele é o "responsável".
+   */
+  const meuIdPara = useCallback((pedido) => (
+    ehDev && ehHistorico(pedido) ? pedido.laboratorista_id : perfil?.id
+  ), [ehDev, perfil?.id])
+
+  /** Quem assina como laboratorista neste pedido (histórico: o laboratorista do pedido) */
+  const laboratoristaDe = useCallback((pedido) => (
+    ehHistorico(pedido)
+      ? porId(dados.usuarios)[pedido.laboratorista_id]
+      : (porId(dados.usuarios)[perfil?.id] || perfil)
+  ), [dados.usuarios, perfil])
+
   // ── Regras de permissão (espelham as regras do banco) ────────────────────
   const permissoes = useCallback((pedido) => {
     if (!pedido || !perfil) return {}
-    const souResp = pedido.laboratorista_id === perfil.id
+    const historico = ehHistorico(pedido)
+    if (historico && !ehDev) return { somenteLeitura: true }
+    const souResp = pedido.laboratorista_id === meuIdPara(pedido)
     const livre = !pedido.laboratorista_id
     const aberto = STATUS_ABERTOS.includes(pedido.status)
     const preOS = ['aguardando_lab', 'em_analise'].includes(pedido.status)
@@ -135,19 +154,24 @@ export function useLaboratorio() {
       podeGerenciarOS: posOS && souResp,
       podeTransferir: aberto && pedido.status !== 'devolvido_campo' && !livre && (souResp || ehGestor),
       somenteLeitura: !(souResp || livre) || !aberto,
+      historico,
+      podeExcluir: ehDev,
+      podeAlterarNumero: ehDev && !!pedido.sequencial,
     }
-  }, [perfil, ehGestor])
+  }, [perfil, ehGestor, ehDev, meuIdPara])
 
   // ── Ações (recarregam ao terminar) ───────────────────────────────────────
   const ctxAcao = useMemo(() => ({
     perfil,
+    meuIdPara,
     ensaiosPorId: indices.ensaiosPorId,
     usuariosPorId: indices.usuariosPorId,
     empresasPorId: indices.empresasPorId,
-  }), [perfil, indices])
+  }), [perfil, meuIdPara, indices])
 
   const acoes = useMemo(() => {
     const embrulhar = fn => async (...args) => {
+      exigirOnlineHistorico(args[0])   // 1º argumento de toda ação = pedido
       try {
         return await fn(ctxAcao, ...args)
       } finally {
@@ -170,11 +194,13 @@ export function useLaboratorio() {
       finalizarOS:          embrulhar(repo.finalizarOS),
       salvarFichaSolicitacao: embrulhar(repo.salvarFichaSolicitacao),
       salvarFichaOS:          embrulhar(repo.salvarFichaOS),
+      excluirPedido:          embrulhar(repo.excluirPedido),
+      alterarNumeroPE:        embrulhar(repo.alterarNumeroPE),
     }
   }, [ctxAcao, carregar])
 
   return {
-    perfil, ehGestor,
+    perfil, ehGestor, ehDev, meuIdPara, laboratoristaDe,
     ...dados, ...indices,
     fonte, loading, erro, atualizadoEm,
     recarregar: carregar,

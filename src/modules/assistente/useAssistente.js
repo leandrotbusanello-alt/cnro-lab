@@ -4,6 +4,7 @@ import { onFilaMudou } from '../../lib/syncQueue'
 import { useAuthStore } from '../../store/authStore'
 import { porId } from '../laboratorio/utils'
 import * as repo from './assistenteRepo'
+import { ehHistorico, exigirOnlineHistorico } from '../../lib/historico'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Estado do Módulo Assistente (compartilhado entre a fila e a execução)
@@ -109,9 +110,16 @@ export function useAssistente() {
   // Registro do próprio usuário (assinatura cadastrada?)
   const eu = indices.usuariosPorId[perfil?.id] || perfil
 
+  /** Quem executa/assina um ensaio. Lançamento histórico: o assistente atribuído (o DEV age em nome dele). */
+  const executorDe = useCallback(eo => {
+    const pedido = eo ? indices.pedidosPorId[eo.pedido_id] : null
+    return ehHistorico(pedido) ? (indices.usuariosPorId[eo.assistente_id] || null) : eu
+  }, [indices, eu])
+
   const ctxAcao = useMemo(() => ({ perfil, modelos: dados.modelos }), [perfil, dados.modelos])
   const acoes = useMemo(() => {
     const embrulhar = (fn, recarregar = true) => async (...args) => {
+      exigirOnlineHistorico(indices.pedidosPorId[args[0]?.pedido_id])   // 1º argumento = ensaio da O.S.
       try { return await fn(ctxAcao, ...args) } finally { if (recarregar) await carregar({ silencioso: true }) }
     }
     return {
@@ -119,10 +127,10 @@ export function useAssistente() {
       salvarRascunho: embrulhar(repo.salvarRascunhoServidor, false),
       enviar: embrulhar(repo.enviarParaRevisao),
     }
-  }, [ctxAcao, carregar])
+  }, [ctxAcao, carregar, indices])
 
   return {
-    perfil, eu, ...dados, ...indices, fila, fonte, loading, erro,
+    perfil, eu, executorDe, ...dados, ...indices, fila, fonte, loading, erro,
     recarregar: carregar, acoes,
   }
 }

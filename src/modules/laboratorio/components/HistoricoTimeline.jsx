@@ -47,9 +47,11 @@ function detalhes(ev) {
   if (ev.ensaio) d.push(`Ensaio: ${ev.ensaio}`)
   if (ev.assistente) d.push(`Executor: ${ev.assistente}`)
   if (ev.numero_os) d.push(`O.S. ${ev.numero_os}`)
-  if (ev.para) d.push(`Para: ${ev.para}`)
+  if (ev.acao === 'Número do PE alterado' && ev.de) d.push(`${ev.de} → ${ev.para}`)
+  else if (ev.para) d.push(`Para: ${ev.para}`)
   if (Array.isArray(ev.campos) && ev.campos.length) d.push(`Alterado: ${ev.campos.join(', ')}`)
   if (ev.motivo) d.push(`Motivo: ${ev.motivo}`)
   if (ev.acao === 'O.S. finalizada' && ev.assinatura === false) d.push('Sem assinatura cadastrada')
+  if (ev.lancado_por) d.push(`📜 Lançado por ${ev.lancado_por}${ev.lancado_em ? ` em ${dataHora(ev.lancado_em)}` : ''}`)
   return d
 }

@@ -10,6 +10,7 @@ import {
 import { DIAS_CONCLUIDAS } from './constants'
 import { gerarNumeroOSProvisorio } from './utils'
 import { prepararModelos, listarModelos } from '../fichas/fichasRepo'
+import { ehHistorico, dataParaISO } from '../../lib/historico'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Repositório do Módulo Laboratório
@@ -26,11 +27,12 @@ const SELECT_PEDIDO_COMPLETO =
 
 // ── Leitura ──────────────────────────────────────────────────────────────────
 
-async function buscarPedidos() {
+async function buscarPedidos({ ehDev = false } = {}) {
   const desde = new Date(Date.now() - DIAS_CONCLUIDAS * 86400000).toISOString()
+  // DEV: também todos os lançamentos históricos (finalizados com datas antigas)
   const filtro =
     `status.in.(aguardando_lab,em_analise,em_andamento,aguardando_revisao,devolvido_campo),` +
-    `finalizado_em.gte.${desde}`
+    `finalizado_em.gte.${desde}` + (ehDev ? ',lancamento_historico.is.true' : '')
 
   let r = await supabase.from('pedidos_ensaio').select(SELECT_PEDIDO_COMPLETO)
     .or(filtro).order('created_at', { ascending: true }).limit(1000)
@@ -69,16 +71,17 @@ async function pedidosCampoOffline() {
 
 /**
  * Carrega tudo o que o módulo precisa.
+ * Lançamentos históricos só aparecem para o DEV (os demais não os veem nas filas).
  * @returns {{pedidos, ensaiosOs, usuarios, ensaios, empresas, fichas, fonte}}
  */
-export async function carregarDados() {
+export async function carregarDados({ ehDev = false } = {}) {
   let dados
   let fonte = 'servidor'
 
   if (navigator.onLine) {
     try {
-      const [pedidos, usuarios, ensaios, empresas, fichas] = await Promise.all([
-        buscarPedidos(),
+      const [pedidosTodos, usuarios, ensaios, empresas, fichas] = await Promise.all([
+        buscarPedidos({ ehDev }),
         supabase.from('usuarios').select('id, nome, cargo, perfil, status, assinatura_url, lote, empresa, modulos_acesso')
           .order('nome').then(r => { if (r.error) throw r.error; return r.data || [] }),
         supabase.from('ensaios').select('*').order('nome')
@@ -88,6 +91,7 @@ export async function carregarDados() {
         supabase.from('fichas_ensaio').select('id, codigo, nome, ensaio_id, versao, ativa').order('codigo')
           .then(r => { if (r.error) throw r.error; return r.data || [] }),
       ])
+      const pedidos = ehDev ? pedidosTodos : pedidosTodos.filter(p => !ehHistorico(p))
       const ensaiosOs = await buscarEnsaiosOs(pedidos.map(p => p.id))
       // fichas online a revisar: baixa os modelos para revisar também sem internet
       prepararModelos(ensaiosOs.filter(e => e.ficha_modelo_id && e.status === 'aguardando_revisao').map(e => e.ficha_modelo_id))
@@ -125,7 +129,7 @@ export async function carregarDados() {
       cacheGetAll('pedidos_cache'), cacheGetAll('ensaios_os_cache'), cacheGetAll('usuarios_cache'),
       cacheGetAll('ensaios_cache'), cacheGetAll('empresas_cache'), cacheGetAll('fichas_ensaio_cache'),
     ])
-    dados = { pedidos, ensaiosOs, usuarios, ensaios, empresas, fichas }
+    dados = { pedidos: ehDev ? pedidos : pedidos.filter(p => !ehHistorico(p)), ensaiosOs, usuarios, ensaios, empresas, fichas }
   }
 
   // Pedidos do Campo criados offline neste aparelho
@@ -289,7 +293,8 @@ function opHistorico(pedidoId, evento) {
 
 /** Passo "assumir" (só quando necessário). Retorna [] se já é o responsável. */
 function passosAssumir(ctx, pedido) {
-  const souResp = pedido.laboratorista_id === ctx.perfil.id
+  const meuId = ctx.meuIdPara ? ctx.meuIdPara(pedido) : ctx.perfil.id   // histórico: laboratorista do pedido
+  const souResp = pedido.laboratorista_id === meuId
   if (souResp && pedido.status !== 'aguardando_lab') return []
   return [{
     op: {
@@ -380,7 +385,9 @@ export async function atualizarAtribuicao(ctx, pedido, ensaioOs, { assistenteId,
   const extra = {}
   if (assistenteId !== undefined && assistenteId !== ensaioOs.assistente_id) {
     dados.assistente_id = assistenteId || null
-    dados.data_atribuicao = assistenteId ? new Date().toISOString() : null
+    // lançamento histórico: atribuição na data da O.S.
+    const quando = ehHistorico(pedido) ? (dataParaISO(pedido.data_validacao) || pedido.created_at) : new Date().toISOString()
+    dados.data_atribuicao = assistenteId ? quando : null
     extra.assistente = assistenteId ? ctx.usuariosPorId?.[assistenteId]?.nome : null
   }
   if (fichaId !== undefined && fichaId !== ensaioOs.ficha_ensaio_id) {
@@ -539,13 +546,35 @@ export async function alterarVisibilidade(ctx, pedido, ensaioOs, visivel) {
   ])
 }
 
-export async function finalizarOS(ctx, pedido) {
+/** @param {{dataFinalizacao?: string}} opcoes — ISO; obrigatória no lançamento histórico */
+export async function finalizarOS(ctx, pedido, { dataFinalizacao } = {}) {
+  const args = { p_pedido_id: pedido.id }
+  if (dataFinalizacao) args.p_data = dataFinalizacao
   return executar({
-    tipo: 'rpc', rpc: 'finalizar_os', args: { p_pedido_id: pedido.id },
+    tipo: 'rpc', rpc: 'finalizar_os', args,
     descricao: 'Finalizar O.S.', pedidoId: pedido.id,
   }, () => patchPedidoLocal(pedido.id, {
     status: 'concluido', finalizado_por: ctx.perfil.id, finalizado_em: new Date().toISOString(),
   }, eventoLocal(ctx, 'O.S. finalizada')))
+}
+
+// ── Somente DEV (migração 14): excluir pedido e corrigir o número ────────────
+// Operações online e diretas (não entram na fila offline).
+
+export async function excluirPedido(ctx, pedido, confirmacao) {
+  if (!navigator.onLine) throw new Error('Excluir pedido só pode ser feito com internet.')
+  if (ehIdTemp(pedido.id)) throw new Error('Pedido ainda não sincronizado.')
+  const { data, error } = await supabase.rpc('excluir_pedido', { p_pedido_id: pedido.id, p_confirmacao: confirmacao })
+  if (error) throw new Error(mensagemErro(error))
+  await cacheDelete('pedidos_cache', pedido.id).catch(() => {})
+  return { resultado: data, offline: false }
+}
+
+export async function alterarNumeroPE(ctx, pedido, sequencial) {
+  if (!navigator.onLine) throw new Error('Alterar o número só pode ser feito com internet.')
+  const { data, error } = await supabase.rpc('alterar_numero_pe', { p_pedido_id: pedido.id, p_sequencial: sequencial })
+  if (error) throw new Error(mensagemErro(error))
+  return { resultado: data, offline: false }
 }
 
 // ── Fichas FR-IMOB-05 / FR-IMOB-04 ───────────────────────────────────────────

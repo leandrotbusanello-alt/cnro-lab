@@ -3,20 +3,25 @@ import Modal from '../../../components/ui/Modal'
 import { useLab } from '../useLaboratorio'
 import { ehIdTemp } from '../../../lib/syncQueue'
 import { hojeISO, numeroPE, previaNumeroOS, normalizarAmostras } from '../utils'
+import { ehHistorico, isoParaData } from '../../../lib/historico'
 import ui from './ui.module.css'
 
 /** Validar pedido e gerar a O.S. (lote obrigatório) */
 export default function ModalGerarOS({ pedido, ocupado, onFechar, onConfirmar }) {
-  const { empresasPorId, empresas, ensaiosPorId } = useLab()
+  const { empresasPorId, empresas, ensaiosPorId, usuariosPorId } = useLab()
   const empresa = empresasPorId[pedido.empresa_id] || empresas.find(e => e.nome === pedido.empresa)
+  const historico = ehHistorico(pedido)
+  const dataPedido = isoParaData(pedido.created_at)
   const [lote, setLote] = useState(pedido.lote || empresa?.lote || '')
-  const [dataValidacao, setDataValidacao] = useState(hojeISO())
+  // lançamento histórico: a O.S. nasce na data real (a partir da data do pedido)
+  const [dataValidacao, setDataValidacao] = useState(historico ? dataPedido : hojeISO())
 
   const loteValido = /\d/.test(lote)
   const ensaios = pedido.ensaios_ids || []
   const offline = !navigator.onLine || ehIdTemp(pedido.id) || !pedido.sequencial
   const previa = !offline && previaNumeroOS({ data: dataValidacao, lote, sequencial: pedido.sequencial })
-  const pode = loteValido && ensaios.length > 0 && !!dataValidacao
+  const dataOk = !!dataValidacao && dataValidacao <= hojeISO() && (!historico || dataValidacao >= dataPedido)
+  const pode = loteValido && ensaios.length > 0 && dataOk
 
   return (
     <Modal
@@ -44,11 +49,19 @@ export default function ModalGerarOS({ pedido, ocupado, onFechar, onConfirmar })
             {!loteValido && <span className={ui.ajuda} style={{ color: '#b91c1c' }}>Informe o lote (precisa conter o número).</span>}
           </label>
           <label className={ui.campo}>
-            <span className={ui.rotulo}>Data da validação</span>
+            <span className={ui.rotulo}>{historico ? '📜 Data da O.S. (papel)' : 'Data da validação'}</span>
             <input type="date" className={ui.input} value={dataValidacao} max={hojeISO()}
+              min={historico ? dataPedido : undefined}
               onChange={e => setDataValidacao(e.target.value)} />
           </label>
         </div>
+
+        {historico && (
+          <div className={`${ui.aviso} ${ui.avisoInfo}`}>
+            📜 Lançamento histórico: a O.S. é aberta em nome de <strong>{usuariosPorId[pedido.laboratorista_id]?.nome || 'laboratorista'}</strong>.
+            {!dataOk && ' A data precisa estar entre a data do pedido e hoje.'}
+          </div>
+        )}
 
         {offline ? (
           <div className={`${ui.aviso} ${ui.avisoAlerta}`}>

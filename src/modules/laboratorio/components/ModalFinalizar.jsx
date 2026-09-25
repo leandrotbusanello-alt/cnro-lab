@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import Modal from '../../../components/ui/Modal'
 import { useLab } from '../useLaboratorio'
-import { numeroOS, ehOSProvisoria } from '../utils'
+import { numeroOS, ehOSProvisoria, hojeISO } from '../utils'
+import { ehHistorico, dataParaISO, isoParaData, maiorData } from '../../../lib/historico'
 import { StatusEnsaio } from './StatusBadge'
 import styles from './ModalFinalizar.module.css'
 import ui from './ui.module.css'
@@ -11,7 +12,11 @@ export default function ModalFinalizar({ pedido, ensaiosOs, ocupado, rodar, onFe
   const lab = useLab()
   const [assinatura, setAssinatura] = useState(null)
   const [confirmo, setConfirmo] = useState(false)
-  const eu = lab.usuariosPorId[lab.perfil?.id] || lab.perfil
+  // lançamento histórico: assina o laboratorista do pedido, na data informada
+  const historico = ehHistorico(pedido)
+  const eu = lab.laboratoristaDe(pedido)
+  const dataMin = maiorData(pedido.data_validacao, ...ensaiosOs.map(e => isoParaData(e.aprovado_em)))
+  const [dataFinal, setDataFinal] = useState(dataMin || '')
 
   useEffect(() => {
     let ativo = true
@@ -20,7 +25,8 @@ export default function ModalFinalizar({ pedido, ensaiosOs, ocupado, rodar, onFe
   }, [eu?.id, eu?.assinatura_url]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const pendentes = ensaiosOs.filter(e => e.status !== 'aprovado')
-  const pode = pendentes.length === 0 && ensaiosOs.length > 0 && confirmo
+  const dataOk = !historico || (!!dataFinal && dataFinal <= hojeISO() && (!pedido.data_validacao || dataFinal >= pedido.data_validacao))
+  const pode = pendentes.length === 0 && ensaiosOs.length > 0 && confirmo && dataOk
 
   return (
     <Modal
@@ -31,7 +37,8 @@ export default function ModalFinalizar({ pedido, ensaiosOs, ocupado, rodar, onFe
       rodape={(
         <>
           <button className={`${ui.btn} ${ui.btnSecundario}`} onClick={onFechar} disabled={ocupado}>Cancelar</button>
-          <button className={`${ui.btn} ${ui.btnAcao}`} disabled={!pode || ocupado} onClick={onConfirmar}>
+          <button className={`${ui.btn} ${ui.btnAcao}`} disabled={!pode || ocupado}
+            onClick={() => onConfirmar(historico ? { dataFinalizacao: dataParaISO(dataFinal) } : {})}>
             {ocupado ? 'Finalizando…' : '✍️ Assinar e finalizar'}
           </button>
         </>
@@ -74,17 +81,27 @@ export default function ModalFinalizar({ pedido, ensaiosOs, ocupado, rodar, onFe
           </div>
         </div>
 
+        {historico && (
+          <label className={ui.campo}>
+            <span className={ui.rotulo}>📜 Data da finalização (lançamento histórico) <span className={ui.obrigatorio}>*</span></span>
+            <input type="date" className={ui.input} value={dataFinal} min={pedido.data_validacao || undefined} max={hojeISO()}
+              onChange={e => setDataFinal(e.target.value)} />
+            {!dataOk && <span className={ui.ajuda} style={{ color: '#b91c1c' }}>Informe uma data entre a data da O.S. e hoje.</span>}
+          </label>
+        )}
+
         <div className={styles.assinaturaBox}>
-          <div className={ui.secaoTitulo}>Assinatura do laboratorista</div>
+          <div className={ui.secaoTitulo}>Assinatura do laboratorista{historico ? ` · ${eu?.nome || ''}` : ''}</div>
           {assinatura ? (
             <div className={styles.assinatura}>
-              <img src={assinatura} alt="Sua assinatura" />
+              <img src={assinatura} alt={`Assinatura de ${eu?.nome || ''}`} />
               <span>{eu?.nome}</span>
             </div>
           ) : (
             <div className={`${ui.aviso} ${ui.avisoAlerta}`}>
-              Você ainda não tem assinatura cadastrada. A O.S. será finalizada e o histórico registrará que foi sem assinatura.
-              Peça ao Gestor para cadastrar sua assinatura (PNG com fundo transparente).
+              {historico ? `${eu?.nome || 'O laboratorista'} não tem assinatura cadastrada.` : 'Você ainda não tem assinatura cadastrada.'} A
+              O.S. será finalizada e o histórico registrará que foi sem assinatura.
+              Peça ao Gestor para cadastrar a assinatura (PNG com fundo transparente).
             </div>
           )}
         </div>

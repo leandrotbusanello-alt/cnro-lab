@@ -3,6 +3,7 @@ import Modal from '../../../components/ui/Modal'
 import { useLab } from '../useLaboratorio'
 import { PERFIS_LABORATORISTAS } from '../constants'
 import { numeroPE, numeroOS } from '../utils'
+import { ehHistorico, laboratoristasHistorico, rotuloUsuario } from '../../../lib/historico'
 import ui from './ui.module.css'
 
 /** Transferir a O.S. para outro laboratorista */
@@ -11,10 +12,13 @@ export default function ModalTransferir({ pedido, ocupado, onFechar, onConfirmar
   const [para, setPara] = useState('')
   const [motivo, setMotivo] = useState('')
 
-  const opcoes = usuarios.filter(u =>
-    PERFIS_LABORATORISTAS.includes(String(u.perfil).toUpperCase())
-    && (u.status || 'Ativo') === 'Ativo'
-    && u.id !== pedido.laboratorista_id)
+  // lançamento histórico: qualquer um com o módulo Laboratório, inclusive inativos
+  const opcoes = ehHistorico(pedido)
+    ? laboratoristasHistorico(usuarios).filter(u => u.id !== pedido.laboratorista_id)
+    : usuarios.filter(u =>
+      PERFIS_LABORATORISTAS.includes(String(u.perfil).toUpperCase())
+      && (u.status || 'Ativo') === 'Ativo'
+      && u.id !== pedido.laboratorista_id)
 
   return (
     <Modal
@@ -36,7 +40,7 @@ export default function ModalTransferir({ pedido, ocupado, onFechar, onConfirmar
           <span className={ui.rotulo}>Novo responsável <span className={ui.obrigatorio}>*</span></span>
           <select className={ui.input} value={para} onChange={e => setPara(e.target.value)}>
             <option value="">Selecione…</option>
-            {opcoes.map(u => <option key={u.id} value={u.id}>{u.nome}{u.cargo ? ` · ${u.cargo}` : ''}</option>)}
+            {opcoes.map(u => <option key={u.id} value={u.id}>{rotuloUsuario(u)}{u.cargo ? ` · ${u.cargo}` : ''}</option>)}
           </select>
         </label>
         <label className={ui.campo}>

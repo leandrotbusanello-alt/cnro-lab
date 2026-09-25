@@ -6,12 +6,14 @@ import {
   cacheEnsaios, getEnsaiosCache, cacheEmpresas, getEmpresasCache,
 } from '../../lib/offlineDB'
 import { novoIdTemp, processarFila } from '../../lib/syncQueue'
+import { ehDev } from '../../lib/historico'
 
 export function useCampo() {
   const { perfil } = useAuthStore()
   const [empresas, setEmpresas]   = useState([])
   const [ensaios, setEnsaios]     = useState([])
   const [pedidos, setPedidos]     = useState([])
+  const [usuarios, setUsuarios]   = useState([])   // só o DEV (lançamento histórico)
   const [loading, setLoading]     = useState(true)
   const [error, setError]         = useState(null)
 
@@ -36,11 +38,19 @@ export function useCampo() {
         const { data: ens } = await supabase.from('ensaios').select('*').order('nome')
         if (ens) { setEnsaios(ens); await cacheEnsaios(ens) }
 
-        // Pedidos do usuário atual
+        // Usuários (DEV: escolher solicitante e laboratorista do lançamento histórico)
+        if (ehDev(perfil)) {
+          const { data: us } = await supabase.from('usuarios')
+            .select('id, nome, cargo, perfil, status, modulos_acesso').order('nome')
+          setUsuarios(us || [])
+        }
+
+        // Pedidos do usuário atual (lançamentos históricos não aparecem aqui)
         const { data: peds } = await supabase
           .from('pedidos_ensaio')
           .select('*')   // (item 2) empresa = texto preenchido pelo banco a partir de empresa_id
           .eq('solicitante_id', perfil?.id)
+          .eq('lancamento_historico', false)
           .order('created_at', { ascending: false })
           .limit(50)
         // pedidos ainda guardados no aparelho continuam visíveis até sincronizar
@@ -62,7 +72,7 @@ export function useCampo() {
     } finally {
       setLoading(false)
     }
-  }, [perfil?.id])
+  }, [perfil])
 
   useEffect(() => { if (perfil) carregar() }, [perfil, carregar])
 
@@ -81,6 +91,20 @@ export function useCampo() {
       solicitante_id: perfil?.id,
       status: 'aguardando_lab',   // (item 3) nome oficial do status
       created_at: new Date().toISOString(),
+    }
+
+    // Lançamento histórico (somente DEV; o banco confere): solicitante, laboratorista,
+    // data da solicitação e nº do PE (opcional) informados; só com internet.
+    if (dados.historico) {
+      if (!navigator.onLine) throw new Error('Lançamento histórico só pode ser feito com internet.')
+      payload.lancamento_historico = true
+      payload.solicitante_id = dados.historico.solicitante_id
+      payload.laboratorista_id = dados.historico.laboratorista_id
+      payload.created_at = dados.historico.created_at
+      if (dados.historico.sequencial) payload.sequencial = dados.historico.sequencial
+      const { data, error } = await supabase.from('pedidos_ensaio').insert(payload).select().single()
+      if (error) throw error
+      return { data, historico: true }
     }
 
     if (!navigator.onLine) {
@@ -133,7 +157,7 @@ export function useCampo() {
   }, [carregar])
 
   return {
-    empresas, ensaios, pedidos, loading, error,
+    empresas, ensaios, pedidos, usuarios, loading, error,
     enviarPedido, corrigirPedido, reenviarPedido,
     recarregar: carregar,
   }

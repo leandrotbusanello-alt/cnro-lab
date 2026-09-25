@@ -14,7 +14,8 @@ import { INTERVALO_RASCUNHO_SERVIDOR } from '../../fichas/constants'
 import FichaEnsaio from '../../fichas/components/FichaEnsaio'
 import FotoApoio from '../../fichas/components/FotoApoio'
 import { urlAssinatura } from '../../laboratorio/labRepo'
-import { numeroOS, numeroPE, dataHora } from '../../laboratorio/utils'
+import { numeroOS, numeroPE, dataHora, hojeISO } from '../../laboratorio/utils'
+import { ehHistorico, dataParaISO, isoParaData } from '../../../lib/historico'
 import { Selo } from '../../laboratorio/components/StatusBadge'
 import DadosPedido from './DadosPedido'
 import ui from '../../laboratorio/components/ui.module.css'
@@ -34,6 +35,13 @@ export default function ExecucaoEnsaio() {
   const id = decodeURIComponent(ensaioOsId || '')
   const eo = a.ensaiosOs.find(e => e.id === id)
   const pedido = eo ? a.pedidosPorId[eo.pedido_id] : null
+  // Lançamento histórico: o DEV preenche e assina em nome do assistente atribuído, na data informada
+  const historico = ehHistorico(pedido)
+  const executor = eo ? a.executorDe(eo) : a.eu
+  const nomeExec = historico ? (executor?.nome || 'O executor') : 'Você'
+  const dataMinExec = isoParaData(eo?.data_atribuicao) || pedido?.data_validacao || ''
+  const [dataExec, setDataExec] = useState('')
+  const dataExecOk = !historico || (!!dataExec && dataExec <= hojeISO() && (!dataMinExec || dataExec >= dataMinExec))
 
   // ── Modelo da ficha ──────────────────────────────────────────────────────
   const modeloId = eo ? modeloIdDoEnsaio(eo, a.modelos) : null
@@ -64,12 +72,16 @@ export default function ExecucaoEnsaio() {
   const carregado = useRef(null)
   const base = eo ? baseDoRascunho(eo) : null
 
+  // Só marca como carregado quando a leitura termina: se a lista recarregar no meio
+  // (tempo real, foco da janela), a leitura descartada é refeita e a ficha não fica em branco.
   useEffect(() => {
-    if (!eo || carregado.current === `${eo.id}|${base}`) return
-    carregado.current = `${eo.id}|${base}`
+    if (!eo) return undefined
+    const chave = `${eo.id}|${base}`
+    if (carregado.current === chave) return undefined
     let ativo = true
     lerRascunho(eo).then(r => {
-      if (!ativo) return
+      if (!ativo || carregado.current === chave) return
+      carregado.current = chave
       const doServidor = estadoDosDados(eo.dados_resultado)
       const rascunhoMaisNovo = r && (!eo.rascunho_em || r.salvoEm >= eo.rascunho_em)
       setEstado(rascunhoMaisNovo ? r.estado : doServidor)
@@ -85,7 +97,7 @@ export default function ExecucaoEnsaio() {
 
   // URL da imagem da assinatura do usuário (funciona offline depois do 1º download)
   const [urlMinha, setUrlMinha] = useState(null)
-  useEffect(() => { if (a.eu?.assinatura_url) urlAssinatura(a.eu).then(setUrlMinha) }, [a.eu])
+  useEffect(() => { if (executor?.assinatura_url) urlAssinatura(executor).then(setUrlMinha) }, [executor])
 
   // ── Salvamento automático ────────────────────────────────────────────────
   const emExecucao = eo?.status === 'em_andamento'
@@ -153,21 +165,22 @@ export default function ExecucaoEnsaio() {
       return
     }
     if (sit.preenchidos === 0) { setAviso({ tipo: 'erro', texto: 'A ficha está vazia.' }); return }
-    if (!a.eu?.assinatura_url) {
-      setAviso({ tipo: 'erro', texto: 'Você ainda não tem assinatura cadastrada. Peça ao Gestor para cadastrar antes de enviar.' })
+    if (!executor?.assinatura_url) {
+      setAviso({ tipo: 'erro', texto: `${historico ? `${nomeExec} não tem` : 'Você ainda não tem'} assinatura cadastrada. Peça ao Gestor para cadastrar antes de enviar.` })
       return
     }
     if (!assinatura) {
       setAviso({ tipo: 'erro', texto: 'Assine a ficha no campo “Responsável executor” antes de enviar.' })
       return
     }
+    if (historico && !dataExec) setDataExec(dataMinExec && dataMinExec <= hojeISO() ? dataMinExec : hojeISO())
     setConfirmarEnvio(true)
   }
 
   async function enviar() {
     setOcupado(true)
     try {
-      const r = await a.acoes.enviar(eo, ficha.dados(), assinatura.em)
+      const r = await a.acoes.enviar(eo, ficha.dados(), historico ? dataParaISO(dataExec) : assinatura.em)
       navigate('/assistente', {
         replace: true,
         state: {
@@ -221,6 +234,13 @@ export default function ExecucaoEnsaio() {
         </div>
       )}
 
+      {historico && (
+        <div className={`${ui.aviso} ${ui.avisoInfo}`}>
+          📜 <span><strong>Lançamento histórico.</strong> Você preenche e assina em nome de <strong>{executor?.nome || 'executor não definido'}</strong>.
+          A data da execução é informada no envio.</span>
+        </div>
+      )}
+
       {pedido && <DadosPedido pedido={pedido} eo={eo} ctx={a} aberto={eo.status !== 'em_andamento'} />}
 
       {semFicha && <div className={`${ui.aviso} ${ui.avisoAlerta}`}>O laboratorista ainda não definiu a ficha deste ensaio. Avise-o para poder começar.</div>}
@@ -260,12 +280,12 @@ export default function ExecucaoEnsaio() {
               onEstado={alterar}
               modo={emExecucao ? 'preencher' : 'leitura'}
               assinaturas={{ executor: assinatura ? { ...assinatura, url: urlMinha } : null }}
-              podeAssinar={{ executor: emExecucao && !!a.eu?.assinatura_url }}
-              motivoSemAssinatura={!a.eu?.assinatura_url
-                ? 'Você ainda não tem assinatura cadastrada. Peça ao Gestor para cadastrar.'
+              podeAssinar={{ executor: emExecucao && !!executor?.assinatura_url }}
+              motivoSemAssinatura={!executor?.assinatura_url
+                ? `${historico ? `${nomeExec} não tem` : 'Você ainda não tem'} assinatura cadastrada. Peça ao Gestor para cadastrar.`
                 : !emExecucao ? 'Inicie o ensaio para preencher e assinar.' : undefined}
-              usuarioNome={a.eu?.nome}
-              onAssinar={() => { setAssinatura({ nome: a.eu?.nome, em: new Date().toISOString() }); sujoServidor.current = true }}
+              usuarioNome={executor?.nome}
+              onAssinar={() => { setAssinatura({ nome: executor?.nome, em: new Date().toISOString() }); sujoServidor.current = true }}
               onRemoverAssinatura={() => { setAssinatura(null); sujoServidor.current = true }}
               idBase={`eo-${eo.id.slice(0, 8)}`}
             />
@@ -305,12 +325,20 @@ export default function ExecucaoEnsaio() {
           rodape={(
             <>
               <button className={`${ui.btn} ${ui.btnSecundario}`} onClick={() => setConfirmarEnvio(false)} disabled={ocupado}>Revisar mais</button>
-              <button className={`${ui.btn} ${ui.btnAcao}`} onClick={enviar} disabled={ocupado}>{ocupado ? 'Enviando…' : 'Enviar'}</button>
+              <button className={`${ui.btn} ${ui.btnAcao}`} onClick={enviar} disabled={ocupado || !dataExecOk}>{ocupado ? 'Enviando…' : 'Enviar'}</button>
             </>
           )}
         >
           <div className={ui.pilha}>
             <p><strong>{sit.preenchidos}</strong> de {sit.total} campos preenchidos · assinada por {assinatura?.nome}.</p>
+            {historico && (
+              <label className={ui.campo}>
+                <span className={ui.rotulo}>📜 Data da execução (lançamento histórico) <span className={ui.obrigatorio}>*</span></span>
+                <input type="date" className={ui.input} value={dataExec} min={dataMinExec || undefined} max={hojeISO()}
+                  onChange={e => setDataExec(e.target.value)} />
+                {!dataExecOk && <span className={ui.ajuda} style={{ color: '#b91c1c' }}>Informe uma data entre a atribuição e hoje.</span>}
+              </label>
+            )}
             <p>Depois de enviar, este ensaio sai da sua lista e vai para o laboratorista revisar.
               Você só volta a ter acesso se ele devolver para correção.</p>
             <p className={ui.ajuda}>As fotos de apoio deste ensaio serão apagadas do aparelho.</p>

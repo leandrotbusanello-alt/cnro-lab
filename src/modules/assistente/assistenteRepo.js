@@ -9,6 +9,7 @@ import {
 import { listarModelos, modeloVigente, prepararModelos } from '../fichas/fichasRepo'
 import { apagarFotosApoio } from '../fichas/components/FotoApoio'
 import { STATUS_NA_FILA } from './constants'
+import { ehDev, ehHistorico } from '../../lib/historico'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Repositório do Módulo Assistente
@@ -20,16 +21,39 @@ import { STATUS_NA_FILA } from './constants'
 const COLUNAS_USUARIOS = '*'
 
 async function buscarServidor(perfil) {
-  const { data: ensaiosOs, error } = await supabase.from('ensaios_os').select('*')
+  const { data: meus, error } = await supabase.from('ensaios_os').select('*')
     .eq('assistente_id', perfil.id).in('status', STATUS_NA_FILA)
   if (error) throw error
+  let ensaiosOs = meus || []
 
-  const idsPedidos = [...new Set((ensaiosOs || []).map(e => e.pedido_id))].filter(id => !ehIdTemp(id))
+  // DEV: também os ensaios dos lançamentos históricos em aberto (qualquer executor),
+  // que ele executa em nome do assistente atribuído (migração 14)
+  const dev = ehDev(perfil)
+  if (dev) {
+    const { data: hist, error: eh } = await supabase.from('pedidos_ensaio').select('id')
+      .eq('lancamento_historico', true).in('status', ['em_andamento', 'aguardando_revisao'])
+    if (eh) throw eh
+    const idsHist = (hist || []).map(p => p.id)
+    for (let i = 0; i < idsHist.length; i += 150) {
+      const { data, error: e3 } = await supabase.from('ensaios_os').select('*')
+        .in('pedido_id', idsHist.slice(i, i + 150)).in('status', STATUS_NA_FILA).not('assistente_id', 'is', null)
+      if (e3) throw e3
+      const ja = new Set(ensaiosOs.map(e => e.id))
+      ensaiosOs = [...ensaiosOs, ...(data || []).filter(e => !ja.has(e.id))]
+    }
+  }
+
+  const idsPedidos = [...new Set(ensaiosOs.map(e => e.pedido_id))].filter(id => !ehIdTemp(id))
   const pedidos = []
   for (let i = 0; i < idsPedidos.length; i += 150) {
     const { data, error: e2 } = await supabase.from('pedidos_ensaio').select('*').in('id', idsPedidos.slice(i, i + 150))
     if (e2) throw e2
     pedidos.push(...(data || []))
+  }
+  // Demais usuários não veem lançamentos históricos (são feitos só pelo DEV)
+  if (!dev) {
+    const historicos = new Set(pedidos.filter(ehHistorico).map(p => p.id))
+    ensaiosOs = ensaiosOs.filter(e => !historicos.has(e.pedido_id))
   }
 
   const [usuarios, ensaios, empresas, fichas, modelos] = await Promise.all([
@@ -40,7 +64,7 @@ async function buscarServidor(perfil) {
       .then(r => { if (r.error) throw r.error; return r.data || [] }),
     listarModelos(),
   ])
-  return { ensaiosOs: ensaiosOs || [], pedidos, usuarios, ensaios, empresas, fichas, modelos }
+  return { ensaiosOs, pedidos, usuarios, ensaios, empresas, fichas, modelos }
 }
 
 /** Mantém a versão local de registros com alterações ainda não sincronizadas */
@@ -93,7 +117,12 @@ export async function carregarDados(perfil) {
       cacheGetAll('assist_ensaios_cache'), cacheGetAll('assist_pedidos_cache'), cacheGetAll('usuarios_cache'),
       cacheGetAll('ensaios_cache'), cacheGetAll('empresas_cache'), cacheGetAll('fichas_ensaio_cache'), listarModelos(),
     ])
-    dados = { ensaiosOs: ensaiosOs.filter(e => e.assistente_id === perfil.id), pedidos, usuarios, ensaios, empresas, fichas, modelos }
+    // sem internet: só os próprios ensaios (lançamento histórico exige conexão)
+    const historicos = new Set(pedidos.filter(ehHistorico).map(p => p.id))
+    dados = {
+      ensaiosOs: ensaiosOs.filter(e => e.assistente_id === perfil.id && !historicos.has(e.pedido_id)),
+      pedidos, usuarios, ensaios, empresas, fichas, modelos,
+    }
   }
   return { ...dados, fonte }
 }
@@ -149,31 +178,6 @@ export async function gravarRascunho(eo, { estado, assinatura, enviadoServidorEm
 
 export async function apagarRascunho(ensaioOsId) {
   await cacheDelete('rascunhos_ficha', ensaioOsId)
-}
-
-// ── "Meus ensaios enviados" (somente leitura — painel interno) ───────────────
-// Ensaios que já saíram da fila do assistente: aguardando revisão do
-// laboratorista ou já aprovados. Consulta própria porque `carregarDados` só
-// traz o que ainda está com o assistente (STATUS_NA_FILA).
-
-export async function buscarEnviados(perfil) {
-  const { data: ensaiosOs, error } = await supabase.from('ensaios_os').select('*')
-    .eq('assistente_id', perfil.id).in('status', ['aguardando_revisao', 'aprovado'])
-    .order('aprovado_em', { ascending: false, nullsFirst: true })
-  if (error) throw error
-
-  const idsPedidos = [...new Set((ensaiosOs || []).map(e => e.pedido_id))]
-  const pedidos = []
-  for (let i = 0; i < idsPedidos.length; i += 150) {
-    const { data, error: e2 } = await supabase.from('pedidos_ensaio').select('*').in('id', idsPedidos.slice(i, i + 150))
-    if (e2) throw e2
-    pedidos.push(...(data || []))
-  }
-  const [empresas, fichas] = await Promise.all([
-    supabase.from('empresas').select('*').then(r => r.data || []),
-    supabase.from('fichas_ensaio').select('id, codigo, nome').then(r => r.data || []),
-  ])
-  return { ensaiosOs: ensaiosOs || [], pedidos, empresas, fichas }
 }
 
 // ── Ações do assistente ──────────────────────────────────────────────────────

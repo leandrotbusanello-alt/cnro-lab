@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useLab } from '../useLaboratorio'
 import { modulosDoUsuario } from '../../../lib/modulos'
+import { ehHistorico, rotuloUsuario } from '../../../lib/historico'
 import { dataHora } from '../utils'
 import { StatusEnsaio } from './StatusBadge'
 import EnsaiosPicker from './EnsaiosPicker'
@@ -19,16 +20,18 @@ export default function EnsaiosOS({ pedido, ensaiosOs, podeGerenciar, ocupado, r
   const rotuloFicha = f => `${f.codigo} — ${f.nome}${f.versao ? ` (${f.versao})` : ''}${fichasOnline.has(f.id) ? ' · online' : ' · sem ficha online'}`
   const [adicionando, setAdicionando] = useState(false)
 
+  const historico = ehHistorico(pedido)
   const executores = useMemo(() => {
-    // Executor = usuário ativo com o módulo Assistente liberado (migração 13)
+    // Executor = usuário ativo com o módulo Assistente liberado (migração 13).
+    // Lançamento histórico: inclui inativos (quem executou pode ter saído da empresa).
     const ativos = usuarios.filter(u =>
-      (u.status || 'Ativo') === 'Ativo' && modulosDoUsuario(u).includes('assistente'))
+      (historico || (u.status || 'Ativo') === 'Ativo') && modulosDoUsuario(u).includes('assistente'))
     const soAssistente = u => !modulosDoUsuario(u).includes('laboratorio')
     return {
       assistentes: ativos.filter(soAssistente),
       laboratoristas: ativos.filter(u => !soAssistente(u)),
     }
-  }, [usuarios])
+  }, [usuarios, historico])
 
   const aprovados = ensaiosOs.filter(e => e.status === 'aprovado').length
   const semAtribuicao = ensaiosOs.filter(e => !e.assistente_id).length
@@ -123,12 +126,12 @@ export default function EnsaiosOS({ pedido, ensaiosOs, podeGerenciar, ocupado, r
                     <option value="">— Selecionar —</option>
                     {executores.assistentes.length > 0 && (
                       <optgroup label="Assistentes">
-                        {executores.assistentes.map(u => <option key={u.id} value={u.id}>{u.nome}</option>)}
+                        {executores.assistentes.map(u => <option key={u.id} value={u.id}>{rotuloUsuario(u)}</option>)}
                       </optgroup>
                     )}
                     {executores.laboratoristas.length > 0 && (
                       <optgroup label="Laboratoristas">
-                        {executores.laboratoristas.map(u => <option key={u.id} value={u.id}>{u.nome}</option>)}
+                        {executores.laboratoristas.map(u => <option key={u.id} value={u.id}>{rotuloUsuario(u)}</option>)}
                       </optgroup>
                     )}
                     {eo.assistente_id && !usuarios.some(u => u.id === eo.assistente_id) && (

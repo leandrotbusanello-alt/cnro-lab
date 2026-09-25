@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useLab } from '../useLaboratorio'
-import { dataHora, numeroOS, numeroPE } from '../utils'
+import { dataHora, numeroOS, numeroPE, hojeISO } from '../utils'
+import { ehHistorico, dataParaISO, isoParaData } from '../../../lib/historico'
 import { StatusEnsaio } from './StatusBadge'
 import { modulosDoUsuario } from '../../../lib/modulos'
 import { obterModelo } from '../../fichas/fichasRepo'
@@ -28,7 +29,12 @@ export default function RevisaoFicha({ pedido, ensaioOs: eo, podeRevisar, ocupad
   const modo = podeAprovar ? 'revisao' : 'leitura'
 
   const assistente = lab.usuariosPorId[eo.assistente_id]
-  const eu = lab.usuariosPorId[lab.perfil?.id] || lab.perfil
+  // lançamento histórico: quem assina é o laboratorista do pedido, na data informada
+  const historico = ehHistorico(pedido)
+  const eu = lab.laboratoristaDe(pedido)
+  const dataEnvio = isoParaData(eo.enviado_em || eo.data_conclusao)
+  const [dataAprov, setDataAprov] = useState(dataEnvio || hojeISO())
+  const dataAprovOk = !historico || (!!dataAprov && dataAprov <= hojeISO() && (!dataEnvio || dataAprov >= dataEnvio))
   const aprovador = lab.usuariosPorId[eo.aprovado_por_id]
   const podeImprimir = modulosDoUsuario(lab.perfil).some(m => MODULOS_QUE_IMPRIMEM.includes(m))
 
@@ -106,15 +112,21 @@ export default function RevisaoFicha({ pedido, ensaioOs: eo, podeRevisar, ocupad
       return
     }
     if (!conformidade) { setAviso('Informe a conformidade do resultado.'); return }
-    if (!eu?.assinatura_url) { setAviso('Você ainda não tem assinatura cadastrada. Peça ao Gestor para cadastrar antes de aprovar.'); return }
+    if (!eu?.assinatura_url) {
+      setAviso(historico
+        ? `${eu?.nome || 'O laboratorista'} não tem assinatura cadastrada. Peça ao Gestor para cadastrar antes de aprovar.`
+        : 'Você ainda não tem assinatura cadastrada. Peça ao Gestor para cadastrar antes de aprovar.')
+      return
+    }
     if (!assinaturaCalc) { setAviso('Assine a ficha no campo “Responsável calculista” antes de aprovar.'); return }
+    if (!dataAprovOk) { setAviso('Informe a data da aprovação (entre a data do envio e hoje).'); return }
     const ok = await rodar(() => lab.acoes.aprovarEnsaioFicha(pedido, eo, {
       dados: ficha.dados(),
       resultados: ficha.resultados(),
       conformidade,
       observacoes: observacoes.trim() || null,
       visivelCampo: liberar,
-      assinadoEm: assinaturaCalc.em,
+      assinadoEm: historico ? dataParaISO(dataAprov) : assinaturaCalc.em,
     }), 'Ensaio aprovado. Resultados enviados ao Painel.')
     if (ok) onFechar()
   }
@@ -167,10 +179,14 @@ export default function RevisaoFicha({ pedido, ensaioOs: eo, podeRevisar, ocupad
               assinaturas={assinaturas}
               podeAssinar={{ calculista: podeAprovar && !!eu?.assinatura_url }}
               motivoSemAssinatura={podeAprovar && !eu?.assinatura_url
-                ? 'Você ainda não tem assinatura cadastrada. Peça ao Gestor para cadastrar.'
+                ? `${historico ? `${eu?.nome || 'O laboratorista'} não tem` : 'Você ainda não tem'} assinatura cadastrada. Peça ao Gestor para cadastrar.`
                 : undefined}
               usuarioNome={eu?.nome}
-              onAssinar={quem => { if (quem === 'calculista') setAssinaturaCalc({ nome: eu?.nome, em: new Date().toISOString() }) }}
+              onAssinar={quem => {
+                if (quem === 'calculista') {
+                  setAssinaturaCalc({ nome: eu?.nome, em: historico ? dataParaISO(dataAprov) : new Date().toISOString() })
+                }
+              }}
               onRemoverAssinatura={quem => { if (quem === 'calculista') setAssinaturaCalc(null) }}
               idBase={`rev-${eo.id.slice(0, 8)}`}
             />
@@ -190,6 +206,16 @@ export default function RevisaoFicha({ pedido, ensaioOs: eo, podeRevisar, ocupad
           {podeAprovar ? (
             <section className={styles.cartao}>
               <h3>Aprovação</h3>
+              {historico && (
+                <label className={styles.campo} htmlFor={`dataaprov-${eo.id}`}>
+                  <span>📜 Data da aprovação · assina {eu?.nome || 'o laboratorista'}</span>
+                  <input id={`dataaprov-${eo.id}`} type="date" value={dataAprov} min={dataEnvio || undefined} max={hojeISO()}
+                    onChange={e => {
+                      setDataAprov(e.target.value)
+                      setAssinaturaCalc(a => (a ? { ...a, em: dataParaISO(e.target.value) } : a))
+                    }} />
+                </label>
+              )}
               <label className={styles.campo} htmlFor={`conf-${eo.id}`}>
                 <span>Conformidade</span>
                 <select id={`conf-${eo.id}`} value={conformidade} onChange={e => setConformidade(e.target.value)}>

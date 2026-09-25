@@ -25,6 +25,7 @@ export default function PedidoCard({ pedido: p, ensaiosOs, sit, mostrarResponsav
           {os && <span className={styles.os}>{os}</span>}
         </div>
         <div className={styles.selos}>
+          {sit.historico && <Selo tom="neutro" title="Lançamento histórico (somente DEV)">📜 Histórico</Selo>}
           {sit.correcaoRecebida && <Selo tom="alerta">↩ Correção recebida</Selo>}
           {sit.qtdRevisao > 0 && <Selo tom="alerta">{sit.qtdRevisao} p/ revisar</Selo>}
           {sit.qtdDevolvidos > 0 && <Selo tom="erro">{sit.qtdDevolvidos} devolvido(s) ao assist.</Selo>}
@@ -52,7 +53,7 @@ export default function PedidoCard({ pedido: p, ensaiosOs, sit, mostrarResponsav
             {sit.qtdAprovados}/{ensaiosOs.length} aprovados
           </span>
         )}
-        {mostrarResponsavel && (
+        {(mostrarResponsavel || sit.historico) && (
           <span className={styles.resp}>{responsavel ? `🔬 ${responsavel}` : 'Sem responsável'}</span>
         )}
       </div>

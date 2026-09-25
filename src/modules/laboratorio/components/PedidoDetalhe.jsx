@@ -18,6 +18,8 @@ import ModalGerarOS from './ModalGerarOS'
 import ModalTransferir from './ModalTransferir'
 import ModalFinalizar from './ModalFinalizar'
 import RevisaoEnsaio from './RevisaoEnsaio'
+import ModalExcluirPedido from './ModalExcluirPedido'
+import ModalAlterarNumero from './ModalAlterarNumero'
 import FichaDocumento from './fichas/FichaDocumento'
 import Toast from '../../../components/ui/Toast'
 import styles from './PedidoDetalhe.module.css'
@@ -65,7 +67,7 @@ export default function PedidoDetalhe() {
   }
 
   const perm = lab.permissoes(pedido)
-  const sit = situacao(pedido, ensaiosOs, lab.perfil?.id)
+  const sit = situacao(pedido, ensaiosOs, lab.meuIdPara(pedido))
   const responsavel = lab.usuariosPorId[pedido.laboratorista_id]
   const solicitante = lab.usuariosPorId[pedido.solicitante_id]
   const temOS = !!pedido.numero_os
@@ -101,6 +103,7 @@ export default function PedidoDetalhe() {
           </h2>
           <div className={styles.selos}>
             <StatusPedido status={pedido.status} />
+            {perm.historico && <Selo tom="neutro" title="Lançamento histórico (somente DEV)">📜 Lançamento histórico</Selo>}
             {sit.correcaoRecebida && <Selo tom="alerta">↩ Correção recebida do campo</Selo>}
             {ehOSProvisoria(pedido) && <Selo tom="offline">Número provisório</Selo>}
             {sit.alteradoOffline && <Selo tom="offline">📶 Não sincronizado</Selo>}
@@ -140,6 +143,18 @@ export default function PedidoDetalhe() {
           {perm.podeTransferir && (
             <button className={`${ui.btn} ${ui.btnSecundario}`} onClick={() => setModal({ tipo: 'transferir' })} disabled={ocupado}>
               ⇄ Transferir
+            </button>
+          )}
+          {perm.podeAlterarNumero && (
+            <button className={`${ui.btn} ${ui.btnSecundario}`} onClick={() => setModal({ tipo: 'numero' })} disabled={ocupado}
+              title="Somente DEV">
+              # Alterar nº
+            </button>
+          )}
+          {perm.podeExcluir && (
+            <button className={`${ui.btn} ${ui.btnPerigo}`} onClick={() => setModal({ tipo: 'excluir' })} disabled={ocupado}
+              title="Somente DEV">
+              🗑 Excluir pedido
             </button>
           )}
         </div>
@@ -285,9 +300,32 @@ export default function PedidoDetalhe() {
           ocupado={ocupado}
           rodar={rodar}
           onFechar={fechar}
-          onConfirmar={async () => {
-            const ok = await rodar(() => lab.acoes.finalizarOS(pedido), 'O.S. finalizada.')
+          onConfirmar={async (opcoes) => {
+            const ok = await rodar(() => lab.acoes.finalizarOS(pedido, opcoes), 'O.S. finalizada.')
             if (ok) fechar()
+          }}
+        />
+      )}
+      {modal?.tipo === 'numero' && (
+        <ModalAlterarNumero
+          pedido={pedido}
+          ocupado={ocupado}
+          onFechar={fechar}
+          onConfirmar={async n => {
+            const ok = await rodar(() => lab.acoes.alterarNumeroPE(pedido, n), 'Número alterado.')
+            if (ok) fechar()
+          }}
+        />
+      )}
+      {modal?.tipo === 'excluir' && (
+        <ModalExcluirPedido
+          pedido={pedido}
+          ensaiosOs={ensaiosOs}
+          ocupado={ocupado}
+          onFechar={fechar}
+          onConfirmar={async confirmacao => {
+            const ok = await rodar(() => lab.acoes.excluirPedido(pedido, confirmacao), `${numeroPE(pedido)} excluído.`)
+            if (ok) voltar()
           }}
         />
       )}
@@ -335,6 +373,15 @@ function Avisos({ pedido, perm, responsavel, lab }) {
   const ultimoEvento = (pedido.historico || []).slice(-1)[0]
   const finalizador = lab.usuariosPorId[pedido.finalizado_por]
 
+  if (perm.historico && pedido.status !== 'concluido') {
+    return (
+      <div className={`${ui.aviso} ${ui.avisoInfo}`}>
+        📜 <span><strong>Lançamento histórico.</strong> Você age em nome de <strong>{responsavel?.nome || 'laboratorista'}</strong> (laboratorista)
+        e dos executores atribuídos, com as assinaturas deles e as datas que informar em cada etapa.
+        O histórico registra que o lançamento foi feito por você. Somente o DEV vê e altera este pedido.</span>
+      </div>
+    )
+  }
   if (pedido.status === 'concluido') {
     return (
       <div className={`${ui.aviso} ${ui.avisoOk}`}>
