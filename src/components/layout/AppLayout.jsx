@@ -3,8 +3,11 @@ import { useAuthStore } from '../../store/authStore'
 import { useOnlineSync } from '../../hooks/useOnlineSync'
 import styles from './AppLayout.module.css'
 
+// "Início" (o painel interno) é a tela de todos — não depende do módulo
+// "dashboard", que agora controla só o acesso ao Lab Painel (sistema à parte).
+const ITEM_INICIO = { id: 'inicio', path: '/dashboard', label: 'Início', icon: '🏠' }
+
 const NAV_ITEMS = [
-  { id: 'dashboard',   path: '/dashboard',   label: 'Dashboard', icon: '📊' },
   { id: 'campo',       path: '/campo',        label: 'Campo',     icon: '📱' },
   { id: 'laboratorio', path: '/laboratorio',  label: 'Lab',       icon: '🔬' },
   { id: 'assistente',  path: '/assistente',   label: 'Assistente',icon: '🧪' },
@@ -17,7 +20,7 @@ export default function AppLayout() {
   const nav = useNavigate()
 
   const modulos = perfil?.modulos_acesso || []
-  const navItems = NAV_ITEMS.filter(item => modulos.includes(item.id))
+  const navItems = [ITEM_INICIO, ...NAV_ITEMS.filter(item => modulos.includes(item.id))]
 
   async function handleLogout() {
     await logout()

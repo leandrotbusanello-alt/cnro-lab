@@ -151,6 +151,31 @@ export async function apagarRascunho(ensaioOsId) {
   await cacheDelete('rascunhos_ficha', ensaioOsId)
 }
 
+// ── "Meus ensaios enviados" (somente leitura — painel interno) ───────────────
+// Ensaios que já saíram da fila do assistente: aguardando revisão do
+// laboratorista ou já aprovados. Consulta própria porque `carregarDados` só
+// traz o que ainda está com o assistente (STATUS_NA_FILA).
+
+export async function buscarEnviados(perfil) {
+  const { data: ensaiosOs, error } = await supabase.from('ensaios_os').select('*')
+    .eq('assistente_id', perfil.id).in('status', ['aguardando_revisao', 'aprovado'])
+    .order('aprovado_em', { ascending: false, nullsFirst: true })
+  if (error) throw error
+
+  const idsPedidos = [...new Set((ensaiosOs || []).map(e => e.pedido_id))]
+  const pedidos = []
+  for (let i = 0; i < idsPedidos.length; i += 150) {
+    const { data, error: e2 } = await supabase.from('pedidos_ensaio').select('*').in('id', idsPedidos.slice(i, i + 150))
+    if (e2) throw e2
+    pedidos.push(...(data || []))
+  }
+  const [empresas, fichas] = await Promise.all([
+    supabase.from('empresas').select('*').then(r => r.data || []),
+    supabase.from('fichas_ensaio').select('id, codigo, nome').then(r => r.data || []),
+  ])
+  return { ensaiosOs: ensaiosOs || [], pedidos, empresas, fichas }
+}
+
 // ── Ações do assistente ──────────────────────────────────────────────────────
 
 export async function iniciarEnsaio(ctx, eo) {

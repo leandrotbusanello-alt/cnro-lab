@@ -21,6 +21,21 @@
 }
 .bannerIcon { font-size: 18px; }
 
+.bannerFiltro {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  background: #eff6ff; border: 1px solid #bfdbfe;
+  color: #1e3a8a; border-radius: 8px;
+  padding: 10px 16px; margin-bottom: 20px;
+  font-size: 13px;
+}
+.btnLimparFiltro {
+  background: #fff; color: var(--navy, #1e3a5f);
+  border: 1px solid #bfdbfe; border-radius: 7px;
+  padding: 5px 12px; font-size: 12.5px; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+}
+.btnLimparFiltro:hover { border-color: var(--navy, #1e3a5f); }
+
 .header {
   display: flex; align-items: center;
   justify-content: space-between; margin-bottom: 20px;

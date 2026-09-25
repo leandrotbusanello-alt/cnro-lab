@@ -10,10 +10,12 @@ import { openDB } from 'idb'
 // v3 (Assistente / fichas online):
 //             fichas_modelo_cache (modelos das fichas), rascunhos_ficha (preenchimento
 //             ainda não salvo no servidor), assist_ensaios_cache, assist_pedidos_cache
+// v4 (Painel interno):
+//             dashboard_cache (chave → dados): últimos números carregados, para uso offline
 // ─────────────────────────────────────────────────────────────────────────────
 
 const DB_NAME = 'cnro_lab'
-const DB_VERSION = 3
+const DB_VERSION = 4
 
 function getDB() {
   return openDB(DB_NAME, DB_VERSION, {
@@ -70,6 +72,10 @@ function getDB() {
       }
       if (!db.objectStoreNames.contains('assist_pedidos_cache')) {
         db.createObjectStore('assist_pedidos_cache', { keyPath: 'id' })
+      }
+      // ── v4 ──
+      if (!db.objectStoreNames.contains('dashboard_cache')) {
+        db.createObjectStore('dashboard_cache', { keyPath: 'chave' })
       }
     },
   })

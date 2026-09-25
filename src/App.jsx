@@ -4,7 +4,7 @@ import { useAuthStore } from './store/authStore'
 
 import AppLayout from './components/layout/AppLayout'
 import LoginPage from './pages/LoginPage'
-import DashboardPage from './pages/DashboardPage'
+import DashboardPage from './modules/dashboard/DashboardPage'
 import AssistentePage from './modules/assistente/AssistentePage'
 import GestorPage from './modules/gestor/GestorPage'
 import TrocarSenhaPage from './pages/TrocarSenhaPage'

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useCampo } from '../useCampo'
 import styles from './MeusPedidos.module.css'
 import { format } from 'date-fns'
@@ -30,8 +31,14 @@ export default function MeusPedidos({ onCorrigir, onNovoPedido }) {
   const { pedidos, loading, reenviarPedido } = useCampo()
   const [reenviadoId, setReenviadoId] = useState(null)
 
-  const devolvidos = pedidos.filter(p => p.status === DEVOLVIDO)
-  const outros = pedidos.filter(p => p.status !== DEVOLVIDO)
+  // Vindo de um número do Painel (ex.: "em_andamento,aguardando_revisao")
+  const [params, setParams] = useSearchParams()
+  const statusFiltro = params.get('status') || ''
+  const listaStatus = statusFiltro ? statusFiltro.split(',') : null
+  const pedidosVisiveis = listaStatus ? pedidos.filter(p => listaStatus.includes(p.status)) : pedidos
+
+  const devolvidos = pedidosVisiveis.filter(p => p.status === DEVOLVIDO)
+  const outros = pedidosVisiveis.filter(p => p.status !== DEVOLVIDO)
 
   async function handleReenviar(pedido) {
     setReenviadoId(pedido.id)
@@ -64,10 +71,19 @@ export default function MeusPedidos({ onCorrigir, onNovoPedido }) {
         <button className={styles.btnNovo} onClick={onNovoPedido}>+ Novo Pedido</button>
       </div>
 
-      {pedidos.length === 0 && (
+      {listaStatus && (
+        <div className={styles.bannerFiltro}>
+          <span>🔎 Filtrado pelo Painel: {listaStatus.map(s => STATUS_LABEL[s]?.label || s).join(', ')}</span>
+          <button className={styles.btnLimparFiltro} onClick={() => setParams({}, { replace: true })}>
+            Ver todos
+          </button>
+        </div>
+      )}
+
+      {pedidosVisiveis.length === 0 && (
         <div className={styles.empty}>
-          <p>Nenhum pedido encontrado.</p>
-          <button className={styles.btnNovo} onClick={onNovoPedido}>Criar primeiro pedido</button>
+          <p>{listaStatus ? 'Nenhum pedido nessa situação.' : 'Nenhum pedido encontrado.'}</p>
+          {!listaStatus && <button className={styles.btnNovo} onClick={onNovoPedido}>Criar primeiro pedido</button>}
         </div>
       )}
 

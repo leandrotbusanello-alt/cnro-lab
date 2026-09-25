@@ -1,0 +1,29 @@
+.wrapper {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 4px;
+}
+
+.tipos { display: flex; gap: 4px; background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 8px; padding: 3px; }
+.tipo {
+  background: none; border: none; border-radius: 6px;
+  padding: 6px 12px; font-size: 13px; font-weight: 600; color: var(--muted, #6b7280);
+  cursor: pointer;
+}
+.tipoAtivo { background: var(--navy, #1e3a5f); color: #fff; }
+
+.navegacao { display: flex; align-items: center; gap: 8px; }
+.seta {
+  background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 6px;
+  width: 30px; height: 30px; font-size: 16px; line-height: 1; cursor: pointer; color: var(--navy, #1e3a5f);
+}
+.seta:disabled { opacity: .4; cursor: not-allowed; }
+.rotulo { font-size: 14px; font-weight: 600; color: var(--text, #111827); min-width: 130px; text-align: center; }
+.btnAtual {
+  background: none; border: none; color: var(--teal, #0d9488);
+  font-size: 12.5px; font-weight: 700; cursor: pointer; text-decoration: underline;
+}
+
+@media (max-width: 560px) {
+  .wrapper { flex-direction: column; align-items: stretch; }
+  .navegacao { justify-content: center; }
+}

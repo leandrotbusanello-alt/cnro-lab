@@ -15,10 +15,17 @@ export default function FilaView() {
   const lab = useLab()
   const { perfil, pedidos, ensaiosOsPorPedido, empresasPorId, usuariosPorId, loading, erro, atualizadoEm } = lab
   const [params, setParams] = useSearchParams()
-  const visao = VISOES[params.get('v')] ? params.get('v') : 'fila'
+  // Vindo de um link do Painel (status/de/ate): cai em "Todas" e já mostra o que veio pronto.
+  const temFiltroDeLink = !!(params.get('status') || params.get('de') || params.get('ate'))
+  const visao = VISOES[params.get('v')] ? params.get('v') : (temFiltroDeLink ? 'todas' : 'fila')
   const sub = SUBVISOES_MINHAS.some(s => s.id === params.get('s')) ? params.get('s') : 'analise'
-  const [filtros, setFiltros] = useState(FILTROS_VAZIOS)
-  const [filtrosAbertos, setFiltrosAbertos] = useState(false)
+  const [filtros, setFiltros] = useState(() => ({
+    ...FILTROS_VAZIOS,
+    status: params.get('status') || '',
+    de: params.get('de') || '',
+    ate: params.get('ate') || '',
+  }))
+  const [filtrosAbertos, setFiltrosAbertos] = useState(temFiltroDeLink)
 
   function irPara(v, s) {
     const p = new URLSearchParams()
@@ -68,7 +75,8 @@ export default function FilaView() {
     }
     if (f.empresa)  l = l.filter(({ pedido: p }) => nomeEmpresa(p, empresasPorId) === f.empresa)
     if (f.material) l = l.filter(({ pedido: p }) => p.material === f.material)
-    if (f.status)   l = l.filter(({ pedido: p }) => p.status === f.status)
+    // Vem do Painel como lista separada por vírgula (ex.: "em_andamento,aguardando_revisao")
+    if (f.status)   { const lista = f.status.split(','); l = l.filter(({ pedido: p }) => lista.includes(p.status)) }
     if (f.de)       l = l.filter(({ pedido: p }) => (p.created_at || '').slice(0, 10) >= f.de)
     if (f.ate)      l = l.filter(({ pedido: p }) => (p.created_at || '').slice(0, 10) <= f.ate)
 

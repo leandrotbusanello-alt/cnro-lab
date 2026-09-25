@@ -1,0 +1,23 @@
+.tile {
+  display: flex; flex-direction: column; gap: 2px;
+  background: #fff; border: 1px solid var(--border, #e5e7eb);
+  border-left: 4px solid var(--border, #e5e7eb);
+  border-radius: 10px; padding: 12px 14px;
+  text-decoration: none; color: inherit;
+  min-width: 0;
+}
+.clicavel { cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+.clicavel:hover { box-shadow: 0 2px 8px rgba(0,0,0,.06); border-left-color: var(--navy, #1e3a5f); }
+
+.valor { font-size: 26px; font-weight: 800; color: var(--text, #111827); line-height: 1.1; }
+.rotulo { font-size: 12.5px; color: var(--muted, #6b7280); font-weight: 500; }
+
+.destaque .valor { color: #9a3412; }
+
+/* Cor de apoio na borda esquerda — mesmos tons dos badges do sistema */
+.pendente { border-left-color: #eab308; }
+.info     { border-left-color: #3b82f6; }
+.alerta   { border-left-color: #f97316; }
+.erro     { border-left-color: #ef4444; }
+.ok       { border-left-color: #22c55e; }
+.neutro   { border-left-color: var(--border, #e5e7eb); }

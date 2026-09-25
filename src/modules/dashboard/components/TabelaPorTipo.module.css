@@ -1,0 +1,13 @@
+.vazio { font-size: 13px; color: var(--muted, #6b7280); margin: 0; }
+
+.tabelaWrap { overflow-x: auto; border: 1px solid var(--border, #e5e7eb); border-radius: 8px; }
+.tabela { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.tabela th, .tabela td { text-align: left; padding: 7px 12px; }
+.tabela thead th {
+  background: #fff; color: var(--muted, #6b7280); font-weight: 700;
+  font-size: 11.5px; text-transform: uppercase; letter-spacing: .3px;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+}
+.tabela th:not(:first-child), .tabela td:not(:first-child) { text-align: right; }
+.tabela tbody tr:nth-child(even) { background: #fff; }
+.tabela tbody td { color: var(--text, #111827); }
