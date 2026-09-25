@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { PERFIS, rotuloPerfil, perfisGerenciaveis } from '../constants'
+import { PERFIS, rotuloPerfil, perfisGerenciaveis, modulosDoUsuario, rotuloModulo, perfilTemTodos, exigeAssinatura } from '../constants'
 import { urlsFotos } from '../gestorRepo'
 import ModalUsuario from './ModalUsuario'
 import Avatar from './Avatar'
@@ -130,6 +130,9 @@ export default function UsuariosView({ usuarios, empresas, eu, online, onSalvo, 
                   {emp?.nome || u.empresa || '—'}{(emp?.lote || u.lote) ? ` · Lote ${emp?.lote || u.lote}` : ''}
                 </div>
                 <div className={styles.sub}>{u.cargo || ''}</div>
+                <div className={styles.sub}>
+                  {perfilTemTodos(sigla) ? 'Todos os módulos' : modulosDoUsuario(u).filter(m => m !== 'gestor').map(rotuloModulo).join(' · ')}
+                </div>
               </span>
               <span className={styles.selos}>
                 {st === 'Ativo'
@@ -139,8 +142,8 @@ export default function UsuariosView({ usuarios, empresas, eu, online, onSalvo, 
                 {u.auth_id && u.trocar_senha && st === 'Ativo' && (
                   <span className={`${styles.badge} ${styles.info}`}>Senha provisória</span>
                 )}
-                {['LAB', 'ASSIST', 'GESTOR', 'DEV'].includes(sigla) && !u.assinatura_url && st === 'Ativo' && (
-                  <span className={`${styles.badge} ${styles.neutro} ${styles.soDesktop}`}>Sem assinatura</span>
+                {exigeAssinatura(sigla, modulosDoUsuario(u)) && !u.assinatura_url && st === 'Ativo' && (
+                  <span className={`${styles.badge} ${styles.alerta}`}>Sem assinatura</span>
                 )}
               </span>
             </button>

@@ -1,3 +1,34 @@
+# Módulo Gestor — atualização G1.1 (cadastro em tela única + módulos)
+
+## Instalação desta atualização
+1. **Código:** extraia o zip na raiz do projeto (substituindo) e **apague**
+   `src/modules/gestor/components/ArquivoUsuario.jsx` (substituído por `CampoArquivo.jsx`).
+2. **Edge Function:** no Supabase → Edge Functions → `gestor-usuarios` → **Code** → apague o código,
+   cole o novo `supabase/functions/gestor-usuarios/index.ts` e clique em **Deploy**.
+   (Sem isso os módulos marcados não são gravados.)
+3. **Banco:** nada a rodar — a coluna `modulos_acesso` já veio na migração 13.
+4. `npm run dev` para testar → commit → push.
+
+## O que mudou
+- **Tudo numa tela só:** dados, módulos de acesso, assinatura e foto são salvos juntos ao clicar em
+  "Criar usuário" / "Salvar". A imagem escolhida aparece em prévia e só é enviada ao confirmar.
+- **Módulos de acesso:** caixas Dashboard, Campo, Laboratório e Assistente. Ao escolher o perfil, as caixas
+  vêm marcadas com o padrão dele e podem ser ajustadas. Pelo menos um módulo é obrigatório.
+  GESTOR e DEV têm sempre todos os módulos; o módulo Gestor é exclusivo desses perfis.
+  A mudança vale para o usuário em até 1 minuto (o menu dele se atualiza sozinho).
+- **Assinatura obrigatória** para quem tem o módulo Laboratório ou Assistente (executam/revisam ensaios).
+  Gestor, Dev e quem só tem Campo/Dashboard: opcional. Sem ela, o botão avisa e não salva.
+- **Foto:** sempre opcional.
+- A lista de usuários mostra os módulos de cada um; "Sem assinatura" (laranja) só aparece para quem precisa.
+
+## Teste rápido
+1. Novo usuário → perfil Laboratorista → as 4 caixas vêm marcadas → tente criar sem assinatura
+   (deve pedir) → escolha o PNG → Criar usuário. A tela final mostra e-mail/senha.
+2. Abra o usuário: a assinatura já aparece. Desmarque "Laboratório" e "Assistente" → a assinatura vira opcional.
+3. Entre com esse usuário numa janela anônima e confira que o menu mostra só os módulos marcados.
+
+---
+
 # Módulo Gestor (G1) — usuários, empresas e login
 
 ## Instalação (nesta ordem)

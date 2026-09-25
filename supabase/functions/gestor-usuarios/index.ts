@@ -4,7 +4,8 @@
 // Operações que exigem a chave de administrador (service_role), que NUNCA vai
 // para o navegador:
 //   criar          → cria o login (senha 123456) + registro em `usuarios`
-//   editar         → altera dados; se o e-mail mudar, altera também no login
+//                    (com os módulos de acesso)
+//   editar         → altera dados e módulos; se o e-mail mudar, altera também no login
 //   status         → Ativo / Inativo (Inativo bloqueia o login na hora)
 //   resetar_senha  → volta a senha para 123456 e obriga a troca
 //   trocar_senha   → o próprio usuário define a nova senha
@@ -18,6 +19,8 @@ import { createClient, SupabaseClient } from 'npm:@supabase/supabase-js@2'
 const SENHA_PADRAO = '123456'
 const PERFIS = ['DEV', 'GESTOR', 'LAB', 'ASSIST', 'CAMPO']
 const BAN_INATIVO = '876000h' // ~100 anos
+// Módulos que o Gestor pode liberar para LAB / ASSIST / CAMPO (o módulo Gestor é só de GESTOR/DEV)
+const MODULOS_ATRIBUIVEIS = ['dashboard', 'campo', 'laboratorio', 'assistente']
 
 const URL_SUPABASE = Deno.env.get('SUPABASE_URL')!
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -60,6 +63,23 @@ function traduzirErro(e: any): string {
   if (/duplicate key.*email/i.test(msg)) return 'Já existe um usuário com este e-mail.'
   if (code === 'P0001') return msg
   return msg || 'Erro inesperado.'
+}
+
+/**
+ * Módulos de acesso gravados em usuarios.modulos_acesso.
+ * DEV/GESTOR → null (sempre têm todos). Demais → lista válida, com pelo menos 1.
+ * `undefined` na entrada = não alterar (retorna undefined).
+ */
+function modulosValidos(perfil: string, entrada: unknown): string[] | null | undefined {
+  if (['DEV', 'GESTOR'].includes(perfil)) return null
+  if (entrada === undefined) return undefined
+  const lista = Array.isArray(entrada) ? entrada.map(m => String(m).toLowerCase()) : []
+  const invalidos = lista.filter(m => !MODULOS_ATRIBUIVEIS.includes(m))
+  if (invalidos.includes('gestor')) throw new Falha('O módulo Gestor é exclusivo dos perfis Gestor e Desenvolvedor.')
+  if (invalidos.length) throw new Falha('Módulo inválido: ' + invalidos.join(', '))
+  const unicos = MODULOS_ATRIBUIVEIS.filter(m => lista.includes(m))
+  if (!unicos.length) throw new Falha('Marque pelo menos um módulo de acesso.')
+  return unicos
 }
 
 function limparEmail(v: unknown) {
@@ -201,6 +221,7 @@ Deno.serve(async (req) => {
       if (!PERFIS.includes(perfil)) throw new Falha('Perfil inválido.')
       if (!podeGerenciar(perfilAtor, perfil)) throw new Falha(`Somente o DEV pode cadastrar usuários ${perfil}.`)
       const empresaId = await empresaValida(admin, d.empresa_id)
+      const modulos = modulosValidos(perfil, d.modulos_acesso ?? [])
 
       const mesmo = await usuarioComEmail(admin, email)
       if (mesmo) throw new Falha(`Já existe um usuário com este e-mail (${mesmo.nome}).`)
@@ -211,6 +232,7 @@ Deno.serve(async (req) => {
         nome, email, perfil,
         cargo: texto(d.cargo),
         empresa_id: empresaId,
+        modulos_acesso: modulos,
         status: 'Ativo',
         trocar_senha: true,
       }).select('*').single()
@@ -237,6 +259,7 @@ Deno.serve(async (req) => {
         throw new Falha('Somente o DEV pode alterar usuários GESTOR ou DEV.')
       }
       const empresaId = await empresaValida(admin, d.empresa_id)
+      const modulos = modulosValidos(perfil, d.modulos_acesso)
 
       const emailMudou = email !== limparEmail(alvo.email)
       if (emailMudou) {
@@ -248,11 +271,14 @@ Deno.serve(async (req) => {
         }
       }
 
-      const { data: atualizado, error } = await comoAtor.from('usuarios').update({
+      const mudancas: Record<string, unknown> = {
         nome, email, perfil,
         cargo: texto(d.cargo),
         empresa_id: empresaId,
-      }).eq('id', alvo.id).select('*').single()
+      }
+      if (modulos !== undefined) mudancas.modulos_acesso = modulos
+      const { data: atualizado, error } = await comoAtor.from('usuarios')
+        .update(mudancas).eq('id', alvo.id).select('*').single()
       if (error) {
         if (emailMudou && alvo.auth_id) {
           await admin.auth.admin.updateUserById(alvo.auth_id, { email: alvo.email, email_confirm: true }).catch(() => {})

@@ -181,3 +181,20 @@
   .grade2, .arquivos { grid-template-columns: 1fr; }
   .barra .filtro { flex: 1 1 140px; min-width: 0; }
 }
+
+/* ── Módulos de acesso ── */
+.modulos { display: flex; flex-wrap: wrap; gap: 8px; }
+.modulo {
+  display: inline-flex; align-items: center; gap: 7px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 7px 12px; font-size: 13.5px; cursor: pointer; background: #fff; user-select: none;
+}
+.modulo input { width: 16px; height: 16px; accent-color: var(--navy); }
+.moduloMarcado { border-color: var(--navy); background: #f0f5fb; font-weight: 600; }
+.moduloDesabilitado { opacity: .55; cursor: not-allowed; }
+.grupoErro { outline: 2px solid #fecaca; outline-offset: 4px; border-radius: 6px; }
+.arquivoErro { border-color: #f87171; }
+.erroRodape {
+  margin-right: auto; flex: 1 1 220px; min-width: 0;
+  color: #991b1b; font-size: 13px; font-weight: 600; line-height: 1.35;
+}

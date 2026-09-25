@@ -2,29 +2,21 @@ import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
 import { cachePerfil, cacheGetAll } from '../lib/offlineDB'
 import { chamarGestorUsuarios } from '../lib/gestorUsuarios'
+import { MODULOS_PADRAO, modulosDoUsuario } from '../lib/modulos'
 
 const INTERVALO_VERIFICACAO_MS = 60_000
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Módulos liberados por perfil (usado enquanto a coluna usuarios.modulos_acesso
-// não existir no banco; se existir e estiver preenchida, ela tem prioridade).
-// ─────────────────────────────────────────────────────────────────────────────
-export const MODULOS_POR_PERFIL = {
-  DEV:    ['dashboard', 'campo', 'laboratorio', 'assistente', 'gestor'],
-  GESTOR: ['dashboard', 'campo', 'laboratorio', 'assistente', 'gestor'],
-  LAB:    ['dashboard', 'campo', 'laboratorio', 'assistente'],
-  ASSIST: ['assistente'],
-  CAMPO:  ['campo'],
-}
+// Módulos liberados: mesma regra do banco (public.modulos_do_usuario) — ver lib/modulos.js.
+// Mantido por compatibilidade com quem importava daqui.
+export const MODULOS_POR_PERFIL = MODULOS_PADRAO
 
 function completarPerfil(u) {
   if (!u) return null
   const sigla = String(u.perfil || '').toUpperCase()
-  const modulos = Array.isArray(u.modulos_acesso) && u.modulos_acesso.length
-    ? u.modulos_acesso
-    : (MODULOS_POR_PERFIL[sigla] || [])
-  return { ...u, perfil: sigla, modulos_acesso: modulos }
+  return { ...u, perfil: sigla, modulos_acesso: modulosDoUsuario({ ...u, perfil: sigla }) }
 }
+
+const chaveModulos = u => [...modulosDoUsuario(u)].sort().join(',')
 
 /** Mensagens do Supabase Auth traduzidas */
 function traduzirErroLogin(e) {
@@ -94,14 +86,17 @@ export const useAuthStore = create((set, get) => ({
     if (!atual?.id || !navigator.onLine) return
     try {
       const { data, error } = await supabase
-        .from('usuarios').select('id, status, trocar_senha, perfil').eq('id', atual.id).maybeSingle()
+        .from('usuarios').select('id, status, trocar_senha, perfil, modulos_acesso').eq('id', atual.id).maybeSingle()
       if (error) return
       if (!data || (data.status || 'Ativo') !== 'Ativo') {
         await supabase.auth.signOut().catch(() => {})
         set({ perfil: null, avisoLogin: 'Seu acesso foi desativado. Procure o Gestor.' })
         return
       }
-      if (data.trocar_senha !== atual.trocar_senha || String(data.perfil).toUpperCase() !== atual.perfil) {
+      // Gestor mudou perfil, módulos ou senha provisória → atualiza o menu sem precisar sair
+      if (data.trocar_senha !== atual.trocar_senha
+          || String(data.perfil).toUpperCase() !== atual.perfil
+          || chaveModulos(data) !== chaveModulos(atual)) {
         await get().recarregarPerfil()
       }
     } catch { /* sem conexão: tenta de novo depois */ }
