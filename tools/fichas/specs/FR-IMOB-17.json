@@ -1,0 +1,185 @@
+{
+  "codigo": "FR-IMOB-17",
+  "versao": "Rev00",
+  "nome": "Concreto asfáltico — Ensaio Marshall (VV > 10%) — Dano por umidade induzida",
+  "arquivo": "FR-IMOB-17_Rev00.xlsx",
+  "aba": "FR-IMOB-17_Rev00",
+  "titulo_aba": "Frente",
+  "_nota": "Planilha-mestre Rev00 da Qualidade, sem alterações. 3 CPs sem condicionamento (D–F) e 3 com condicionamento (G–I). Resultado: 1 linha em resultado_dano_umidade com a RRT (J45, fração → ×100). A ficha só tem a força de tração em kgf (sem MPa), então rt_nao_condicionada_mpa e rt_condicionada_mpa ficam vazias. Verso: 6 equipamentos + 4 pontos de verificação.",
+  "pedido": {
+    "B7": {
+      "campo": "os",
+      "manter_texto": true
+    },
+    "B8": {
+      "campo": "material",
+      "manter_texto": true
+    },
+    "F8": {
+      "campo": "registro",
+      "manter_texto": true
+    },
+    "B9": {
+      "campo": "procedencia",
+      "manter_texto": true
+    },
+    "B10": {
+      "campo": "complemento",
+      "manter_texto": true
+    }
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "F7"
+      ],
+      "tipo": "data",
+      "manter_texto": true
+    },
+    {
+      "colunas": [
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I"
+      ],
+      "linhas": [
+        19
+      ],
+      "tipo": "texto"
+    },
+    {
+      "colunas": [
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I"
+      ],
+      "linhas": [
+        "20-23",
+        "25-28",
+        32,
+        35,
+        36,
+        42
+      ],
+      "tipo": "numero"
+    },
+    {
+      "colunas": [
+        "G",
+        "H",
+        "I"
+      ],
+      "linhas": [
+        39,
+        40
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "assinaturas": {
+    "executor": "B48",
+    "calculista": "G48"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "F7"
+        ]
+      },
+      {
+        "titulo": "CP {n} — sem condicionamento",
+        "colunas": [
+          "D",
+          "E",
+          "F"
+        ]
+      },
+      {
+        "titulo": "CP {n} — com condicionamento",
+        "colunas": [
+          "G",
+          "H",
+          "I"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "F7": "Data do ensaio",
+    "D19": "Nº CP",
+    "E19": "Nº CP",
+    "F19": "Nº CP",
+    "G19": "Nº CP",
+    "H19": "Nº CP",
+    "I19": "Nº CP"
+  },
+  "abas_extras": [
+    {
+      "id": "VERSO",
+      "aba": "VERSO",
+      "titulo": "Verso",
+      "entradas": [
+        {
+          "celulas": [
+            "C6",
+            "C7",
+            "C8",
+            "C9",
+            "C10",
+            "C11"
+          ],
+          "tipo": "texto"
+        }
+      ],
+      "rotulos": {
+        "C6": "Balança — identificação",
+        "C7": "Paquímetro — identificação",
+        "C8": "Banho-maria — identificação",
+        "C9": "Prensa Marshall — identificação",
+        "C10": "Estufa — identificação",
+        "C11": "Soquete — identificação"
+      },
+      "lista": {
+        "grupos": [
+          {
+            "titulo": "Equipamentos utilizados",
+            "celulas": [
+              "C6",
+              "C7",
+              "C8",
+              "C9",
+              "C10",
+              "C11"
+            ]
+          },
+          {
+            "titulo": "Pontos de verificação",
+            "linhas": "13-16"
+          }
+        ]
+      }
+    }
+  ],
+  "resultados": [
+    {
+      "tabela": "resultado_dano_umidade",
+      "linhas": [
+        {
+          "quando": "=ISNUMBER(J45)",
+          "campos": {
+            "rrt_pct": "=J45*100"
+          }
+        }
+      ]
+    }
+  ],
+  "pedido_exemplo": {}
+}

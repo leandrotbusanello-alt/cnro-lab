@@ -1,0 +1,295 @@
+{
+  "codigo": "FR-IMOB-14",
+  "versao": "Rev00",
+  "nome": "Caracterização do ligante asfáltico — CAP modificado por polímero",
+  "arquivo": "FR-IMOB-14_Rev00.xlsx",
+  "aba": "FR-IMOB-14 _Rev00",
+  "area_impressao": "A1:S72",
+  "_nota": "PROVISÓRIO até a Rev01 da Qualidade (decisão do usuário em 25/09 15:12: fórmula errada sai da ficha e a célula passa a ser digitada). G59:G62 (variação de massa, % penetração original, variação do PA, % recuperação elástica original) apontavam para rótulos: viram campos digitados. As temperaturas de mistura/compactação (M62, N62, Q62, R62) dependiam de células fora da área de impressão: viram campos digitados. Área da ficha limitada a A1:S72 (à direita havia células com #REF!). Os cálculos de regressão da viscosidade (L53:N55) ficavam atrás do gráfico e não alimentam mais nada: limpos. Variação de massa por recipiente (P43/45/47) não tinha fórmula: digitada. Sem gráfico (área em branco). VERSO: A2 ligado a arquivo externo ([12]FR-LAB-09) foi limpo.",
+  "pedido": {
+    "B7": {
+      "campo": "os",
+      "manter_texto": true
+    },
+    "B8": {
+      "campo": "material",
+      "manter_texto": true
+    },
+    "J8": {
+      "campo": "registro",
+      "manter_texto": true
+    },
+    "B9": {
+      "campo": "procedencia",
+      "manter_texto": true
+    },
+    "B10": {
+      "campo": "complemento",
+      "manter_texto": true
+    }
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "J7"
+      ],
+      "tipo": "data",
+      "manter_texto": true
+    },
+    {
+      "celulas": [
+        "I20",
+        "M20",
+        "P20",
+        "I23",
+        "M23",
+        "P23",
+        "I24",
+        "M24",
+        "P24",
+        "I32",
+        "M32",
+        "P32",
+        "I35",
+        "M35",
+        "P35",
+        "I36",
+        "M36",
+        "P36",
+        "I28",
+        "M28",
+        "I40",
+        "M40",
+        "I43",
+        "M43",
+        "P43",
+        "I45",
+        "M45",
+        "P45",
+        "I47",
+        "M47",
+        "P47",
+        "G53",
+        "G54",
+        "G55",
+        "G56",
+        "G59",
+        "G60",
+        "G61",
+        "G62"
+      ],
+      "tipo": "numero"
+    },
+    {
+      "celulas": [
+        "M62",
+        "N62",
+        "Q62",
+        "R62"
+      ],
+      "tipo": "texto"
+    }
+  ],
+  "limpar": [
+    "L53",
+    "L54",
+    "L55",
+    "M53",
+    "M54",
+    "M55",
+    "N53",
+    "N54",
+    "N55"
+  ],
+  "assinaturas": {
+    "executor": "D65",
+    "calculista": "L65"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "J7"
+        ]
+      },
+      {
+        "titulo": "Antes do envelhecimento",
+        "linhas": "20-29"
+      },
+      {
+        "titulo": "Após o envelhecimento",
+        "linhas": "32-41"
+      },
+      {
+        "titulo": "Variação em massa (RTFOT)",
+        "linhas": "43-48"
+      },
+      {
+        "titulo": "Viscosidade Brookfield e separação de fase",
+        "celulas": [
+          "G53",
+          "G54",
+          "G55",
+          "G56"
+        ]
+      },
+      {
+        "titulo": "Resultados após RTFOT",
+        "celulas": [
+          "G59",
+          "G60",
+          "G61",
+          "G62"
+        ]
+      },
+      {
+        "titulo": "Temperaturas ótimas",
+        "celulas": [
+          "M62",
+          "N62",
+          "Q62",
+          "R62"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "J7": "Data do ensaio",
+    "G53": "Viscosidade a 135 °C (cP)",
+    "G54": "Viscosidade a 150 °C (cP)",
+    "G55": "Viscosidade a 177 °C (cP)",
+    "G56": "Separação de fase (°C)",
+    "G59": "Variação de massa (%)",
+    "G60": "Porcentagem de penetração original (%)",
+    "G61": "Variação do ponto de amolecimento (°C)",
+    "G62": "Porcentagem de recuperação elástica original (%)",
+    "M62": "Mistura — mín. (°C)",
+    "N62": "Mistura — máx. (°C)",
+    "Q62": "Compactação — mín. (°C)",
+    "R62": "Compactação — máx. (°C)",
+    "I43": "Recipiente 1 — antes (g)",
+    "M43": "Recipiente 1 — após (g)",
+    "P43": "Recipiente 1 — variação (%)",
+    "I45": "Recipiente 2 — antes (g)",
+    "M45": "Recipiente 2 — após (g)",
+    "P45": "Recipiente 2 — variação (%)",
+    "I47": "Recipiente 3 — antes (g)",
+    "M47": "Recipiente 3 — após (g)",
+    "P47": "Recipiente 3 — variação (%)"
+  },
+  "resultados": [
+    {
+      "tabela": "resultado_penetracao",
+      "linhas": [
+        {
+          "quando": "=ISNUMBER(I21)",
+          "campos": {
+            "temperatura_c": 25,
+            "leitura_1": "=I20",
+            "leitura_2": "=M20",
+            "leitura_3": "=P20",
+            "penetracao_media": "=I21"
+          }
+        }
+      ]
+    },
+    {
+      "tabela": "resultado_ponto_amolecimento",
+      "linhas": [
+        {
+          "quando": "=ISNUMBER(I29)",
+          "campos": {
+            "leitura_1_c": "=I28",
+            "leitura_2_c": "=M28",
+            "media_c": "=I29"
+          }
+        }
+      ]
+    },
+    {
+      "tabela": "resultado_recuperacao_elastica",
+      "linhas": [
+        {
+          "quando": "=ISNUMBER(I26)",
+          "campos": {
+            "temperatura_c": 25,
+            "elongacao_cm": 10,
+            "recuperacao_obtida_pct": "=I26*100"
+          }
+        }
+      ]
+    },
+    {
+      "tabela": "resultado_viscosidade",
+      "linhas": [
+        {
+          "quando": "=COUNT(G53:G55)>0",
+          "campos": {
+            "viscosidade_135c_cp": "=G53",
+            "viscosidade_150c_cp": "=G54",
+            "viscosidade_177c_cp": "=G55"
+          }
+        }
+      ]
+    }
+  ],
+  "abas_extras": [
+    {
+      "id": "VERSO",
+      "aba": "VERSO",
+      "titulo": "Verso",
+      "entradas": [
+        {
+          "celulas": [
+            "C6",
+            "C7",
+            "C8",
+            "C9",
+            "C10",
+            "C11",
+            "C12",
+            "C13"
+          ],
+          "tipo": "texto"
+        }
+      ],
+      "limpar": [
+        "A2"
+      ],
+      "rotulos": {
+        "C6": "Balança — identificação",
+        "C7": "Agulha + penetrômetro — identificação",
+        "C8": "Ductilômetro — identificação",
+        "C9": "Viscosímetro — identificação",
+        "C10": "Estufa RTFOT — identificação",
+        "C11": "Esferas — identificação",
+        "C12": "Béquer — identificação",
+        "C13": "Termômetro — identificação"
+      },
+      "lista": {
+        "grupos": [
+          {
+            "titulo": "Equipamentos utilizados",
+            "celulas": [
+              "C6",
+              "C7",
+              "C8",
+              "C9",
+              "C10",
+              "C11",
+              "C12",
+              "C13"
+            ]
+          },
+          {
+            "titulo": "Pontos de verificação",
+            "linhas": "15-22"
+          }
+        ]
+      }
+    }
+  ],
+  "pedido_exemplo": {},
+  "titulo_aba": "Frente"
+}

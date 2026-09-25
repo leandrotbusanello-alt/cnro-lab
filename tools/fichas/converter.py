@@ -261,7 +261,9 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
     """Converte uma aba da planilha (frente, verso…). spec = papéis das células desta aba."""
     wsv = wbv[ws.title]
 
-    pa = ws.print_area
+    # área da ficha: a área de impressão do Excel, ou "area_impressao" da spec quando a do Excel
+    # inclui colunas de rascunho (p.ex. células com #REF! à direita da ficha)
+    pa = spec.get('area_impressao') or ws.print_area
     pa = (pa if isinstance(pa, str) else pa[0]).split('!')[-1].replace('$', '')
     c1, r1, c2, r2 = range_boundaries(pa)
     c2_impressao = c2
@@ -494,7 +496,7 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
 
 
 CHAVES_DA_FOLHA = ('pedido', 'entradas', 'revisao', 'escolhas', 'assinaturas', 'linhas_assinatura', 'formulas',
-                   'colunas_tela', 'limpar', 'mesclas_extras', 'lista', 'rotulos', 'verificacoes')
+                   'colunas_tela', 'limpar', 'mesclas_extras', 'lista', 'rotulos', 'verificacoes', 'area_impressao')
 RE_ABA_FORMULA = re.compile(r"(?:'((?:[^']|'')+)'|([A-Za-z_][A-Za-z0-9_.]*))!\$?[A-Z]{1,3}\$?\d")
 
 

@@ -1,0 +1,198 @@
+{
+  "codigo": "FR-IMOB-16",
+  "versao": "Rev00",
+  "nome": "Concreto asfáltico — Ensaio Marshall (VV < 10% e ABS > 2%)",
+  "arquivo": "FR-IMOB-16_Rev00.xlsx",
+  "aba": "FR-IMOB-16 _Rev00",
+  "titulo_aba": "Frente",
+  "_nota": "Planilha-mestre Rev00 da Qualidade, sem alterações. Gmb com filme PVC (absorção > 2%). 4 CPs (D–G): 1 linha por CP em resultado_marshall. GC está em fração na ficha (0%) e vai ×100 para o banco. A tração diametral da ficha é força em kgf (não há MPa), então resistencia_tracao_mpa fica vazia. Verso: equipamentos + 5 pontos de verificação.",
+  "pedido": {
+    "B7": {
+      "campo": "os",
+      "manter_texto": true
+    },
+    "B8": {
+      "campo": "material",
+      "manter_texto": true
+    },
+    "E8": {
+      "campo": "registro",
+      "manter_texto": true
+    },
+    "B9": {
+      "campo": "procedencia",
+      "manter_texto": true
+    },
+    "B10": {
+      "campo": "complemento",
+      "manter_texto": true
+    }
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "E7"
+      ],
+      "tipo": "data",
+      "manter_texto": true
+    },
+    {
+      "colunas": [
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "linhas": [
+        18
+      ],
+      "tipo": "texto"
+    },
+    {
+      "colunas": [
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "linhas": [
+        "19-22",
+        "24-27",
+        "30-33",
+        36,
+        "38-41",
+        47,
+        48,
+        51
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "escolhas": [
+    {
+      "grupo": "modulo_resiliencia",
+      "celulas": {
+        "D56": "Sim",
+        "E56": "Não"
+      }
+    },
+    {
+      "grupo": "vida_fadiga",
+      "celulas": {
+        "D57": "Sim",
+        "E57": "Não"
+      }
+    },
+    {
+      "grupo": "deformacao_permanente",
+      "celulas": {
+        "D58": "Sim",
+        "E58": "Não"
+      }
+    }
+  ],
+  "assinaturas": {
+    "executor": "B60",
+    "calculista": "F60"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "E7"
+        ]
+      },
+      {
+        "titulo": "CP {n}",
+        "colunas": [
+          "D",
+          "E",
+          "F",
+          "G"
+        ]
+      },
+      {
+        "titulo": "Ensaios especiais",
+        "celulas": [
+          "D56",
+          "E56",
+          "D57",
+          "E57",
+          "D58",
+          "E58"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "E7": "Data do ensaio",
+    "D18": "Nº CP",
+    "E18": "Nº CP",
+    "F18": "Nº CP",
+    "G18": "Nº CP"
+  },
+  "abas_extras": [
+    {
+      "id": "VERSO",
+      "aba": "VERSO",
+      "titulo": "Verso",
+      "entradas": [
+        {
+          "celulas": [
+            "C6",
+            "C7"
+          ],
+          "tipo": "texto"
+        }
+      ],
+      "rotulos": {
+        "C6": "Balança — identificação",
+        "C7": "Peneira — identificação"
+      },
+      "lista": {
+        "grupos": [
+          {
+            "titulo": "Equipamentos utilizados",
+            "celulas": [
+              "C6",
+              "C7"
+            ]
+          },
+          {
+            "titulo": "Pontos de verificação",
+            "linhas": "9-13"
+          }
+        ]
+      }
+    }
+  ],
+  "resultados": [
+    {
+      "tabela": "resultado_marshall",
+      "repetir": {
+        "var": "c",
+        "valores": [
+          "D",
+          "E",
+          "F",
+          "G"
+        ],
+        "quando": "=COUNT({c}19:{c}22,{c}24:{c}27,{c}30:{c}33,{c}36,{c}38:{c}41,{c}47,{c}48,{c}51)>0"
+      },
+      "campos": {
+        "codigo_cp": "=IF({c}18<>\"\",{c}18&\"\",\"CP \"&{n})",
+        "gmb_obtido": "={c}34",
+        "gmm_referencia": "={c}36",
+        "teor_betume_obtido_pct": "={c}39",
+        "va_pct": "={c}43",
+        "vam_pct": "={c}45",
+        "rbv_pct": "={c}46",
+        "grau_compactacao_pct": "=IF(ISNUMBER({c}37),{c}37*100,\"\")",
+        "fluencia_mm": "={c}47",
+        "estabilidade_kgf": "={c}50"
+      }
+    }
+  ],
+  "pedido_exemplo": {}
+}

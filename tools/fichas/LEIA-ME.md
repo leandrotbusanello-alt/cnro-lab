@@ -43,6 +43,7 @@ Requisitos: Python 3.10+ (`openpyxl`, `lxml`), Node 18+ e LibreOffice (só para 
   "formulas": { "N20": "=IF(W20=\"\",\"\",W20/0.07854*0.09807)" },   // quando a planilha não tem a fórmula
   "colunas_tela": "V:X",               // colunas fora da impressão que o assistente usa (aparecem só na tela)
   "limpar": ["H49"],                   // células com lixo (#VALUE! de exemplo etc.)
+  "area_impressao": "A1:S72",          // opcional: substitui a área de impressão do Excel (rascunho fora da ficha)
   "mesclas_extras": ["B40:K45"],
 
   // visão em lista (celular): grupos e rótulos
@@ -83,6 +84,7 @@ Requisitos: Python 3.10+ (`openpyxl`, `lxml`), Node 18+ e LibreOffice (só para 
 
 ## Regras do conversor
 - **Fórmulas bloqueadas:** as aleatórias ou voláteis (`RANDBETWEEN`, `RAND`, `NOW`, `TODAY`, `INDIRECT`, `OFFSET`) nunca entram no sistema.
-- **Fórmula em célula de entrada:** é descartada, com aviso.
+- **Fórmula em célula de entrada:** é descartada, com aviso. É assim que se tira uma fórmula errada da ficha
+  enquanto a Qualidade não emite a revisão: a célula vira campo digitado (registre no `_nota` da spec).
 - **Motor:** cobre IF, IFERROR, IFNA, SUM, AVERAGE, MIN, MAX, MEDIAN, COUNT, COUNTA, STDEV, PI, ABS, SQRT, LN, LOG, LOG10, EXP, INT, TRUNC, POWER, ROUND*, AND, OR, NOT, IS*, NA, CONCATENATE, VLOOKUP, HLOOKUP, INDEX, MATCH, SLOPE, INTERCEPT, RSQ e CORREL.
   Função fora da lista aparece como `#NAME?` no teste. Nesse caso, acrescente-a em `src/modules/fichas/motor/formulas.js`.

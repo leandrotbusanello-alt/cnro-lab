@@ -1,0 +1,178 @@
+{
+  "codigo": "FR-IMOB-12",
+  "versao": "Rev00",
+  "nome": "Análise granulométrica — SMA",
+  "arquivo": "FR-IMOB-12_Rev00.xlsx",
+  "aba": "FR-IMOB-12_Rev00",
+  "titulo_aba": "Frente",
+  "_nota": "PROVISÓRIO até a Rev01 da Qualidade (decisão do usuário em 25/09 15:12: fórmula errada sai da ficha e a célula passa a ser digitada). J20:J23 (% retida acumulada da 2ª determinação nas peneiras 1\", 3/4\", 1/2\" e 3/8\") dividiam pela massa da 1ª determinação: viram campos digitados; as colunas % passa (K) e média (L) continuam calculando a partir deles. Sem gráfico (área em branco). Sem resultado_* (tabela de granulometria de agregado ainda não definida).",
+  "pedido": {
+    "B7": {
+      "campo": "os",
+      "manter_texto": true
+    },
+    "B8": {
+      "campo": "material",
+      "manter_texto": true
+    },
+    "G8": {
+      "campo": "registro",
+      "manter_texto": true
+    },
+    "B9": {
+      "campo": "procedencia",
+      "manter_texto": true
+    },
+    "B10": {
+      "campo": "complemento",
+      "manter_texto": true
+    }
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "G7"
+      ],
+      "tipo": "data",
+      "manter_texto": true
+    },
+    {
+      "colunas": [
+        "D",
+        "H"
+      ],
+      "linhas": [
+        "20-32"
+      ],
+      "tipo": "numero"
+    },
+    {
+      "colunas": [
+        "J"
+      ],
+      "linhas": [
+        "20-23"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "assinaturas": {
+    "executor": "B51",
+    "calculista": "H51"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "G7"
+        ]
+      },
+      {
+        "titulo": "1ª determinação",
+        "colunas": [
+          "D"
+        ]
+      },
+      {
+        "titulo": "2ª determinação",
+        "celulas": [
+          "H20",
+          "H21",
+          "H22",
+          "H23",
+          "H24",
+          "H25",
+          "H26",
+          "H27",
+          "H28",
+          "H29",
+          "H30",
+          "H31",
+          "H32",
+          "J20",
+          "J21",
+          "J22",
+          "J23"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "G7": "Data do ensaio",
+    "J20": "% retida acumulada (2ª det.) — peneira 1\"",
+    "J21": "% retida acumulada (2ª det.) — peneira 3/4\"",
+    "J22": "% retida acumulada (2ª det.) — peneira 1/2\"",
+    "J23": "% retida acumulada (2ª det.) — peneira 3/8\""
+  },
+  "abas_extras": [
+    {
+      "id": "VERSO",
+      "aba": "VERSO ",
+      "titulo": "Verso",
+      "entradas": [
+        {
+          "celulas": [
+            "E6",
+            "E7",
+            "E8",
+            "E9",
+            "E10",
+            "E11",
+            "E12",
+            "E13",
+            "E14",
+            "E15",
+            "E16",
+            "E17",
+            "E18"
+          ],
+          "tipo": "texto"
+        }
+      ],
+      "rotulos": {
+        "E6": "Balança — identificação",
+        "E7": "Estufa — identificação",
+        "E8": "Peneira 2\" — identificação",
+        "E9": "Peneira 1 1/2\" — identificação",
+        "E10": "Peneira 1\" — identificação",
+        "E11": "Peneira 3/4\" — identificação",
+        "E12": "Peneira 1/2\" — identificação",
+        "E13": "Peneira 3/8\" — identificação",
+        "E14": "Peneira nº 4 — identificação",
+        "E15": "Peneira nº 10 — identificação",
+        "E16": "Peneira nº 40 — identificação",
+        "E17": "Peneira nº 80 — identificação",
+        "E18": "Peneira nº 200 — identificação"
+      },
+      "lista": {
+        "grupos": [
+          {
+            "titulo": "Equipamentos utilizados",
+            "celulas": [
+              "E6",
+              "E7",
+              "E8",
+              "E9",
+              "E10",
+              "E11",
+              "E12",
+              "E13",
+              "E14",
+              "E15",
+              "E16",
+              "E17",
+              "E18"
+            ]
+          },
+          {
+            "titulo": "Pontos de verificação",
+            "linhas": "20-23"
+          }
+        ]
+      }
+    }
+  ],
+  "resultados": [],
+  "pedido_exemplo": {}
+}

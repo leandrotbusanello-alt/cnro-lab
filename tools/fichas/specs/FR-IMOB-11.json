@@ -1,0 +1,216 @@
+{
+  "codigo": "FR-IMOB-11",
+  "versao": "Rev00",
+  "nome": "Análise granulométrica de agregados",
+  "arquivo": "FR-IMOB-11_Rev00.xlsx",
+  "_nota": "PROVISÓRIO até a Rev01 da Qualidade (decisão do usuário em 25/09 15:12: fórmula errada sai da ficha e a célula passa a ser digitada). Alterações em relação à planilha: O40 (fundo da Amostra 02, era =P39) e F41/O41 (diâmetro máximo, fixo em 9,5) viram campos digitados; K46 (#REF!) limpa. Os zeros pré-preenchidos de F29:F33/O29:O33 não entram (são exemplo). As duas assinaturas dizem 'Responsável calculista' na planilha: a da esquerda (E61) foi tratada como executor. Sem gráfico: a tabela auxiliar do gráfico (F45:K57, que no Excel fica escondida atrás do gráfico e mostrava #DIV/0! com a ficha vazia) foi limpa; a coluna '% MÉDIA PASSANTE' (P47:P57), que lia essa tabela, passou a calcular a média direto de H29:H39 e Q29:Q39 (mesmo resultado, sem #DIV/0!). Sem resultado_* (tabela de granulometria de agregado ainda não definida): os dados ficam em dados_resultado.",
+  "pedido": {
+    "C7": {
+      "campo": "os",
+      "manter_texto": true
+    },
+    "C8": {
+      "campo": "material",
+      "manter_texto": true
+    },
+    "I8": {
+      "campo": "registro",
+      "manter_texto": true
+    },
+    "C9": {
+      "campo": "procedencia",
+      "manter_texto": true
+    },
+    "C10": {
+      "campo": "complemento",
+      "manter_texto": true
+    }
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "I7"
+      ],
+      "tipo": "data",
+      "manter_texto": true
+    },
+    {
+      "celulas": [
+        "I25",
+        "R25"
+      ],
+      "tipo": "numero"
+    },
+    {
+      "colunas": [
+        "F",
+        "O"
+      ],
+      "linhas": [
+        "29-40"
+      ],
+      "tipo": "numero"
+    },
+    {
+      "celulas": [
+        "F41",
+        "O41"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "limpar": [
+    "F45",
+    "F46",
+    "F47",
+    "F48",
+    "F49",
+    "F50",
+    "F51",
+    "F52",
+    "F53",
+    "F54",
+    "F55",
+    "F56",
+    "F57",
+    "G45",
+    "G46",
+    "G47",
+    "G48",
+    "G49",
+    "G50",
+    "G51",
+    "G52",
+    "G53",
+    "G54",
+    "G55",
+    "G56",
+    "G57",
+    "H45",
+    "H46",
+    "H47",
+    "H48",
+    "H49",
+    "H50",
+    "H51",
+    "H52",
+    "H53",
+    "H54",
+    "H55",
+    "H56",
+    "H57",
+    "I45",
+    "I46",
+    "I47",
+    "I48",
+    "I49",
+    "I50",
+    "I51",
+    "I52",
+    "I53",
+    "I54",
+    "I55",
+    "I56",
+    "I57",
+    "J45",
+    "J46",
+    "J47",
+    "J48",
+    "J49",
+    "J50",
+    "J51",
+    "J52",
+    "J53",
+    "J54",
+    "J55",
+    "J56",
+    "J57",
+    "K45",
+    "K46",
+    "K47",
+    "K48",
+    "K49",
+    "K50",
+    "K51",
+    "K52",
+    "K53",
+    "K54",
+    "K55",
+    "K56",
+    "K57"
+  ],
+  "assinaturas": {
+    "executor": "E61",
+    "calculista": "M61"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "I7"
+        ]
+      },
+      {
+        "titulo": "Amostra 01",
+        "celulas": [
+          "I25",
+          "F29",
+          "F30",
+          "F31",
+          "F32",
+          "F33",
+          "F34",
+          "F35",
+          "F36",
+          "F37",
+          "F38",
+          "F39",
+          "F40",
+          "F41"
+        ]
+      },
+      {
+        "titulo": "Amostra 02",
+        "celulas": [
+          "R25",
+          "O29",
+          "O30",
+          "O31",
+          "O32",
+          "O33",
+          "O34",
+          "O35",
+          "O36",
+          "O37",
+          "O38",
+          "O39",
+          "O40",
+          "O41"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "I7": "Data do ensaio",
+    "I25": "Amostra total seca (g)",
+    "R25": "Amostra total seca (g)",
+    "F41": "Diâmetro máximo (mm)",
+    "O41": "Diâmetro máximo (mm)"
+  },
+  "resultados": [],
+  "pedido_exemplo": {},
+  "formulas": {
+    "P47": "=IF(H39=\"\",\"\",IFERROR(AVERAGE(H29,Q29),\"\"))",
+    "P48": "=IF(H39=\"\",\"\",IFERROR(AVERAGE(H30,Q30),\"\"))",
+    "P49": "=IF(H39=\"\",\"\",IFERROR(AVERAGE(H31,Q31),\"\"))",
+    "P50": "=IF(H39=\"\",\"\",IFERROR(AVERAGE(H32,Q32),\"\"))",
+    "P51": "=IF(H39=\"\",\"\",IFERROR(AVERAGE(H33,Q33),\"\"))",
+    "P52": "=IF(H39=\"\",\"\",IFERROR(AVERAGE(H34,Q34),\"\"))",
+    "P53": "=IF(H39=\"\",\"\",IFERROR(AVERAGE(H35,Q35),\"\"))",
+    "P54": "=IF(H39=\"\",\"\",IFERROR(AVERAGE(H36,Q36),\"\"))",
+    "P55": "=IF(H39=\"\",\"\",IFERROR(AVERAGE(H37,Q37),\"\"))",
+    "P56": "=IF(H39=\"\",\"\",IFERROR(AVERAGE(H38,Q38),\"\"))",
+    "P57": "=IF(H39=\"\",\"\",IFERROR(AVERAGE(H39,Q39),\"\"))"
+  }
+}
