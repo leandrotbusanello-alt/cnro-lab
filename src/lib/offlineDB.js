@@ -7,10 +7,13 @@ import { openDB } from 'idb'
 // v2 (Lab):   pedidos_cache, ensaios_os_cache, usuarios_cache, fichas_ensaio_cache,
 //             arquivos_cache (assinaturas etc.), op_queue (fila ordenada de operações),
 //             id_map (ID provisório offline → ID definitivo no servidor)
+// v3 (Assistente / fichas online):
+//             fichas_modelo_cache (modelos das fichas), rascunhos_ficha (preenchimento
+//             ainda não salvo no servidor), assist_ensaios_cache, assist_pedidos_cache
 // ─────────────────────────────────────────────────────────────────────────────
 
 const DB_NAME = 'cnro_lab'
-const DB_VERSION = 2
+const DB_VERSION = 3
 
 function getDB() {
   return openDB(DB_NAME, DB_VERSION, {
@@ -54,6 +57,19 @@ function getDB() {
       }
       if (!db.objectStoreNames.contains('id_map')) {
         db.createObjectStore('id_map', { keyPath: 'tempId' })
+      }
+      // ── v3 ──
+      if (!db.objectStoreNames.contains('fichas_modelo_cache')) {
+        db.createObjectStore('fichas_modelo_cache', { keyPath: 'id' })
+      }
+      if (!db.objectStoreNames.contains('rascunhos_ficha')) {
+        db.createObjectStore('rascunhos_ficha', { keyPath: 'ensaioOsId' })
+      }
+      if (!db.objectStoreNames.contains('assist_ensaios_cache')) {
+        db.createObjectStore('assist_ensaios_cache', { keyPath: 'id' })
+      }
+      if (!db.objectStoreNames.contains('assist_pedidos_cache')) {
+        db.createObjectStore('assist_pedidos_cache', { keyPath: 'id' })
       }
     },
   })
@@ -114,7 +130,8 @@ export async function getPerfilCache(userId) {
 
 // ── Cache genérico (v2) ──────────────────────────────────────────────────────
 // Stores: pedidos_cache, ensaios_os_cache, usuarios_cache, fichas_ensaio_cache,
-//         ensaios_cache, empresas_cache
+//         ensaios_cache, empresas_cache, fichas_modelo_cache, rascunhos_ficha,
+//         assist_ensaios_cache, assist_pedidos_cache
 
 /** Substitui todo o conteúdo de um store pelos registros informados. */
 export async function cacheSubstituir(store, registros) {
@@ -164,6 +181,18 @@ export async function arquivoObter(chave) {
   const db = await getDB()
   const r = await db.get('arquivos_cache', chave)
   return r?.blob || null
+}
+
+/** Chaves dos arquivos que começam com o prefixo (ex.: 'apoio:<ensaio>:') */
+export async function arquivosListar(prefixo) {
+  const db = await getDB()
+  const chaves = await db.getAllKeys('arquivos_cache')
+  return chaves.filter(k => String(k).startsWith(prefixo)).sort()
+}
+
+export async function arquivoRemover(chave) {
+  const db = await getDB()
+  await db.delete('arquivos_cache', chave)
 }
 
 // ── Fila de operações (v2) ───────────────────────────────────────────────────

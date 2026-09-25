@@ -1,0 +1,72 @@
+/* Revisão da ficha online pelo laboratorista — tela cheia */
+.tela {
+  position: fixed; inset: 0; z-index: 1050;
+  background: var(--gray); display: flex; flex-direction: column;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.topo {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  background: #fff; border-bottom: 1px solid var(--border); padding: 10px 20px;
+}
+.voltar {
+  font: inherit; font-size: 13.5px; font-weight: 700; color: var(--navy);
+  background: none; border: 0; cursor: pointer; padding: 4px 0;
+}
+.voltar:hover { text-decoration: underline; }
+.titulos { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
+.titulos h2 { font-size: 17px; font-weight: 800; color: var(--navy); line-height: 1.25; }
+.titulos span { font-size: 12.5px; color: var(--muted); }
+
+.corpo {
+  flex: 1; overflow: auto; padding: 14px 20px 20px;
+  display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 14px; align-items: start;
+}
+.principal { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.lateral { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 0; }
+.carregando { padding: 60px 0; display: flex; justify-content: center; }
+
+.cartao {
+  background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.cartao h3 { font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13.5px; }
+.kv dt { color: var(--muted); }
+.kv dd { color: var(--text); font-weight: 600; }
+
+.campo { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+.campo select, .campo textarea {
+  font: inherit; font-size: 14px; color: var(--text);
+  border: 1px solid var(--border); border-radius: 6px; padding: 7px 9px; background: #fff;
+}
+.campo textarea { resize: vertical; }
+.campo select:focus, .campo textarea:focus { outline: 2px solid var(--teal); outline-offset: 0; }
+
+.liberar { display: flex; gap: 8px; align-items: flex-start; font-size: 13.5px; cursor: pointer; }
+.liberar input { margin-top: 3px; }
+.ajuda { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+
+.rodape {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  background: #fff; border-top: 1px solid var(--border); padding: 10px 20px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -4px 16px rgba(17, 24, 39, .06);
+}
+.situacao { font-size: 13px; color: var(--muted); }
+.botoes { display: flex; gap: 8px; flex-wrap: wrap; }
+
+@media (max-width: 900px) {
+  .corpo { grid-template-columns: minmax(0, 1fr); }
+  .lateral { position: static; }
+}
+@media (max-width: 600px) {
+  .topo, .corpo, .rodape { padding-left: 12px; padding-right: 12px; }
+  .botoes { width: 100%; }
+  .botoes > button { flex: 1; }
+}
+
+@media print {
+  .tela { display: none !important; }
+}

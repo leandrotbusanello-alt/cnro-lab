@@ -1,0 +1,2535 @@
+{
+  "codigo": "FR-IMOB-50",
+  "versao": "Rev00",
+  "nome": "Concreto de cimento Portland — Resistência à compressão",
+  "arquivo": "FR-IMOB-50_Rev00.xlsx",
+  "_nota": "A Rev00 não tem fórmulas: as fórmulas abaixo vêm da versão anterior (FR-LAB-49, 17/10/2025): MPa = carga (t) / 0,07854 × 0,09807 (CP de 100 mm). A carga em toneladas fica nas colunas W/X, fora da área de impressão — aparecem só na tela.",
+  "colunas_tela": "V:X",
+  "pedido": {
+    "B7": {
+      "campo": "os",
+      "manter_texto": true
+    },
+    "B8": {
+      "campo": "material",
+      "manter_texto": true
+    },
+    "L8": {
+      "campo": "registro",
+      "manter_texto": true
+    },
+    "B9": {
+      "campo": "procedencia",
+      "manter_texto": true
+    },
+    "B10": {
+      "campo": "complemento",
+      "manter_texto": true
+    }
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "L7"
+      ],
+      "tipo": "data",
+      "manter_texto": true
+    },
+    {
+      "celulas": [
+        "B17",
+        "G17"
+      ],
+      "tipo": "numero"
+    },
+    {
+      "celulas": [
+        "M17"
+      ],
+      "tipo": "texto"
+    },
+    {
+      "celulas": [
+        "B20",
+        "B22",
+        "B24",
+        "B26",
+        "B28",
+        "B30",
+        "B32",
+        "B34",
+        "B36",
+        "B38",
+        "B40",
+        "B42",
+        "B44",
+        "B46",
+        "B48",
+        "B50"
+      ],
+      "tipo": "data"
+    },
+    {
+      "celulas": [
+        "C20",
+        "D20",
+        "E20",
+        "F20",
+        "L20",
+        "W20",
+        "W21",
+        "X20",
+        "X21",
+        "C22",
+        "D22",
+        "E22",
+        "F22",
+        "L22",
+        "W22",
+        "W23",
+        "X22",
+        "X23",
+        "C24",
+        "D24",
+        "E24",
+        "F24",
+        "L24",
+        "W24",
+        "W25",
+        "X24",
+        "X25",
+        "C26",
+        "D26",
+        "E26",
+        "F26",
+        "L26",
+        "W26",
+        "W27",
+        "X26",
+        "X27",
+        "C28",
+        "D28",
+        "E28",
+        "F28",
+        "L28",
+        "W28",
+        "W29",
+        "X28",
+        "X29",
+        "C30",
+        "D30",
+        "E30",
+        "F30",
+        "L30",
+        "W30",
+        "W31",
+        "X30",
+        "X31",
+        "C32",
+        "D32",
+        "E32",
+        "F32",
+        "L32",
+        "W32",
+        "W33",
+        "X32",
+        "X33",
+        "C34",
+        "D34",
+        "E34",
+        "F34",
+        "L34",
+        "W34",
+        "W35",
+        "X34",
+        "X35",
+        "C36",
+        "D36",
+        "E36",
+        "F36",
+        "L36",
+        "W36",
+        "W37",
+        "X36",
+        "X37",
+        "C38",
+        "D38",
+        "E38",
+        "F38",
+        "L38",
+        "W38",
+        "W39",
+        "X38",
+        "X39",
+        "C40",
+        "D40",
+        "E40",
+        "F40",
+        "L40",
+        "W40",
+        "W41",
+        "X40",
+        "X41",
+        "C42",
+        "D42",
+        "E42",
+        "F42",
+        "L42",
+        "W42",
+        "W43",
+        "X42",
+        "X43",
+        "C44",
+        "D44",
+        "E44",
+        "F44",
+        "L44",
+        "W44",
+        "W45",
+        "X44",
+        "X45",
+        "C46",
+        "D46",
+        "E46",
+        "F46",
+        "L46",
+        "W46",
+        "W47",
+        "X46",
+        "X47",
+        "C48",
+        "D48",
+        "E48",
+        "F48",
+        "L48",
+        "W48",
+        "W49",
+        "X48",
+        "X49",
+        "C50",
+        "D50",
+        "E50",
+        "F50",
+        "L50",
+        "W50",
+        "W51",
+        "X50",
+        "X51"
+      ],
+      "tipo": "numero"
+    },
+    {
+      "celulas": [
+        "I20",
+        "J20",
+        "K20",
+        "I22",
+        "J22",
+        "K22",
+        "I24",
+        "J24",
+        "K24",
+        "I26",
+        "J26",
+        "K26",
+        "I28",
+        "J28",
+        "K28",
+        "I30",
+        "J30",
+        "K30",
+        "I32",
+        "J32",
+        "K32",
+        "I34",
+        "J34",
+        "K34",
+        "I36",
+        "J36",
+        "K36",
+        "I38",
+        "J38",
+        "K38",
+        "I40",
+        "J40",
+        "K40",
+        "I42",
+        "J42",
+        "K42",
+        "I44",
+        "J44",
+        "K44",
+        "I46",
+        "J46",
+        "K46",
+        "I48",
+        "J48",
+        "K48",
+        "I50",
+        "J50",
+        "K50"
+      ],
+      "tipo": "hora"
+    },
+    {
+      "celulas": [
+        "S20",
+        "S22",
+        "S24",
+        "S26",
+        "S28",
+        "S30",
+        "S32",
+        "S34",
+        "S36",
+        "S38",
+        "S40",
+        "S42",
+        "S44",
+        "S46",
+        "S48",
+        "S50"
+      ],
+      "tipo": "texto"
+    }
+  ],
+  "escolhas": [
+    {
+      "grupo": "lancamento_1",
+      "marca": "X",
+      "celulas": {
+        "G20": "Bombeado",
+        "H20": "Convencional"
+      },
+      "rotulo": "Lançamento"
+    },
+    {
+      "grupo": "lancamento_2",
+      "marca": "X",
+      "celulas": {
+        "G22": "Bombeado",
+        "H22": "Convencional"
+      },
+      "rotulo": "Lançamento"
+    },
+    {
+      "grupo": "lancamento_3",
+      "marca": "X",
+      "celulas": {
+        "G24": "Bombeado",
+        "H24": "Convencional"
+      },
+      "rotulo": "Lançamento"
+    },
+    {
+      "grupo": "lancamento_4",
+      "marca": "X",
+      "celulas": {
+        "G26": "Bombeado",
+        "H26": "Convencional"
+      },
+      "rotulo": "Lançamento"
+    },
+    {
+      "grupo": "lancamento_5",
+      "marca": "X",
+      "celulas": {
+        "G28": "Bombeado",
+        "H28": "Convencional"
+      },
+      "rotulo": "Lançamento"
+    },
+    {
+      "grupo": "lancamento_6",
+      "marca": "X",
+      "celulas": {
+        "G30": "Bombeado",
+        "H30": "Convencional"
+      },
+      "rotulo": "Lançamento"
+    },
+    {
+      "grupo": "lancamento_7",
+      "marca": "X",
+      "celulas": {
+        "G32": "Bombeado",
+        "H32": "Convencional"
+      },
+      "rotulo": "Lançamento"
+    },
+    {
+      "grupo": "lancamento_8",
+      "marca": "X",
+      "celulas": {
+        "G34": "Bombeado",
+        "H34": "Convencional"
+      },
+      "rotulo": "Lançamento"
+    },
+    {
+      "grupo": "lancamento_9",
+      "marca": "X",
+      "celulas": {
+        "G36": "Bombeado",
+        "H36": "Convencional"
+      },
+      "rotulo": "Lançamento"
+    },
+    {
+      "grupo": "lancamento_10",
+      "marca": "X",
+      "celulas": {
+        "G38": "Bombeado",
+        "H38": "Convencional"
+      },
+      "rotulo": "Lançamento"
+    },
+    {
+      "grupo": "lancamento_11",
+      "marca": "X",
+      "celulas": {
+        "G40": "Bombeado",
+        "H40": "Convencional"
+      },
+      "rotulo": "Lançamento"
+    },
+    {
+      "grupo": "lancamento_12",
+      "marca": "X",
+      "celulas": {
+        "G42": "Bombeado",
+        "H42": "Convencional"
+      },
+      "rotulo": "Lançamento"
+    },
+    {
+      "grupo": "lancamento_13",
+      "marca": "X",
+      "celulas": {
+        "G44": "Bombeado",
+        "H44": "Convencional"
+      },
+      "rotulo": "Lançamento"
+    },
+    {
+      "grupo": "lancamento_14",
+      "marca": "X",
+      "celulas": {
+        "G46": "Bombeado",
+        "H46": "Convencional"
+      },
+      "rotulo": "Lançamento"
+    },
+    {
+      "grupo": "lancamento_15",
+      "marca": "X",
+      "celulas": {
+        "G48": "Bombeado",
+        "H48": "Convencional"
+      },
+      "rotulo": "Lançamento"
+    },
+    {
+      "grupo": "lancamento_16",
+      "marca": "X",
+      "celulas": {
+        "G50": "Bombeado",
+        "H50": "Convencional"
+      },
+      "rotulo": "Lançamento"
+    }
+  ],
+  "formulas": {
+    "M20": "=IF(B20=\"\",\"\",B20+7)",
+    "O20": "=IF(B20=\"\",\"\",B20+28)",
+    "N20": "=IF(W20=\"\",\"\",W20/0.07854*0.09807)",
+    "P20": "=IF(X20=\"\",\"\",X20/0.07854*0.09807)",
+    "N21": "=IF(W21=\"\",\"\",W21/0.07854*0.09807)",
+    "P21": "=IF(X21=\"\",\"\",X21/0.07854*0.09807)",
+    "M22": "=IF(B22=\"\",\"\",B22+7)",
+    "O22": "=IF(B22=\"\",\"\",B22+28)",
+    "N22": "=IF(W22=\"\",\"\",W22/0.07854*0.09807)",
+    "P22": "=IF(X22=\"\",\"\",X22/0.07854*0.09807)",
+    "N23": "=IF(W23=\"\",\"\",W23/0.07854*0.09807)",
+    "P23": "=IF(X23=\"\",\"\",X23/0.07854*0.09807)",
+    "M24": "=IF(B24=\"\",\"\",B24+7)",
+    "O24": "=IF(B24=\"\",\"\",B24+28)",
+    "N24": "=IF(W24=\"\",\"\",W24/0.07854*0.09807)",
+    "P24": "=IF(X24=\"\",\"\",X24/0.07854*0.09807)",
+    "N25": "=IF(W25=\"\",\"\",W25/0.07854*0.09807)",
+    "P25": "=IF(X25=\"\",\"\",X25/0.07854*0.09807)",
+    "M26": "=IF(B26=\"\",\"\",B26+7)",
+    "O26": "=IF(B26=\"\",\"\",B26+28)",
+    "N26": "=IF(W26=\"\",\"\",W26/0.07854*0.09807)",
+    "P26": "=IF(X26=\"\",\"\",X26/0.07854*0.09807)",
+    "N27": "=IF(W27=\"\",\"\",W27/0.07854*0.09807)",
+    "P27": "=IF(X27=\"\",\"\",X27/0.07854*0.09807)",
+    "M28": "=IF(B28=\"\",\"\",B28+7)",
+    "O28": "=IF(B28=\"\",\"\",B28+28)",
+    "N28": "=IF(W28=\"\",\"\",W28/0.07854*0.09807)",
+    "P28": "=IF(X28=\"\",\"\",X28/0.07854*0.09807)",
+    "N29": "=IF(W29=\"\",\"\",W29/0.07854*0.09807)",
+    "P29": "=IF(X29=\"\",\"\",X29/0.07854*0.09807)",
+    "M30": "=IF(B30=\"\",\"\",B30+7)",
+    "O30": "=IF(B30=\"\",\"\",B30+28)",
+    "N30": "=IF(W30=\"\",\"\",W30/0.07854*0.09807)",
+    "P30": "=IF(X30=\"\",\"\",X30/0.07854*0.09807)",
+    "N31": "=IF(W31=\"\",\"\",W31/0.07854*0.09807)",
+    "P31": "=IF(X31=\"\",\"\",X31/0.07854*0.09807)",
+    "M32": "=IF(B32=\"\",\"\",B32+7)",
+    "O32": "=IF(B32=\"\",\"\",B32+28)",
+    "N32": "=IF(W32=\"\",\"\",W32/0.07854*0.09807)",
+    "P32": "=IF(X32=\"\",\"\",X32/0.07854*0.09807)",
+    "N33": "=IF(W33=\"\",\"\",W33/0.07854*0.09807)",
+    "P33": "=IF(X33=\"\",\"\",X33/0.07854*0.09807)",
+    "M34": "=IF(B34=\"\",\"\",B34+7)",
+    "O34": "=IF(B34=\"\",\"\",B34+28)",
+    "N34": "=IF(W34=\"\",\"\",W34/0.07854*0.09807)",
+    "P34": "=IF(X34=\"\",\"\",X34/0.07854*0.09807)",
+    "N35": "=IF(W35=\"\",\"\",W35/0.07854*0.09807)",
+    "P35": "=IF(X35=\"\",\"\",X35/0.07854*0.09807)",
+    "M36": "=IF(B36=\"\",\"\",B36+7)",
+    "O36": "=IF(B36=\"\",\"\",B36+28)",
+    "N36": "=IF(W36=\"\",\"\",W36/0.07854*0.09807)",
+    "P36": "=IF(X36=\"\",\"\",X36/0.07854*0.09807)",
+    "N37": "=IF(W37=\"\",\"\",W37/0.07854*0.09807)",
+    "P37": "=IF(X37=\"\",\"\",X37/0.07854*0.09807)",
+    "M38": "=IF(B38=\"\",\"\",B38+7)",
+    "O38": "=IF(B38=\"\",\"\",B38+28)",
+    "N38": "=IF(W38=\"\",\"\",W38/0.07854*0.09807)",
+    "P38": "=IF(X38=\"\",\"\",X38/0.07854*0.09807)",
+    "N39": "=IF(W39=\"\",\"\",W39/0.07854*0.09807)",
+    "P39": "=IF(X39=\"\",\"\",X39/0.07854*0.09807)",
+    "M40": "=IF(B40=\"\",\"\",B40+7)",
+    "O40": "=IF(B40=\"\",\"\",B40+28)",
+    "N40": "=IF(W40=\"\",\"\",W40/0.07854*0.09807)",
+    "P40": "=IF(X40=\"\",\"\",X40/0.07854*0.09807)",
+    "N41": "=IF(W41=\"\",\"\",W41/0.07854*0.09807)",
+    "P41": "=IF(X41=\"\",\"\",X41/0.07854*0.09807)",
+    "M42": "=IF(B42=\"\",\"\",B42+7)",
+    "O42": "=IF(B42=\"\",\"\",B42+28)",
+    "N42": "=IF(W42=\"\",\"\",W42/0.07854*0.09807)",
+    "P42": "=IF(X42=\"\",\"\",X42/0.07854*0.09807)",
+    "N43": "=IF(W43=\"\",\"\",W43/0.07854*0.09807)",
+    "P43": "=IF(X43=\"\",\"\",X43/0.07854*0.09807)",
+    "M44": "=IF(B44=\"\",\"\",B44+7)",
+    "O44": "=IF(B44=\"\",\"\",B44+28)",
+    "N44": "=IF(W44=\"\",\"\",W44/0.07854*0.09807)",
+    "P44": "=IF(X44=\"\",\"\",X44/0.07854*0.09807)",
+    "N45": "=IF(W45=\"\",\"\",W45/0.07854*0.09807)",
+    "P45": "=IF(X45=\"\",\"\",X45/0.07854*0.09807)",
+    "M46": "=IF(B46=\"\",\"\",B46+7)",
+    "O46": "=IF(B46=\"\",\"\",B46+28)",
+    "N46": "=IF(W46=\"\",\"\",W46/0.07854*0.09807)",
+    "P46": "=IF(X46=\"\",\"\",X46/0.07854*0.09807)",
+    "N47": "=IF(W47=\"\",\"\",W47/0.07854*0.09807)",
+    "P47": "=IF(X47=\"\",\"\",X47/0.07854*0.09807)",
+    "M48": "=IF(B48=\"\",\"\",B48+7)",
+    "O48": "=IF(B48=\"\",\"\",B48+28)",
+    "N48": "=IF(W48=\"\",\"\",W48/0.07854*0.09807)",
+    "P48": "=IF(X48=\"\",\"\",X48/0.07854*0.09807)",
+    "N49": "=IF(W49=\"\",\"\",W49/0.07854*0.09807)",
+    "P49": "=IF(X49=\"\",\"\",X49/0.07854*0.09807)",
+    "M50": "=IF(B50=\"\",\"\",B50+7)",
+    "O50": "=IF(B50=\"\",\"\",B50+28)",
+    "N50": "=IF(W50=\"\",\"\",W50/0.07854*0.09807)",
+    "P50": "=IF(X50=\"\",\"\",X50/0.07854*0.09807)",
+    "N51": "=IF(W51=\"\",\"\",W51/0.07854*0.09807)",
+    "P51": "=IF(X51=\"\",\"\",X51/0.07854*0.09807)"
+  },
+  "assinaturas": {
+    "executor": "C54",
+    "calculista": "L54"
+  },
+  "linhas_assinatura": [
+    [
+      52,
+      55
+    ]
+  ],
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Dados do ensaio",
+        "celulas": [
+          "L7",
+          "B17",
+          "G17",
+          "M17"
+        ]
+      },
+      {
+        "titulo": "Moldagem 1",
+        "celulas": [
+          "B20",
+          "C20",
+          "D20",
+          "E20",
+          "F20",
+          "G20",
+          "I20",
+          "J20",
+          "K20",
+          "L20",
+          "S20",
+          "W20",
+          "W21",
+          "X20",
+          "X21"
+        ]
+      },
+      {
+        "titulo": "Moldagem 2",
+        "celulas": [
+          "B22",
+          "C22",
+          "D22",
+          "E22",
+          "F22",
+          "G22",
+          "I22",
+          "J22",
+          "K22",
+          "L22",
+          "S22",
+          "W22",
+          "W23",
+          "X22",
+          "X23"
+        ]
+      },
+      {
+        "titulo": "Moldagem 3",
+        "celulas": [
+          "B24",
+          "C24",
+          "D24",
+          "E24",
+          "F24",
+          "G24",
+          "I24",
+          "J24",
+          "K24",
+          "L24",
+          "S24",
+          "W24",
+          "W25",
+          "X24",
+          "X25"
+        ]
+      },
+      {
+        "titulo": "Moldagem 4",
+        "celulas": [
+          "B26",
+          "C26",
+          "D26",
+          "E26",
+          "F26",
+          "G26",
+          "I26",
+          "J26",
+          "K26",
+          "L26",
+          "S26",
+          "W26",
+          "W27",
+          "X26",
+          "X27"
+        ]
+      },
+      {
+        "titulo": "Moldagem 5",
+        "celulas": [
+          "B28",
+          "C28",
+          "D28",
+          "E28",
+          "F28",
+          "G28",
+          "I28",
+          "J28",
+          "K28",
+          "L28",
+          "S28",
+          "W28",
+          "W29",
+          "X28",
+          "X29"
+        ]
+      },
+      {
+        "titulo": "Moldagem 6",
+        "celulas": [
+          "B30",
+          "C30",
+          "D30",
+          "E30",
+          "F30",
+          "G30",
+          "I30",
+          "J30",
+          "K30",
+          "L30",
+          "S30",
+          "W30",
+          "W31",
+          "X30",
+          "X31"
+        ]
+      },
+      {
+        "titulo": "Moldagem 7",
+        "celulas": [
+          "B32",
+          "C32",
+          "D32",
+          "E32",
+          "F32",
+          "G32",
+          "I32",
+          "J32",
+          "K32",
+          "L32",
+          "S32",
+          "W32",
+          "W33",
+          "X32",
+          "X33"
+        ]
+      },
+      {
+        "titulo": "Moldagem 8",
+        "celulas": [
+          "B34",
+          "C34",
+          "D34",
+          "E34",
+          "F34",
+          "G34",
+          "I34",
+          "J34",
+          "K34",
+          "L34",
+          "S34",
+          "W34",
+          "W35",
+          "X34",
+          "X35"
+        ]
+      },
+      {
+        "titulo": "Moldagem 9",
+        "celulas": [
+          "B36",
+          "C36",
+          "D36",
+          "E36",
+          "F36",
+          "G36",
+          "I36",
+          "J36",
+          "K36",
+          "L36",
+          "S36",
+          "W36",
+          "W37",
+          "X36",
+          "X37"
+        ]
+      },
+      {
+        "titulo": "Moldagem 10",
+        "celulas": [
+          "B38",
+          "C38",
+          "D38",
+          "E38",
+          "F38",
+          "G38",
+          "I38",
+          "J38",
+          "K38",
+          "L38",
+          "S38",
+          "W38",
+          "W39",
+          "X38",
+          "X39"
+        ]
+      },
+      {
+        "titulo": "Moldagem 11",
+        "celulas": [
+          "B40",
+          "C40",
+          "D40",
+          "E40",
+          "F40",
+          "G40",
+          "I40",
+          "J40",
+          "K40",
+          "L40",
+          "S40",
+          "W40",
+          "W41",
+          "X40",
+          "X41"
+        ]
+      },
+      {
+        "titulo": "Moldagem 12",
+        "celulas": [
+          "B42",
+          "C42",
+          "D42",
+          "E42",
+          "F42",
+          "G42",
+          "I42",
+          "J42",
+          "K42",
+          "L42",
+          "S42",
+          "W42",
+          "W43",
+          "X42",
+          "X43"
+        ]
+      },
+      {
+        "titulo": "Moldagem 13",
+        "celulas": [
+          "B44",
+          "C44",
+          "D44",
+          "E44",
+          "F44",
+          "G44",
+          "I44",
+          "J44",
+          "K44",
+          "L44",
+          "S44",
+          "W44",
+          "W45",
+          "X44",
+          "X45"
+        ]
+      },
+      {
+        "titulo": "Moldagem 14",
+        "celulas": [
+          "B46",
+          "C46",
+          "D46",
+          "E46",
+          "F46",
+          "G46",
+          "I46",
+          "J46",
+          "K46",
+          "L46",
+          "S46",
+          "W46",
+          "W47",
+          "X46",
+          "X47"
+        ]
+      },
+      {
+        "titulo": "Moldagem 15",
+        "celulas": [
+          "B48",
+          "C48",
+          "D48",
+          "E48",
+          "F48",
+          "G48",
+          "I48",
+          "J48",
+          "K48",
+          "L48",
+          "S48",
+          "W48",
+          "W49",
+          "X48",
+          "X49"
+        ]
+      },
+      {
+        "titulo": "Moldagem 16",
+        "celulas": [
+          "B50",
+          "C50",
+          "D50",
+          "E50",
+          "F50",
+          "G50",
+          "I50",
+          "J50",
+          "K50",
+          "L50",
+          "S50",
+          "W50",
+          "W51",
+          "X50",
+          "X51"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "L7": "Data do ensaio",
+    "B17": "Fck especificado aos 28 dias (MPa)",
+    "G17": "Slump especificado (mm)",
+    "M17": "Dimensão do corpo de prova (mm)",
+    "B20": "Data da moldagem",
+    "C20": "Nota fiscal nº",
+    "D20": "Volume (m³)",
+    "E20": "Slump (mm)",
+    "F20": "Água adicionada (L)",
+    "I20": "Saída da usina",
+    "J20": "Chegada na obra",
+    "K20": "Final da descarga",
+    "L20": "CPs moldados",
+    "S20": "Peça concretada",
+    "W20": "Carga 7 dias · CP 1 (t)",
+    "W21": "Carga 7 dias · CP 2 (t)",
+    "X20": "Carga 28 dias · CP 1 (t)",
+    "X21": "Carga 28 dias · CP 2 (t)",
+    "B22": "Data da moldagem",
+    "C22": "Nota fiscal nº",
+    "D22": "Volume (m³)",
+    "E22": "Slump (mm)",
+    "F22": "Água adicionada (L)",
+    "I22": "Saída da usina",
+    "J22": "Chegada na obra",
+    "K22": "Final da descarga",
+    "L22": "CPs moldados",
+    "S22": "Peça concretada",
+    "W22": "Carga 7 dias · CP 1 (t)",
+    "W23": "Carga 7 dias · CP 2 (t)",
+    "X22": "Carga 28 dias · CP 1 (t)",
+    "X23": "Carga 28 dias · CP 2 (t)",
+    "B24": "Data da moldagem",
+    "C24": "Nota fiscal nº",
+    "D24": "Volume (m³)",
+    "E24": "Slump (mm)",
+    "F24": "Água adicionada (L)",
+    "I24": "Saída da usina",
+    "J24": "Chegada na obra",
+    "K24": "Final da descarga",
+    "L24": "CPs moldados",
+    "S24": "Peça concretada",
+    "W24": "Carga 7 dias · CP 1 (t)",
+    "W25": "Carga 7 dias · CP 2 (t)",
+    "X24": "Carga 28 dias · CP 1 (t)",
+    "X25": "Carga 28 dias · CP 2 (t)",
+    "B26": "Data da moldagem",
+    "C26": "Nota fiscal nº",
+    "D26": "Volume (m³)",
+    "E26": "Slump (mm)",
+    "F26": "Água adicionada (L)",
+    "I26": "Saída da usina",
+    "J26": "Chegada na obra",
+    "K26": "Final da descarga",
+    "L26": "CPs moldados",
+    "S26": "Peça concretada",
+    "W26": "Carga 7 dias · CP 1 (t)",
+    "W27": "Carga 7 dias · CP 2 (t)",
+    "X26": "Carga 28 dias · CP 1 (t)",
+    "X27": "Carga 28 dias · CP 2 (t)",
+    "B28": "Data da moldagem",
+    "C28": "Nota fiscal nº",
+    "D28": "Volume (m³)",
+    "E28": "Slump (mm)",
+    "F28": "Água adicionada (L)",
+    "I28": "Saída da usina",
+    "J28": "Chegada na obra",
+    "K28": "Final da descarga",
+    "L28": "CPs moldados",
+    "S28": "Peça concretada",
+    "W28": "Carga 7 dias · CP 1 (t)",
+    "W29": "Carga 7 dias · CP 2 (t)",
+    "X28": "Carga 28 dias · CP 1 (t)",
+    "X29": "Carga 28 dias · CP 2 (t)",
+    "B30": "Data da moldagem",
+    "C30": "Nota fiscal nº",
+    "D30": "Volume (m³)",
+    "E30": "Slump (mm)",
+    "F30": "Água adicionada (L)",
+    "I30": "Saída da usina",
+    "J30": "Chegada na obra",
+    "K30": "Final da descarga",
+    "L30": "CPs moldados",
+    "S30": "Peça concretada",
+    "W30": "Carga 7 dias · CP 1 (t)",
+    "W31": "Carga 7 dias · CP 2 (t)",
+    "X30": "Carga 28 dias · CP 1 (t)",
+    "X31": "Carga 28 dias · CP 2 (t)",
+    "B32": "Data da moldagem",
+    "C32": "Nota fiscal nº",
+    "D32": "Volume (m³)",
+    "E32": "Slump (mm)",
+    "F32": "Água adicionada (L)",
+    "I32": "Saída da usina",
+    "J32": "Chegada na obra",
+    "K32": "Final da descarga",
+    "L32": "CPs moldados",
+    "S32": "Peça concretada",
+    "W32": "Carga 7 dias · CP 1 (t)",
+    "W33": "Carga 7 dias · CP 2 (t)",
+    "X32": "Carga 28 dias · CP 1 (t)",
+    "X33": "Carga 28 dias · CP 2 (t)",
+    "B34": "Data da moldagem",
+    "C34": "Nota fiscal nº",
+    "D34": "Volume (m³)",
+    "E34": "Slump (mm)",
+    "F34": "Água adicionada (L)",
+    "I34": "Saída da usina",
+    "J34": "Chegada na obra",
+    "K34": "Final da descarga",
+    "L34": "CPs moldados",
+    "S34": "Peça concretada",
+    "W34": "Carga 7 dias · CP 1 (t)",
+    "W35": "Carga 7 dias · CP 2 (t)",
+    "X34": "Carga 28 dias · CP 1 (t)",
+    "X35": "Carga 28 dias · CP 2 (t)",
+    "B36": "Data da moldagem",
+    "C36": "Nota fiscal nº",
+    "D36": "Volume (m³)",
+    "E36": "Slump (mm)",
+    "F36": "Água adicionada (L)",
+    "I36": "Saída da usina",
+    "J36": "Chegada na obra",
+    "K36": "Final da descarga",
+    "L36": "CPs moldados",
+    "S36": "Peça concretada",
+    "W36": "Carga 7 dias · CP 1 (t)",
+    "W37": "Carga 7 dias · CP 2 (t)",
+    "X36": "Carga 28 dias · CP 1 (t)",
+    "X37": "Carga 28 dias · CP 2 (t)",
+    "B38": "Data da moldagem",
+    "C38": "Nota fiscal nº",
+    "D38": "Volume (m³)",
+    "E38": "Slump (mm)",
+    "F38": "Água adicionada (L)",
+    "I38": "Saída da usina",
+    "J38": "Chegada na obra",
+    "K38": "Final da descarga",
+    "L38": "CPs moldados",
+    "S38": "Peça concretada",
+    "W38": "Carga 7 dias · CP 1 (t)",
+    "W39": "Carga 7 dias · CP 2 (t)",
+    "X38": "Carga 28 dias · CP 1 (t)",
+    "X39": "Carga 28 dias · CP 2 (t)",
+    "B40": "Data da moldagem",
+    "C40": "Nota fiscal nº",
+    "D40": "Volume (m³)",
+    "E40": "Slump (mm)",
+    "F40": "Água adicionada (L)",
+    "I40": "Saída da usina",
+    "J40": "Chegada na obra",
+    "K40": "Final da descarga",
+    "L40": "CPs moldados",
+    "S40": "Peça concretada",
+    "W40": "Carga 7 dias · CP 1 (t)",
+    "W41": "Carga 7 dias · CP 2 (t)",
+    "X40": "Carga 28 dias · CP 1 (t)",
+    "X41": "Carga 28 dias · CP 2 (t)",
+    "B42": "Data da moldagem",
+    "C42": "Nota fiscal nº",
+    "D42": "Volume (m³)",
+    "E42": "Slump (mm)",
+    "F42": "Água adicionada (L)",
+    "I42": "Saída da usina",
+    "J42": "Chegada na obra",
+    "K42": "Final da descarga",
+    "L42": "CPs moldados",
+    "S42": "Peça concretada",
+    "W42": "Carga 7 dias · CP 1 (t)",
+    "W43": "Carga 7 dias · CP 2 (t)",
+    "X42": "Carga 28 dias · CP 1 (t)",
+    "X43": "Carga 28 dias · CP 2 (t)",
+    "B44": "Data da moldagem",
+    "C44": "Nota fiscal nº",
+    "D44": "Volume (m³)",
+    "E44": "Slump (mm)",
+    "F44": "Água adicionada (L)",
+    "I44": "Saída da usina",
+    "J44": "Chegada na obra",
+    "K44": "Final da descarga",
+    "L44": "CPs moldados",
+    "S44": "Peça concretada",
+    "W44": "Carga 7 dias · CP 1 (t)",
+    "W45": "Carga 7 dias · CP 2 (t)",
+    "X44": "Carga 28 dias · CP 1 (t)",
+    "X45": "Carga 28 dias · CP 2 (t)",
+    "B46": "Data da moldagem",
+    "C46": "Nota fiscal nº",
+    "D46": "Volume (m³)",
+    "E46": "Slump (mm)",
+    "F46": "Água adicionada (L)",
+    "I46": "Saída da usina",
+    "J46": "Chegada na obra",
+    "K46": "Final da descarga",
+    "L46": "CPs moldados",
+    "S46": "Peça concretada",
+    "W46": "Carga 7 dias · CP 1 (t)",
+    "W47": "Carga 7 dias · CP 2 (t)",
+    "X46": "Carga 28 dias · CP 1 (t)",
+    "X47": "Carga 28 dias · CP 2 (t)",
+    "B48": "Data da moldagem",
+    "C48": "Nota fiscal nº",
+    "D48": "Volume (m³)",
+    "E48": "Slump (mm)",
+    "F48": "Água adicionada (L)",
+    "I48": "Saída da usina",
+    "J48": "Chegada na obra",
+    "K48": "Final da descarga",
+    "L48": "CPs moldados",
+    "S48": "Peça concretada",
+    "W48": "Carga 7 dias · CP 1 (t)",
+    "W49": "Carga 7 dias · CP 2 (t)",
+    "X48": "Carga 28 dias · CP 1 (t)",
+    "X49": "Carga 28 dias · CP 2 (t)",
+    "B50": "Data da moldagem",
+    "C50": "Nota fiscal nº",
+    "D50": "Volume (m³)",
+    "E50": "Slump (mm)",
+    "F50": "Água adicionada (L)",
+    "I50": "Saída da usina",
+    "J50": "Chegada na obra",
+    "K50": "Final da descarga",
+    "L50": "CPs moldados",
+    "S50": "Peça concretada",
+    "W50": "Carga 7 dias · CP 1 (t)",
+    "W51": "Carga 7 dias · CP 2 (t)",
+    "X50": "Carga 28 dias · CP 1 (t)",
+    "X51": "Carga 28 dias · CP 2 (t)"
+  },
+  "resultados": [
+    {
+      "tabela": "resultado_compressao_concreto",
+      "linhas": [
+        {
+          "quando": "=ISNUMBER(W20)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 1 · 7 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B20",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M20",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W20*9.80665",
+            "fci_obtido_mpa": "=N20",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N20/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W21)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 1 · 7 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B20",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M20",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W21*9.80665",
+            "fci_obtido_mpa": "=N21",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N21/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X20)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 1 · 28 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B20",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O20",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X20*9.80665",
+            "fci_obtido_mpa": "=P20",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P20/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X21)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 1 · 28 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B20",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O20",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X21*9.80665",
+            "fci_obtido_mpa": "=P21",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P21/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W22)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 2 · 7 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B22",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M22",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W22*9.80665",
+            "fci_obtido_mpa": "=N22",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N22/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W23)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 2 · 7 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B22",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M22",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W23*9.80665",
+            "fci_obtido_mpa": "=N23",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N23/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X22)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 2 · 28 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B22",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O22",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X22*9.80665",
+            "fci_obtido_mpa": "=P22",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P22/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X23)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 2 · 28 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B22",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O22",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X23*9.80665",
+            "fci_obtido_mpa": "=P23",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P23/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W24)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 3 · 7 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B24",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M24",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W24*9.80665",
+            "fci_obtido_mpa": "=N24",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N24/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W25)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 3 · 7 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B24",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M24",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W25*9.80665",
+            "fci_obtido_mpa": "=N25",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N25/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X24)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 3 · 28 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B24",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O24",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X24*9.80665",
+            "fci_obtido_mpa": "=P24",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P24/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X25)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 3 · 28 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B24",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O24",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X25*9.80665",
+            "fci_obtido_mpa": "=P25",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P25/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W26)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 4 · 7 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B26",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M26",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W26*9.80665",
+            "fci_obtido_mpa": "=N26",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N26/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W27)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 4 · 7 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B26",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M26",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W27*9.80665",
+            "fci_obtido_mpa": "=N27",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N27/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X26)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 4 · 28 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B26",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O26",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X26*9.80665",
+            "fci_obtido_mpa": "=P26",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P26/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X27)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 4 · 28 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B26",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O26",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X27*9.80665",
+            "fci_obtido_mpa": "=P27",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P27/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W28)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 5 · 7 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B28",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M28",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W28*9.80665",
+            "fci_obtido_mpa": "=N28",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N28/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W29)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 5 · 7 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B28",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M28",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W29*9.80665",
+            "fci_obtido_mpa": "=N29",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N29/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X28)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 5 · 28 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B28",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O28",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X28*9.80665",
+            "fci_obtido_mpa": "=P28",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P28/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X29)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 5 · 28 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B28",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O28",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X29*9.80665",
+            "fci_obtido_mpa": "=P29",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P29/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W30)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 6 · 7 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B30",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M30",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W30*9.80665",
+            "fci_obtido_mpa": "=N30",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N30/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W31)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 6 · 7 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B30",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M30",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W31*9.80665",
+            "fci_obtido_mpa": "=N31",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N31/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X30)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 6 · 28 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B30",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O30",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X30*9.80665",
+            "fci_obtido_mpa": "=P30",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P30/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X31)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 6 · 28 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B30",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O30",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X31*9.80665",
+            "fci_obtido_mpa": "=P31",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P31/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W32)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 7 · 7 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B32",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M32",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W32*9.80665",
+            "fci_obtido_mpa": "=N32",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N32/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W33)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 7 · 7 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B32",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M32",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W33*9.80665",
+            "fci_obtido_mpa": "=N33",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N33/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X32)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 7 · 28 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B32",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O32",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X32*9.80665",
+            "fci_obtido_mpa": "=P32",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P32/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X33)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 7 · 28 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B32",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O32",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X33*9.80665",
+            "fci_obtido_mpa": "=P33",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P33/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W34)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 8 · 7 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B34",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M34",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W34*9.80665",
+            "fci_obtido_mpa": "=N34",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N34/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W35)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 8 · 7 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B34",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M34",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W35*9.80665",
+            "fci_obtido_mpa": "=N35",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N35/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X34)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 8 · 28 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B34",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O34",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X34*9.80665",
+            "fci_obtido_mpa": "=P34",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P34/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X35)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 8 · 28 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B34",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O34",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X35*9.80665",
+            "fci_obtido_mpa": "=P35",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P35/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W36)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 9 · 7 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B36",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M36",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W36*9.80665",
+            "fci_obtido_mpa": "=N36",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N36/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W37)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 9 · 7 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B36",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M36",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W37*9.80665",
+            "fci_obtido_mpa": "=N37",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N37/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X36)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 9 · 28 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B36",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O36",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X36*9.80665",
+            "fci_obtido_mpa": "=P36",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P36/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X37)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 9 · 28 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B36",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O36",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X37*9.80665",
+            "fci_obtido_mpa": "=P37",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P37/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W38)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 10 · 7 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B38",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M38",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W38*9.80665",
+            "fci_obtido_mpa": "=N38",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N38/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W39)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 10 · 7 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B38",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M38",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W39*9.80665",
+            "fci_obtido_mpa": "=N39",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N39/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X38)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 10 · 28 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B38",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O38",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X38*9.80665",
+            "fci_obtido_mpa": "=P38",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P38/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X39)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 10 · 28 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B38",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O38",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X39*9.80665",
+            "fci_obtido_mpa": "=P39",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P39/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W40)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 11 · 7 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B40",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M40",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W40*9.80665",
+            "fci_obtido_mpa": "=N40",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N40/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W41)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 11 · 7 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B40",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M40",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W41*9.80665",
+            "fci_obtido_mpa": "=N41",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N41/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X40)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 11 · 28 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B40",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O40",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X40*9.80665",
+            "fci_obtido_mpa": "=P40",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P40/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X41)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 11 · 28 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B40",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O40",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X41*9.80665",
+            "fci_obtido_mpa": "=P41",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P41/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W42)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 12 · 7 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B42",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M42",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W42*9.80665",
+            "fci_obtido_mpa": "=N42",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N42/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W43)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 12 · 7 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B42",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M42",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W43*9.80665",
+            "fci_obtido_mpa": "=N43",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N43/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X42)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 12 · 28 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B42",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O42",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X42*9.80665",
+            "fci_obtido_mpa": "=P42",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P42/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X43)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 12 · 28 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B42",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O42",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X43*9.80665",
+            "fci_obtido_mpa": "=P43",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P43/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W44)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 13 · 7 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B44",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M44",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W44*9.80665",
+            "fci_obtido_mpa": "=N44",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N44/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W45)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 13 · 7 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B44",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M44",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W45*9.80665",
+            "fci_obtido_mpa": "=N45",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N45/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X44)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 13 · 28 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B44",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O44",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X44*9.80665",
+            "fci_obtido_mpa": "=P44",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P44/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X45)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 13 · 28 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B44",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O44",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X45*9.80665",
+            "fci_obtido_mpa": "=P45",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P45/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W46)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 14 · 7 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B46",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M46",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W46*9.80665",
+            "fci_obtido_mpa": "=N46",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N46/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W47)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 14 · 7 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B46",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M46",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W47*9.80665",
+            "fci_obtido_mpa": "=N47",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N47/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X46)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 14 · 28 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B46",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O46",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X46*9.80665",
+            "fci_obtido_mpa": "=P46",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P46/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X47)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 14 · 28 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B46",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O46",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X47*9.80665",
+            "fci_obtido_mpa": "=P47",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P47/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W48)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 15 · 7 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B48",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M48",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W48*9.80665",
+            "fci_obtido_mpa": "=N48",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N48/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W49)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 15 · 7 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B48",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M48",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W49*9.80665",
+            "fci_obtido_mpa": "=N49",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N49/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X48)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 15 · 28 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B48",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O48",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X48*9.80665",
+            "fci_obtido_mpa": "=P48",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P48/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X49)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 15 · 28 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B48",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O48",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X49*9.80665",
+            "fci_obtido_mpa": "=P49",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P49/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W50)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 16 · 7 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B50",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M50",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W50*9.80665",
+            "fci_obtido_mpa": "=N50",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N50/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(W51)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 16 · 7 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B50",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=M50",
+              "tipo": "data"
+            },
+            "idade_dias": 7,
+            "carga_ruptura_kn": "=W51*9.80665",
+            "fci_obtido_mpa": "=N51",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),N51/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X50)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 16 · 28 dias · CP 1\"",
+            "data_moldagem": {
+              "expr": "=B50",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O50",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X50*9.80665",
+            "fci_obtido_mpa": "=P50",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P50/B17*100,\"\")"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(X51)",
+          "campos": {
+            "codigo_cp": "=\"Moldagem 16 · 28 dias · CP 2\"",
+            "data_moldagem": {
+              "expr": "=B50",
+              "tipo": "data"
+            },
+            "data_rompimento": {
+              "expr": "=O50",
+              "tipo": "data"
+            },
+            "idade_dias": 28,
+            "carga_ruptura_kn": "=X51*9.80665",
+            "fci_obtido_mpa": "=P51",
+            "fck_projeto_mpa": {
+              "expr": "=B17",
+              "tipo": "numero"
+            },
+            "percentual_atingido_pct": "=IF(ISNUMBER(B17),P51/B17*100,\"\")"
+          }
+        }
+      ]
+    }
+  ],
+  "pedido_exemplo": {
+    "os": "2026.02.11.02.071",
+    "material": "CORPO DE PROVA DE CONCRETO",
+    "registro": "071/2026",
+    "procedencia": "CONSÓRCIO NOVA IMIGRANTES (CUIABÁ) - LOTE 02",
+    "complemento": "MOLDAGEM DO DIA 03/02/2026."
+  }
+}

@@ -1,0 +1,216 @@
+{
+  "codigo": "FR-IMOB-33",
+  "versao": "Rev00",
+  "nome": "Compressão axial e diametral de CPs cilíndricos — solo melhorado com cimento",
+  "arquivo": "FR-IMOB-33_Rev00.xlsx",
+  "pedido": {
+    "C7": "os",
+    "C8": "material",
+    "H8": "registro",
+    "C9": "procedencia",
+    "C10": "complemento"
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "H7",
+        "C26",
+        "C28",
+        "C34",
+        "C36"
+      ],
+      "tipo": "data"
+    },
+    {
+      "celulas": [
+        "C18",
+        "C19",
+        "C20",
+        "C21",
+        "H18",
+        "H19",
+        "H20",
+        "H21"
+      ],
+      "tipo": "texto"
+    },
+    {
+      "colunas": [
+        "F",
+        "G",
+        "H"
+      ],
+      "linhas": [
+        "26-29",
+        "34-37"
+      ],
+      "tipo": "numero"
+    },
+    {
+      "celulas": [
+        "B40"
+      ],
+      "tipo": "texto",
+      "multilinha": true
+    }
+  ],
+  "mesclas_extras": [
+    "B40:K45"
+  ],
+  "rotulos": {
+    "B40": "Observações",
+    "H7": "Data do ensaio",
+    "C26": "Data da moldagem",
+    "C28": "Data da moldagem",
+    "C34": "Data da moldagem",
+    "C36": "Data da moldagem"
+  },
+  "assinaturas": {
+    "executor": "C50",
+    "calculista": "H50"
+  },
+  "linhas_assinatura": [
+    [
+      47,
+      51
+    ]
+  ],
+  "limpar": [
+    "H49"
+  ],
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "H7"
+        ]
+      },
+      {
+        "titulo": "Dados da moldagem",
+        "celulas": [
+          "C18",
+          "C19",
+          "C20",
+          "C21",
+          "H18",
+          "H19",
+          "H20",
+          "H21"
+        ],
+        "rotulo": "linha"
+      },
+      {
+        "titulo": "CP 1 — axial, 7 dias",
+        "celulas": [
+          "C26",
+          "F26",
+          "G26",
+          "H26"
+        ],
+        "rotulo": "cabecalho"
+      },
+      {
+        "titulo": "CP 2 — axial, 7 dias",
+        "celulas": [
+          "F27",
+          "G27",
+          "H27"
+        ],
+        "rotulo": "cabecalho"
+      },
+      {
+        "titulo": "CP 3 — axial, 28 dias",
+        "celulas": [
+          "C28",
+          "F28",
+          "G28",
+          "H28"
+        ],
+        "rotulo": "cabecalho"
+      },
+      {
+        "titulo": "CP 4 — axial, 28 dias",
+        "celulas": [
+          "F29",
+          "G29",
+          "H29"
+        ],
+        "rotulo": "cabecalho"
+      },
+      {
+        "titulo": "CP 5 — diametral, 7 dias",
+        "celulas": [
+          "C34",
+          "F34",
+          "G34",
+          "H34"
+        ],
+        "rotulo": "cabecalho"
+      },
+      {
+        "titulo": "CP 6 — diametral, 7 dias",
+        "celulas": [
+          "F35",
+          "G35",
+          "H35"
+        ],
+        "rotulo": "cabecalho"
+      },
+      {
+        "titulo": "CP 7 — diametral, 28 dias",
+        "celulas": [
+          "C36",
+          "F36",
+          "G36",
+          "H36"
+        ],
+        "rotulo": "cabecalho"
+      },
+      {
+        "titulo": "CP 8 — diametral, 28 dias",
+        "celulas": [
+          "F37",
+          "G37",
+          "H37"
+        ],
+        "rotulo": "cabecalho"
+      },
+      {
+        "titulo": "Observações",
+        "celulas": [
+          "B40"
+        ]
+      }
+    ]
+  },
+  "resultados": [
+    {
+      "tabela": "resultado_rtcd",
+      "repetir": {
+        "var": "r",
+        "valores": [
+          34,
+          35,
+          36,
+          37
+        ],
+        "quando": "=ISNUMBER(F{r})"
+      },
+      "campos": {
+        "tipo_material": "Solo-cimento (compressão diametral)",
+        "codigo_cp": "=B{r}&\"\"",
+        "diametro_mm": "=G{r}*10",
+        "altura_mm": "=H{r}*10",
+        "rt_obtida_mpa": "=J{r}"
+      }
+    }
+  ],
+  "pedido_exemplo": {
+    "os": "2026.03.06.02.092",
+    "material": "CPs DE SOLO (BASE) MELHORADO COM 4,5% DE CIMENTO",
+    "registro": "092/2026",
+    "procedencia": "CONSÓRCIO NOVA IMIGRANTES - VÁRZEA GRANDE / LOTE 02",
+    "complemento": "COD 3021 / KM 499+300 A 499+460 / DATA DA MOLDAGEM: 02/03/2026."
+  }
+}

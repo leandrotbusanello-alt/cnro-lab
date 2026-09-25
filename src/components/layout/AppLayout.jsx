@@ -47,7 +47,12 @@ export default function AppLayout() {
             {online ? '🟢 Online' : '🔴 Offline'}
             {pendingCount > 0 && <span className={styles.pendingBadge}>{pendingCount}</span>}
           </span>
-          <span className={styles.userName}>{perfil?.nome || perfil?.email}</span>
+          <button
+            type="button" className={styles.userName} onClick={() => nav('/trocar-senha')}
+            title="Trocar minha senha"
+          >
+            {perfil?.nome || perfil?.email}
+          </button>
           <button className={styles.btnLogout} onClick={handleLogout}>Sair</button>
         </div>
       </header>

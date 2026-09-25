@@ -1,0 +1,11 @@
+.wrap { position: relative; display: flex; width: 100%; }
+.input { width: 100%; padding-right: 44px !important; }
+.olho {
+  position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: none; border: none; border-radius: 6px;
+  color: #6b7280; cursor: pointer;
+}
+.olho:hover { color: #1e3a5f; background: #f3f4f6; }
+.olho:focus-visible { outline: 2px solid rgba(13, 148, 136, .5); }

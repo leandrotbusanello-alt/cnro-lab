@@ -9,6 +9,7 @@ import {
 } from '../../lib/syncQueue'
 import { DIAS_CONCLUIDAS } from './constants'
 import { gerarNumeroOSProvisorio } from './utils'
+import { prepararModelos, listarModelos } from '../fichas/fichasRepo'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Repositório do Módulo Laboratório
@@ -78,7 +79,7 @@ export async function carregarDados() {
     try {
       const [pedidos, usuarios, ensaios, empresas, fichas] = await Promise.all([
         buscarPedidos(),
-        supabase.from('usuarios').select('id, nome, cargo, perfil, status, assinatura_url, lote, empresa')
+        supabase.from('usuarios').select('id, nome, cargo, perfil, status, assinatura_url, lote, empresa, modulos_acesso')
           .order('nome').then(r => { if (r.error) throw r.error; return r.data || [] }),
         supabase.from('ensaios').select('*').order('nome')
           .then(r => { if (r.error) throw r.error; return r.data || [] }),
@@ -88,6 +89,8 @@ export async function carregarDados() {
           .then(r => { if (r.error) throw r.error; return r.data || [] }),
       ])
       const ensaiosOs = await buscarEnsaiosOs(pedidos.map(p => p.id))
+      // fichas online a revisar: baixa os modelos para revisar também sem internet
+      prepararModelos(ensaiosOs.filter(e => e.ficha_modelo_id && e.status === 'aguardando_revisao').map(e => e.ficha_modelo_id))
 
       // Pedidos com operações ainda na fila (ex.: erro de sincronização)
       // continuam exibindo a versão local, para não "sumir" o trabalho feito.
@@ -130,7 +133,10 @@ export async function carregarDados() {
   const ids = new Set(dados.pedidos.map(p => p.id))
   dados.pedidos = [...dados.pedidos, ...offline.filter(p => !ids.has(p.id))]
 
-  return { ...dados, fonte }
+  // Modelos das fichas online (lista, sem o conteúdo): indicam quais fichas já estão no sistema
+  const modelos = await listarModelos().catch(() => [])
+
+  return { ...dados, modelos, fonte }
 }
 
 /** Mantém a versão local de registros com alterações ainda não sincronizadas */
@@ -456,6 +462,46 @@ export async function aprovarEnsaio(ctx, pedido, ensaioOs, { visivelCampo } = {}
     },
     { op: opHistorico(pedido.id, { acao: 'Ensaio aprovado', ensaio: ensaioOs.nome_ensaio }) },
   ])
+}
+
+// ── Revisão de fichas online (migração 13) ───────────────────────────────────
+
+/** Salva correções feitas pelo laboratorista na ficha, sem aprovar */
+export async function salvarRevisaoFicha(ctx, pedido, ensaioOs, dados) {
+  return executarSequencia([{
+    op: { tipo: 'rpc', rpc: 'salvar_revisao_ensaio', args: { p_ensaio_os_id: ensaioOs.id, p_dados: dados },
+          descricao: `Corrigir ficha: ${ensaioOs.nome_ensaio}`, pedidoId: pedido.id },
+    local: async () => { await patchEnsaioOsLocal(ensaioOs.id, { dados_resultado: dados }) },
+  }])
+}
+
+/**
+ * Aprova a ficha online: grava a ficha final, a assinatura do calculista e os
+ * resultados normalizados (resultados + resultado_*), que alimentam o Painel.
+ */
+export async function aprovarEnsaioFicha(ctx, pedido, ensaioOs, {
+  dados, resultados, conformidade, observacoes, visivelCampo, assinadoEm,
+}) {
+  return executarSequencia([{
+    op: {
+      tipo: 'rpc', rpc: 'aprovar_ensaio',
+      args: {
+        p_ensaio_os_id: ensaioOs.id, p_dados: dados, p_resultados: resultados || [],
+        p_conformidade: conformidade || null, p_observacoes: observacoes || null,
+        p_visivel_campo: typeof visivelCampo === 'boolean' ? visivelCampo : null,
+        p_assinado_em: assinadoEm,
+      },
+      descricao: `Aprovar: ${ensaioOs.nome_ensaio}`, pedidoId: pedido.id,
+    },
+    local: async () => {
+      await patchEnsaioOsLocal(ensaioOs.id, {
+        status: 'aprovado', dados_resultado: dados, aprovado_por_id: ctx.perfil.id, aprovado_em: new Date().toISOString(),
+        ...(typeof visivelCampo === 'boolean' ? { visivel_campo: visivelCampo } : {}),
+        assinatura_calculista: { usuario_id: ctx.perfil.id, nome: ctx.perfil.nome, em: assinadoEm },
+      })
+      await patchPedidoLocal(pedido.id, {}, eventoLocal(ctx, 'Ensaio aprovado', { ensaio: ensaioOs.nome_ensaio }))
+    },
+  }])
 }
 
 export async function devolverAoAssistente(ctx, pedido, ensaioOs, motivo) {

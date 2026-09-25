@@ -162,6 +162,21 @@ export async function enfileirar(op) {
   return id
 }
 
+/**
+ * Enfileira substituindo operações pendentes com a mesma `chave` (ex.: rascunho
+ * de uma ficha salvo várias vezes offline → só o último é enviado).
+ * Operações com erro não são removidas.
+ */
+export async function enfileirarUnico(op) {
+  if (op.chave) {
+    const ops = await filaListar()
+    for (const o of ops) {
+      if (o.chave === op.chave && o.status !== 'erro') await filaRemover(o.id)
+    }
+  }
+  return enfileirar(op)
+}
+
 // ── Pedidos criados/corrigidos offline pelo Módulo Campo ─────────────────────
 
 const COLUNAS_PEDIDO_CAMPO = [

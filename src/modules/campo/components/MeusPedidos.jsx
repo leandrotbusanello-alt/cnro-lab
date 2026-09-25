@@ -4,18 +4,18 @@ import styles from './MeusPedidos.module.css'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
-// Bug 5 fix: lista completa de status (seção 7 do documento de referência)
+// Status do pedido (seção 7 da Referência Técnica)
 const STATUS_LABEL = {
-  pendente_sync:        { label: 'Aguardando envio',       cls: 'offline'    },
-  aguardando_analise:   { label: 'Aguardando análise',     cls: 'pending'    },
-  em_analise:           { label: 'Em análise',             cls: 'info'       },
-  em_andamento:         { label: 'Em andamento',           cls: 'info'       },
-  aguardando_revisao:   { label: 'Aguardando revisão',     cls: 'info'       },
-  devolvido:            { label: 'Devolvido para correção', cls: 'error'     },
-  devolvido_assistente: { label: 'Devolvido ao assistente', cls: 'error'    },
-  concluido:            { label: 'Concluído',              cls: 'success'    },
-  cancelado:            { label: 'Cancelado',              cls: 'cancelled'  },
+  pendente_sync:      { label: 'Aguardando envio',        cls: 'offline'   },
+  aguardando_lab:     { label: 'Aguardando laboratório',  cls: 'pending'   },
+  em_analise:         { label: 'Em análise',              cls: 'info'      },
+  devolvido_campo:    { label: 'Devolvido para correção', cls: 'error'     },
+  em_andamento:       { label: 'Em andamento',            cls: 'info'      },
+  aguardando_revisao: { label: 'Em revisão',              cls: 'info'      },
+  concluido:          { label: 'Concluído',               cls: 'success'   },
+  cancelado:          { label: 'Cancelado',               cls: 'cancelled' },
 }
+const DEVOLVIDO = 'devolvido_campo'
 
 // Bug 3 fix: formatar numero_pe retornado pelo banco
 function formatarNumeroPE(pedido) {
@@ -30,13 +30,15 @@ export default function MeusPedidos({ onCorrigir, onNovoPedido }) {
   const { pedidos, loading, reenviarPedido } = useCampo()
   const [reenviadoId, setReenviadoId] = useState(null)
 
-  const devolvidos = pedidos.filter(p => p.status === 'devolvido')
-  const outros = pedidos.filter(p => p.status !== 'devolvido')
+  const devolvidos = pedidos.filter(p => p.status === DEVOLVIDO)
+  const outros = pedidos.filter(p => p.status !== DEVOLVIDO)
 
   async function handleReenviar(pedido) {
     setReenviadoId(pedido.id)
     try {
       await reenviarPedido(pedido.id)
+    } catch {
+      /* continua guardado no aparelho; a fila tenta de novo quando a conexão voltar */
     } finally {
       setReenviadoId(null)
     }
@@ -119,12 +121,12 @@ function PedidoCard({ pedido, onCorrigir, onReenviar, reenviadoId, destaque }) {
 
       <div className={styles.cardInfo}>
         <span>📅 {data}</span>
-        {pedido.empresa?.nome_fantasia && <span>🏢 {pedido.empresa.nome_fantasia}</span>}
+        {pedido.empresa && <span>🏢 {pedido.empresa}</span>}
         {pedido.lote    && <span>📍 Lote {pedido.lote}</span>}
         {pedido.material && <span>🪨 {pedido.material}</span>}
       </div>
 
-      {pedido.status === 'devolvido' && pedido.motivo_devolucao && (
+      {pedido.status === DEVOLVIDO && pedido.motivo_devolucao && (
         <div className={styles.motivo}>
           <strong>Motivo:</strong> {pedido.motivo_devolucao}
         </div>
@@ -135,7 +137,7 @@ function PedidoCard({ pedido, onCorrigir, onReenviar, reenviadoId, destaque }) {
       )}
 
       <div className={styles.cardActions}>
-        {pedido.status === 'devolvido' && (
+        {pedido.status === DEVOLVIDO && (
           <button className={styles.btnCorrigir} onClick={() => onCorrigir?.(pedido)}>
             ✏️ Corrigir e Reenviar
           </button>

@@ -1,0 +1,161 @@
+{
+  "codigo": "FR-IMOB-13",
+  "versao": "Rev00",
+  "nome": "Concreto asfáltico — Ensaio Marshall (VV < 10% e ABS ≤ 2%)",
+  "arquivo": "FR-IMOB-13_Rev00.xlsx",
+  "pedido": {
+    "C7": "os",
+    "C8": "material",
+    "O8": "registro",
+    "F9": "procedencia",
+    "F10": "complemento"
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "O7"
+      ],
+      "tipo": "data"
+    },
+    {
+      "colunas": [
+        "D",
+        "F",
+        "H",
+        "J",
+        "L",
+        "N"
+      ],
+      "linhas": [
+        "18-21",
+        "23-26",
+        29,
+        30,
+        31,
+        33,
+        35,
+        36,
+        37,
+        43,
+        44,
+        47
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "revisao": [
+    {
+      "colunas": [
+        "S",
+        "T"
+      ],
+      "linhas": "18-49",
+      "tipo": "texto"
+    }
+  ],
+  "escolhas": [
+    {
+      "grupo": "modulo_resiliencia",
+      "celulas": {
+        "D52": "Sim",
+        "F52": "Não"
+      }
+    },
+    {
+      "grupo": "vida_fadiga",
+      "celulas": {
+        "D53": "Sim",
+        "F53": "Não"
+      }
+    },
+    {
+      "grupo": "deformacao_permanente",
+      "celulas": {
+        "D54": "Sim",
+        "F54": "Não"
+      }
+    }
+  ],
+  "assinaturas": {
+    "executor": "B56",
+    "calculista": "K56"
+  },
+  "linhas_assinatura": [
+    [
+      55,
+      58
+    ]
+  ],
+  "lista": {
+    "sem_cabecalho": true,
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "O7"
+        ]
+      },
+      {
+        "titulo": "CP {n}",
+        "colunas": [
+          "D",
+          "F",
+          "H",
+          "J",
+          "L",
+          "N"
+        ]
+      },
+      {
+        "titulo": "Ensaios especiais",
+        "celulas": [
+          "D52",
+          "F52",
+          "D53",
+          "F53",
+          "D54",
+          "F54"
+        ]
+      }
+    ]
+  },
+  "resultados": [
+    {
+      "tabela": "resultado_marshall",
+      "repetir": {
+        "var": "c",
+        "valores": [
+          "D",
+          "F",
+          "H",
+          "J",
+          "L",
+          "N"
+        ],
+        "quando": "=COUNT({c}18:{c}21,{c}29:{c}31,{c}43:{c}47)>0"
+      },
+      "campos": {
+        "codigo_cp": "=\"CP \"&{n}",
+        "gmb_obtido": "={c}32",
+        "gmm_referencia": "={c}33",
+        "teor_betume_obtido_pct": "={c}35",
+        "va_pct": "={c}39",
+        "vam_pct": "={c}41",
+        "rbv_pct": "={c}42",
+        "fluencia_mm": "={c}43",
+        "estabilidade_kgf": "={c}46",
+        "resistencia_tracao_mpa": "={c}49"
+      }
+    }
+  ],
+  "pedido_exemplo": {
+    "os": "2026.03.06.02.094",
+    "material": "C.A.U.Q. FX-III DER-SP",
+    "registro": "094/2026",
+    "procedencia": "CONSÓRCIO BR-163 (108) - VÁRZEA GRANDE A JANGADA",
+    "complemento": ""
+  },
+  "rotulos": {
+    "O7": "Data do ensaio"
+  }
+}

@@ -57,7 +57,6 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
           sub_tipo:      subcategoria,
           ensaios_ids:   ensaiosSel,
           dados_amostra: amostras,   // Bug 2 fix: nome correto no banco
-          status:        'aguardando_analise',
         })
       } else {
         resultado = await enviarPedido({
@@ -146,7 +145,7 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
                 }}
               >
                 <option value="">Selecione a empresa…</option>
-                {empresas.map(emp => <option key={emp.id} value={emp.id}>{emp.nome_fantasia}</option>)}
+                {empresas.map(emp => <option key={emp.id} value={emp.id}>{emp.nome}{emp.rodovia ? ` · ${emp.rodovia}` : ''}</option>)}
               </select>
             </label>
 

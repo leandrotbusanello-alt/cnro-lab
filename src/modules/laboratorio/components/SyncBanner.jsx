@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 import {
   listarFila, onFilaMudou, processarFila, tentarNovamente, descartarOperacoesDoPedido,
 } from '../../../lib/syncQueue'
 import { getPedidosPendentes } from '../../../lib/offlineDB'
-import { useLab } from '../useLaboratorio'
+import { LabContext } from '../useLaboratorio'
 import { numeroPE } from '../utils'
 import styles from './SyncBanner.module.css'
 import ui from './ui.module.css'
@@ -12,9 +12,13 @@ import ui from './ui.module.css'
  * Faixa de status da sincronização offline:
  *  • offline / quantidade de ações aguardando envio
  *  • erro de sincronização com opções "Tentar novamente" e "Descartar"
+ *
+ * Dentro do Módulo Laboratório usa o contexto do Lab; outros módulos passam
+ * ctx = { fonte, pedidosPorId, recarregar } (ex.: Módulo Assistente).
  */
-export default function SyncBanner() {
-  const { fonte, pedidosPorId, recarregar } = useLab()
+export default function SyncBanner({ ctx, avisoOffline = 'Números de PE e O.S. gerados agora são provisórios.' }) {
+  const lab = useContext(LabContext)
+  const { fonte, pedidosPorId = {}, recarregar = () => {} } = ctx || lab || {}
   const [ops, setOps] = useState([])
   const [pedidosCampo, setPedidosCampo] = useState(0)
   const [online, setOnline] = useState(navigator.onLine)
@@ -102,7 +106,7 @@ export default function SyncBanner() {
             As ações ficam salvas neste aparelho e serão enviadas quando a internet voltar.
             {total > 0 && ` ${total} aguardando envio.`}
           </span>
-          <span className={styles.sub}>Números de PE e O.S. gerados agora são provisórios.</span>
+          {avisoOffline && <span className={styles.sub}>{avisoOffline}</span>}
         </div>
       </div>
     )

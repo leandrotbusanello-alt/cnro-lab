@@ -1,0 +1,149 @@
+/* Fichas online — grade da planilha, visão em lista, assinatura, impressão, foto de apoio */
+
+.ficha { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+
+/* ── Alternar Ficha / Lista ── */
+.barraVista { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.barraVista button, .apoioAbas button {
+  border: 1px solid var(--border); background: #fff; color: var(--navy);
+  font-size: 13px; font-weight: 600; padding: 6px 14px; cursor: pointer;
+}
+.barraVista button:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+.barraVista button:nth-child(2) { border-radius: 0 var(--radius) var(--radius) 0; margin-left: -5px; }
+.vistaAtiva { background: var(--navy) !important; color: #fff !important; border-color: var(--navy) !important; }
+.travada { font-size: 12.5px; color: #92400e; background: #fffbeb; border: 1px solid #fde68a; border-radius: 999px; padding: 3px 10px; margin-left: 6px; }
+
+/* ── Papel (grade) ── */
+.papel { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px; overflow-x: auto; }
+.caixaGrade { width: 100%; }
+.folhaGrade { position: absolute; left: 0; top: 0; transform-origin: top left; background: #fff; }
+.grade { border-collapse: collapse; table-layout: fixed; color: #000; background: #fff; }
+.grade td { padding: 0; position: relative; }
+.cc { display: flex; flex-direction: column; padding: 0 2px; overflow: visible; }
+.cc > span { display: block; white-space: pre; }
+.quebra > span { white-space: pre-wrap; overflow-wrap: anywhere; }
+.quebra, .recortar { overflow: hidden; }
+.oculta { visibility: hidden; }
+.imagem { position: absolute; pointer-events: none; }
+.clicavel { cursor: pointer; }
+.grade td.clicavel:focus-visible { outline: 2px solid #2563eb; outline-offset: -2px; }
+
+.campoCelula, .areaCelula {
+  all: unset; box-sizing: border-box; display: block; width: 100%;
+  padding: 0 2px; font: inherit; color: inherit; cursor: text;
+}
+.areaCelula { white-space: pre-wrap; overflow: auto; padding: 2px 4px; text-align: left !important; }
+.campoCelula[readonly], .areaCelula[readonly] { cursor: default; }
+.campoCelula:focus, .areaCelula:focus { outline: 2px solid #2563eb; outline-offset: -2px; background: #fff; }
+.campoCelula[aria-invalid], .areaCelula[aria-invalid] { background: #fee2e2; outline: 2px solid #dc2626; outline-offset: -2px; }
+
+/* Destaques por tipo de campo (tela; não aparecem na impressão) */
+.dEntrada { background-color: #e1ecff !important; box-shadow: inset 0 0 0 1px #7ea6e8; }
+.dEntradaFixa { background-color: #f1f5fb !important; }
+.dPedido { background-color: #eceff3 !important; }
+.dRevisao { background-color: #fff0cc !important; box-shadow: inset 0 0 0 1px #e5b94e; }
+.dAssinatura { box-shadow: inset 0 0 0 2px #2f6fd6; }
+
+.marcaAssinatura {
+  position: absolute; left: 0; right: 0; display: flex; justify-content: center;
+  pointer-events: none;
+}
+.marcaAssinatura img { max-height: 58px; max-width: 70%; object-fit: contain; }
+.assinaturaNome { font-family: 'Brush Script MT', 'Segoe Script', cursive; font-size: 24px; color: #1d3f8f; }
+
+/* ── Visão em lista ── */
+.lista { display: flex; flex-direction: column; gap: 12px; }
+.grupo { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+.grupoTitulo { font-size: 13px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 10px; }
+.grupoItens { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px 14px; }
+.item { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.itemLargo { grid-column: 1 / -1; }
+.grupoItens > * { min-width: 0; }
+.itemRotulo { font-size: 12.5px; color: var(--muted); line-height: 1.3; }
+.itemCampo, .itemArea {
+  width: 100%; border: 1px solid #b9c7dd; border-radius: var(--radius); background: #f6f9ff;
+  padding: 10px 12px; font-size: 16px; color: #111827; font-family: inherit; font-variant-numeric: tabular-nums;
+}
+.itemArea { min-height: 90px; resize: vertical; }
+.itemCampo[readonly], .itemArea[readonly] { background: #f3f4f6; border-color: var(--border); color: #374151; }
+.itemCampo:focus, .itemArea:focus { outline: 2px solid rgba(37, 99, 235, .35); border-color: #2563eb; background: #fff; }
+.itemCampo[aria-invalid], .itemArea[aria-invalid] { border-color: #dc2626; background: #fef2f2; }
+.opcoes { display: flex; gap: 6px; flex-wrap: wrap; }
+.opcao { flex: 1 1 120px; min-width: 0; overflow-wrap: anywhere; border: 1px solid #b9c7dd; background: #fff; border-radius: var(--radius); padding: 9px; font-size: 15px; cursor: pointer; }
+.opcaoAtiva { background: var(--navy); color: #fff; border-color: var(--navy); }
+.opcao:disabled { opacity: .6; cursor: default; }
+.assinaturasLista { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.assinaturaBotao {
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px;
+  min-height: 96px; border: 2px dashed #9db6e3; border-radius: 10px; background: #f8fbff; cursor: pointer;
+  padding: 10px; color: var(--muted); font-size: 14px;
+}
+.assinaturaBotao img { max-height: 54px; max-width: 90%; }
+.assinaturaBotao small { border-top: 1px solid #9ca3af; padding-top: 4px; width: 80%; text-align: center; color: #111827; font-weight: 600; }
+.assinaturaBotao:disabled { cursor: default; opacity: .65; }
+.assinaturaFeita { border-style: solid; border-color: #86efac; background: #f0fdf4; }
+
+/* ── Confirmação de assinatura ── */
+.popFundo { position: fixed; inset: 0; z-index: 1190; }
+.pop {
+  position: fixed; z-index: 1200; background: #fff; color: var(--text); border: 1px solid var(--border);
+  border-radius: 10px; box-shadow: 0 10px 30px rgba(15, 23, 42, .2); padding: 14px; font-size: 14px;
+}
+.pop p { margin-bottom: 10px; line-height: 1.45; }
+.popAjuda { font-size: 12.5px; color: var(--muted); }
+.popAcoes { display: flex; justify-content: flex-end; gap: 8px; }
+.popBtn {
+  border: 1px solid var(--border); background: #fff; color: var(--navy); border-radius: var(--radius);
+  padding: 7px 14px; font-size: 13.5px; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.popPrimario { background: var(--navy); border-color: var(--navy); color: #fff; }
+
+/* ── Impressão ── */
+.impressao { position: fixed; inset: 0; z-index: 1100; background: #525659; display: flex; flex-direction: column; }
+.impressaoBarra {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  background: #fff; padding: 10px 16px; border-bottom: 1px solid var(--border);
+}
+.impressaoAcoes { display: flex; gap: 8px; }
+.impressaoArea { flex: 1; overflow: auto; padding: 20px; }
+.folhaA4 { position: relative; background: #fff; margin: 0 auto; box-shadow: 0 4px 18px rgba(0, 0, 0, .35); }
+
+@media print {
+  :global(#root) { display: none !important; }
+  .impressao { position: static; background: #fff; display: block; }
+  .impressaoBarra { display: none !important; }
+  .impressaoArea { padding: 0; overflow: visible; }
+  .folhaA4 { box-shadow: none; margin: 0; }
+  .grade, .grade td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+/* ── Foto de apoio ── */
+.apoio { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.apoioBarra { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.apoioAcoes { display: flex; gap: 6px; }
+.apoioAjuda { font-size: 12px; color: var(--muted); }
+.apoioAbas { display: flex; gap: 4px; }
+.apoioAbas button { border-radius: var(--radius); padding: 3px 10px; }
+.apoioVazio {
+  border: 2px dashed #cbd5e1; border-radius: 10px; background: #f8fafc; color: var(--muted);
+  padding: 30px 12px; font-size: 14px; cursor: pointer;
+}
+.apoioVisor { flex: 1; min-height: 280px; max-height: 70vh; overflow: auto; background: #f1f5f9; border-radius: 8px; }
+.apoioVisor img { display: block; max-width: none; }
+.apoioVisor iframe { width: 100%; height: 68vh; border: 0; }
+.apoioRodape { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.espaco { flex: 1; }
+
+@media (max-width: 600px) {
+  .papel { padding: 8px; }
+  .grupoItens { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── Rótulo e valor na mesma célula ("Nº O.S: …") ── */
+.comPrefixo { display: flex; align-items: center; gap: 4px; padding-left: 2px; }
+.comPrefixo > input { flex: 1; min-width: 0; }
+.prefixo { white-space: pre; }
+.valorPedido { color: #0000cc; font-weight: 700; }
+
+/* ── Colunas fora da área de impressão (só aparecem na tela) ── */
+.soTela { background-image: repeating-linear-gradient(135deg, rgba(13, 148, 136, .07) 0 6px, transparent 6px 12px); }

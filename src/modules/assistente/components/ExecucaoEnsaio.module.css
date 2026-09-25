@@ -1,0 +1,55 @@
+/* Execução do ensaio pelo assistente (ficha online) */
+.tela { display: flex; flex-direction: column; gap: 12px; padding-bottom: 76px; }
+
+.carregando { padding: 60px 0; display: flex; justify-content: center; }
+.fora {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding: 60px 16px; color: var(--muted); text-align: center;
+}
+
+.topo { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.voltar { font-size: 13.5px; font-weight: 700; color: var(--navy); text-decoration: none; padding-top: 3px; }
+.voltar:hover { text-decoration: underline; }
+.titulos { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.titulos h1 { font-size: 19px; font-weight: 800; color: var(--navy); line-height: 1.25; }
+.titulos span { font-size: 13px; color: var(--teal); font-weight: 700; }
+
+.iniciarCaixa {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--teal);
+  border-radius: 10px; padding: 12px 14px;
+}
+.iniciarCaixa > div { display: flex; flex-direction: column; gap: 2px; max-width: 62ch; }
+.iniciarCaixa strong { color: var(--navy); font-size: 15px; }
+.iniciarCaixa span { color: var(--muted); font-size: 13.5px; }
+
+/* ficha + foto de apoio lado a lado (empilha no celular) */
+.area { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-items: start; }
+.comFoto { grid-template-columns: minmax(0, 1fr) minmax(280px, 38%); }
+.areaFicha { min-width: 0; }
+
+/* barra fixa de ações */
+.barraAcoes {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  background: #fff; border-top: 1px solid var(--border);
+  box-shadow: 0 -4px 16px rgba(17, 24, 39, .08);
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  padding: 10px max(16px, calc((100vw - 1280px) / 2 + 20px));
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+}
+.situacao { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; color: #374151; }
+.situacao strong { color: var(--navy); }
+.salvo { color: var(--muted); }
+.botoes { display: flex; gap: 8px; flex-wrap: wrap; }
+
+@media (max-width: 900px) {
+  .comFoto { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 767px) {
+  /* acima da navegação inferior do app */
+  .barraAcoes { bottom: calc(64px + env(safe-area-inset-bottom, 0px)); padding-bottom: 10px; }
+  .tela { padding-bottom: 140px; }
+  .botoes { width: 100%; }
+  .botoes > button { flex: 1; }
+}

@@ -23,7 +23,7 @@ export { LabContext }
 export function useLaboratorio() {
   const { perfil } = useAuthStore()
   const [dados, setDados] = useState({
-    pedidos: [], ensaiosOs: [], usuarios: [], ensaios: [], empresas: [], fichas: [],
+    pedidos: [], ensaiosOs: [], usuarios: [], ensaios: [], empresas: [], fichas: [], modelos: [],
   })
   const [fonte, setFonte] = useState('servidor')
   const [loading, setLoading] = useState(true)
@@ -41,7 +41,7 @@ export function useLaboratorio() {
       const r = await repo.carregarDados()
       setDados({
         pedidos: r.pedidos, ensaiosOs: r.ensaiosOs, usuarios: r.usuarios,
-        ensaios: r.ensaios, empresas: r.empresas, fichas: r.fichas,
+        ensaios: r.ensaios, empresas: r.empresas, fichas: r.fichas, modelos: r.modelos || [],
       })
       setFonte(r.fonte)
       setErro(null)
@@ -163,6 +163,8 @@ export function useLaboratorio() {
       adicionarEnsaioNaOS:  embrulhar(repo.adicionarEnsaioNaOS),
       removerEnsaioDaOS:    embrulhar(repo.removerEnsaioDaOS),
       aprovarEnsaio:        embrulhar(repo.aprovarEnsaio),
+      aprovarEnsaioFicha:   embrulhar(repo.aprovarEnsaioFicha),
+      salvarRevisaoFicha:   embrulhar(repo.salvarRevisaoFicha),
       devolverAoAssistente: embrulhar(repo.devolverAoAssistente),
       alterarVisibilidade:  embrulhar(repo.alterarVisibilidade),
       finalizarOS:          embrulhar(repo.finalizarOS),

@@ -2,9 +2,10 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuthStore } from '../../store/authStore'
 import {
-  salvarPedidoOffline, getPedidosPendentes, marcarPedidoSincronizado,
+  salvarPedidoOffline, getPedidosPendentes,
   cacheEnsaios, getEnsaiosCache, cacheEmpresas, getEmpresasCache,
 } from '../../lib/offlineDB'
+import { novoIdTemp, processarFila } from '../../lib/syncQueue'
 
 export function useCampo() {
   const { perfil } = useAuthStore()
@@ -20,11 +21,16 @@ export function useCampo() {
     try {
       if (navigator.onLine) {
         // Empresas (incluindo lote para preenchimento automático)
+        // (seção 14, item 1) a tabela tem nome/lote/rodovia — não há nome_fantasia/cnpj
         const { data: emp } = await supabase
           .from('empresas')
-          .select('id, nome_fantasia, cnpj, lote')
-          .order('nome_fantasia')
-        if (emp) { setEmpresas(emp); await cacheEmpresas(emp) }
+          .select('*')
+          .order('nome')
+        if (emp) {
+          const ativas = emp.filter(e => e.ativo !== false)
+          setEmpresas(ativas)
+          await cacheEmpresas(ativas)
+        }
 
         // Ensaios disponíveis
         const { data: ens } = await supabase.from('ensaios').select('*').order('nome')
@@ -33,11 +39,13 @@ export function useCampo() {
         // Pedidos do usuário atual
         const { data: peds } = await supabase
           .from('pedidos_ensaio')
-          .select('*, empresa:empresas(nome_fantasia)')
+          .select('*')   // (item 2) empresa = texto preenchido pelo banco a partir de empresa_id
           .eq('solicitante_id', perfil?.id)
           .order('created_at', { ascending: false })
           .limit(50)
-        if (peds) setPedidos(peds)
+        // pedidos ainda guardados no aparelho continuam visíveis até sincronizar
+        const pendentes = (await getPedidosPendentes()).filter(p => !(peds || []).some(x => x.id === p.id))
+        setPedidos([...pendentes.map(p => ({ ...p, status: 'pendente_sync' })), ...(peds || [])])
       } else {
         // Offline fallback
         const [empCache, ensCache, pendentes] = await Promise.all([
@@ -47,7 +55,7 @@ export function useCampo() {
         ])
         setEmpresas(empCache)
         setEnsaios(ensCache)
-        setPedidos(pendentes)
+        setPedidos(pendentes.map(p => ({ ...p, status: 'pendente_sync' })))
       }
     } catch (e) {
       setError(e.message)
@@ -71,12 +79,12 @@ export function useCampo() {
       ensaios_ids:   dados.ensaios_ids,
       dados_amostra: dados.dados_amostra,
       solicitante_id: perfil?.id,
-      status: 'aguardando_analise',
+      status: 'aguardando_lab',   // (item 3) nome oficial do status
       created_at: new Date().toISOString(),
     }
 
     if (!navigator.onLine) {
-      const tempId = `offline_${Date.now()}`
+      const tempId = novoIdTemp()
       await salvarPedidoOffline({ id: tempId, ...payload })
       setPedidos(prev => [{ id: tempId, ...payload, status: 'pendente_sync' }, ...prev])
       return { offline: true }
@@ -102,7 +110,7 @@ export function useCampo() {
       .from('pedidos_ensaio')
       .update({
         ...dadosCorrigidos,
-        status: 'aguardando_analise',
+        status: 'aguardando_lab',
         updated_at: new Date().toISOString(),
       })
       .eq('id', pedidoId)
@@ -114,27 +122,15 @@ export function useCampo() {
     return { data }
   }, [])
 
-  // ── Reenviar pedido offline (pendente_sync) ────────────────────────────────
-  const reenviarPedido = useCallback(async (id) => {
-    const pendentes = await getPedidosPendentes()
-    const pedido = pendentes.find(p => p.id === id)
-    if (!pedido) return
-
-    const { id: tempId, status, ...dados } = pedido
-
-    // Se é uma correção de pedido existente (id não começa com 'offline_')
-    // o id original foi preservado no payload
-    const { data, error } = await supabase
-      .from('pedidos_ensaio')
-      .insert(dados)
-      .select()
-      .single()
-    if (error) throw error
-
-    await marcarPedidoSincronizado(id)
-    setPedidos(prev => prev.map(p => p.id === id ? { ...data } : p))
-    return { data }
-  }, [])
+  // ── Reenviar pedidos guardados no aparelho (pendente_sync) ─────────────────
+  // (seção 14, item 6) usa a fila de sincronização oficial: evita pedido duplicado
+  // e trata tanto pedidos novos quanto correções feitas offline.
+  const reenviarPedido = useCallback(async () => {
+    if (!navigator.onLine) throw new Error('Sem conexão. O pedido será enviado quando a internet voltar.')
+    const r = await processarFila()
+    await carregar()
+    return r
+  }, [carregar])
 
   return {
     empresas, ensaios, pedidos, loading, error,

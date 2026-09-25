@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useLab } from '../useLaboratorio'
-import { PERFIS_EXECUTORES } from '../constants'
+import { modulosDoUsuario } from '../../../lib/modulos'
 import { dataHora } from '../utils'
 import { StatusEnsaio } from './StatusBadge'
 import EnsaiosPicker from './EnsaiosPicker'
@@ -13,15 +13,20 @@ import ui from './ui.module.css'
  * visibilidade para o campo e acesso à revisão.
  */
 export default function EnsaiosOS({ pedido, ensaiosOs, podeGerenciar, ocupado, rodar, onRevisar }) {
-  const { usuarios, fichas, ensaios, ensaiosPorId, usuariosPorId, acoes } = useLab()
+  const { usuarios, fichas, modelos, ensaios, ensaiosPorId, usuariosPorId, acoes } = useLab()
+  // fichas que já têm modelo online (o assistente só consegue executar essas)
+  const fichasOnline = useMemo(() => new Set((modelos || []).filter(m => m.ativo !== false).map(m => m.ficha_ensaio_id)), [modelos])
+  const rotuloFicha = f => `${f.codigo} — ${f.nome}${f.versao ? ` (${f.versao})` : ''}${fichasOnline.has(f.id) ? ' · online' : ' · sem ficha online'}`
   const [adicionando, setAdicionando] = useState(false)
 
   const executores = useMemo(() => {
+    // Executor = usuário ativo com o módulo Assistente liberado (migração 13)
     const ativos = usuarios.filter(u =>
-      PERFIS_EXECUTORES.includes(String(u.perfil).toUpperCase()) && (u.status || 'Ativo') === 'Ativo')
+      (u.status || 'Ativo') === 'Ativo' && modulosDoUsuario(u).includes('assistente'))
+    const soAssistente = u => !modulosDoUsuario(u).includes('laboratorio')
     return {
-      assistentes: ativos.filter(u => String(u.perfil).toUpperCase() === 'ASSIST'),
-      laboratoristas: ativos.filter(u => String(u.perfil).toUpperCase() !== 'ASSIST'),
+      assistentes: ativos.filter(soAssistente),
+      laboratoristas: ativos.filter(u => !soAssistente(u)),
     }
   }, [usuarios])
 
@@ -95,12 +100,12 @@ export default function EnsaiosOS({ pedido, ensaiosOs, podeGerenciar, ocupado, r
                       fichasOpc.length > 0 && (
                         <optgroup label="Fichas sem vínculo com este ensaio">
                           {fichasOpc.map(f => (
-                            <option key={f.id} value={f.id}>{f.codigo} — {f.nome}{f.versao ? ` (${f.versao})` : ''}</option>
+                            <option key={f.id} value={f.id}>{rotuloFicha(f)}</option>
                           ))}
                         </optgroup>
                       )
                     ) : fichasOpc.map(f => (
-                      <option key={f.id} value={f.id}>{f.codigo} — {f.nome}{f.versao ? ` (${f.versao})` : ''}</option>
+                      <option key={f.id} value={f.id}>{rotuloFicha(f)}</option>
                     ))}
                   </select>
                 </label>

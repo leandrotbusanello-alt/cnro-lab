@@ -40,11 +40,14 @@ export const OPCOES_LADO  = ['Direito', 'Esquerdo', 'Eixo', 'Central']
 export const OPCOES_PROCTOR = ['Normal (PN)', 'Intermediário (PI)', 'Modificado (PM)']
 export const OPCOES_LANCAMENTO = ['Bombeado', 'Grua', 'Manual', 'Calha', 'Carrinho', 'Outro']
 
+// Status do pedido (seção 7 da Referência Técnica — CHECK no banco)
 export const STATUS_LABELS = {
-  pendente_sync:       'Aguardando envio',
-  aguardando_analise:  'Aguardando análise',
-  em_analise:          'Em análise',
-  aprovado:            'Aprovado',
-  devolvido:           'Devolvido para correção',
-  cancelado:           'Cancelado',
+  pendente_sync:      'Aguardando envio',
+  aguardando_lab:     'Aguardando laboratório',
+  em_analise:         'Em análise',
+  devolvido_campo:    'Devolvido para correção',
+  em_andamento:       'Em andamento',
+  aguardando_revisao: 'Em revisão',
+  concluido:          'Concluído',
+  cancelado:          'Cancelado',
 }

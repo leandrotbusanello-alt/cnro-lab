@@ -40,8 +40,7 @@ export const SUBVISOES_MINHAS = [
   { id: 'concluidas', label: 'Concluídas' },
 ]
 
-/** Perfis que aparecem como opção de executor de ensaio */
-export const PERFIS_EXECUTORES = ['ASSIST', 'LAB', 'GESTOR', 'DEV']
+// Executores de ensaio: usuários com o módulo Assistente liberado (ver EnsaiosOS e authStore.modulosDoUsuario)
 /** Perfis que podem ser responsáveis por O.S. */
 export const PERFIS_LABORATORISTAS = ['LAB', 'GESTOR', 'DEV']
 export const PERFIS_GESTAO = ['GESTOR', 'DEV']

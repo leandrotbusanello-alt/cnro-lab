@@ -1,0 +1,79 @@
+{
+  "codigo": "FR-IMOB-22",
+  "versao": "Rev00",
+  "nome": "Porcentagem de betume — Soxhlet / Rotarex",
+  "arquivo": "FR-IMOB-22_Rev00.xlsx",
+  "pedido": {
+    "C7": "os",
+    "C8": "material",
+    "F8": "registro",
+    "C9": "procedencia",
+    "C10": "complemento"
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "F7"
+      ],
+      "tipo": "data"
+    },
+    {
+      "colunas": [
+        "F",
+        "G"
+      ],
+      "linhas": [
+        "16-18",
+        "24-25"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "assinaturas": {
+    "executor": "B31",
+    "calculista": "E31"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "F7"
+        ]
+      },
+      {
+        "titulo": "Soxhlet",
+        "linhas": "16-18"
+      },
+      {
+        "titulo": "Rotarex",
+        "linhas": "24-25"
+      }
+    ]
+  },
+  "resultados": [
+    {
+      "tabela": "resultado_teor_betume",
+      "linhas": [
+        {
+          "quando": "=ISNUMBER(G21)",
+          "campos": {
+            "metodo": "Soxhlet",
+            "teor_obtido_pct": "=G21"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(G28)",
+          "campos": {
+            "metodo": "Rotarex",
+            "teor_obtido_pct": "=G28"
+          }
+        }
+      ]
+    }
+  ],
+  "pedido_exemplo": {},
+  "rotulos": {
+    "F7": "Data do ensaio"
+  }
+}

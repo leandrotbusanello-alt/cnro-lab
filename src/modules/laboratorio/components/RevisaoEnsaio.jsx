@@ -4,6 +4,7 @@ import { useLab } from '../useLaboratorio'
 import { dataHora } from '../utils'
 import { StatusEnsaio } from './StatusBadge'
 import ResultadoView from './ResultadoView'
+import RevisaoFicha from './RevisaoFicha'
 import ModalMotivo from './ModalMotivo'
 import styles from './RevisaoEnsaio.module.css'
 import ui from './ui.module.css'
@@ -12,8 +13,8 @@ import ui from './ui.module.css'
  * Revisão de um ensaio enviado pelo assistente: visualizar resultado/arquivo,
  * aprovar (com opção de liberar ao campo) ou devolver ao assistente.
  *
- * Correção de valores na própria ficha: usará o componente de ficha digital do
- * Módulo Assistente (<FichaEnsaio modo="revisao" />) quando estiver disponível.
+ * Ensaios preenchidos na ficha online (migração 13) abrem a própria ficha em tela
+ * cheia (RevisaoFicha), onde o laboratorista corrige, assina e aprova.
  */
 export default function RevisaoEnsaio({ pedido, ensaioOs: eo, podeRevisar, ocupado, rodar, onFechar }) {
   const lab = useLab()
@@ -63,6 +64,20 @@ export default function RevisaoEnsaio({ pedido, ensaioOs: eo, podeRevisar, ocupa
           const ok = await rodar(() => lab.acoes.devolverAoAssistente(pedido, eo, motivo), 'Ensaio devolvido ao assistente.')
           if (ok) onFechar()
         }}
+      />
+    )
+  }
+
+  if (eo.ficha_modelo_id || eo.dados_resultado?.modelo_id) {
+    return (
+      <RevisaoFicha
+        pedido={pedido}
+        ensaioOs={eo}
+        podeRevisar={podeRevisar}
+        ocupado={ocupado}
+        rodar={rodar}
+        onFechar={onFechar}
+        onDevolver={() => setDevolvendo(true)}
       />
     )
   }
