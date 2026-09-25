@@ -1,13 +1,8 @@
-export const TIPOS_SOLICITACAO = [
-  { value: 'rotina',   label: 'Rotina de Obra' },
-  { value: 'especial', label: 'Ensaio Especial' },
-]
-
 export const TIPOS_AMOSTRA = [
-  { value: 'solos',    label: '🪨 Solos e Granulares' },
-  { value: 'asfalto',  label: '🛣️ Asfalto / Misturas Asfálticas' },
-  { value: 'concreto', label: '🏗️ Concreto' },
-  { value: 'especial', label: '🔬 Ensaios Especiais in Loco' },
+  { value: 'solos',    label: 'Solos e Granulares' },
+  { value: 'asfalto',  label: 'Asfalto / Misturas Asfálticas' },
+  { value: 'concreto', label: 'Concreto' },
+  { value: 'especial', label: 'Ensaios Especiais' },
 ]
 
 export const SUBCATEGORIAS = {
@@ -27,37 +22,32 @@ export const SUBCATEGORIAS = {
     { value: 'concreto', label: 'Concreto (Estrutural / Pavimento)' },
   ],
   especial: [
-    { value: 'deflectometria',    label: 'Deflectometria (Viga Benkelman / FWD)' },
-    { value: 'mancha_areia',      label: 'Mancha de Areia' },
+    { value: 'deflectometria',  label: 'Deflectometria (Viga Benkelman / FWD)' },
+    { value: 'mancha_areia',    label: 'Mancha de Areia' },
     { value: 'pendulo_britanico', label: 'Pêndulo Britânico' },
-    { value: 'densimetro',        label: 'Densímetro Nuclear' },
-    { value: 'outros',            label: 'Outros' },
+    { value: 'densimetro',      label: 'Densímetro Nuclear' },
   ],
 }
 
-// Camadas por categoria de material
-export const OPCOES_CAMADA_SOLO = [
-  'Corpo de Aterro', '1ª CFT', '2ª CFT', '3ª CFT',
-  'Subleito', 'Reforço do Subleito', 'Sub-base', 'Sub-base Melhorada',
-  'Base', 'Base Melhorada',
+export const OPCOES_CAMADA = [
+  'Subleito', 'Regularização', 'Reforço do Subleito',
+  'Sub-base', 'Base', 'Binder', 'Capa',
+  'Macadame Betuminoso', 'Tratamento Superficial', 'Outro',
 ]
-
-export const OPCOES_CAMADA_ASFALTO = [
-  'Binder', '1ª Camada', '2ª Camada', 'Capa',
-]
-
-export const OPCOES_PISTA  = ['Norte', 'Sul', 'Marginal Norte', 'Marginal Sul']
-export const OPCOES_FAIXA  = ['1ª Faixa', '2ª Faixa', '3ª Faixa', 'Acostamento', 'Rua de Serviço']
-export const OPCOES_LADO   = ['LD', 'LE', 'EX']
+export const OPCOES_PISTA = ['Norte', 'Sul', 'Leste', 'Oeste', 'Única', 'Retorno']
+export const OPCOES_FAIXA = ['1ª Faixa', '2ª Faixa', '3ª Faixa', 'Acostamento', 'Rua de Serviço']
+export const OPCOES_LADO  = ['Direito', 'Esquerdo', 'Eixo', 'Central']
 export const OPCOES_PROCTOR = ['Normal (PN)', 'Intermediário (PI)', 'Modificado (PM)']
 export const OPCOES_LANCAMENTO = ['Bombeado', 'Grua', 'Manual', 'Calha', 'Carrinho', 'Outro']
-export const OPCOES_IDADE_RUPTURA = ['03', '07', '14', '28', '63']
 
+// Status do pedido (seção 7 da Referência Técnica — CHECK no banco)
 export const STATUS_LABELS = {
-  pendente_sync:    'Aguardando envio',
-  aguardando_lab:   'Aguardando laboratório',
-  em_analise:       'Em análise',
-  aprovado:         'Aprovado',
-  devolvido:        'Devolvido para correção',
-  cancelado:        'Cancelado',
+  pendente_sync:      'Aguardando envio',
+  aguardando_lab:     'Aguardando laboratório',
+  em_analise:         'Em análise',
+  devolvido_campo:    'Devolvido para correção',
+  em_andamento:       'Em andamento',
+  aguardando_revisao: 'Em revisão',
+  concluido:          'Concluído',
+  cancelado:          'Cancelado',
 }

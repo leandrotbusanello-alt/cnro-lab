@@ -1,29 +1,24 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useCampo } from '../useCampo'
 import styles from './MeusPedidos.module.css'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
+// Status do pedido (seção 7 da Referência Técnica)
 const STATUS_LABEL = {
-  pendente_sync:        { label: 'Aguardando envio',           cls: 'offline'   },
-  aguardando_lab:       { label: 'Aguardando laboratório',     cls: 'pending'   },
-  // status legado que pode vir do banco
-  aguardando_analise:   { label: 'Aguardando laboratório',     cls: 'pending'   },
-  em_analise:           { label: 'Em análise',                 cls: 'info'      },
-  em_andamento:         { label: 'Em andamento',               cls: 'info'      },
-  aguardando_revisao:   { label: 'Aguardando revisão',         cls: 'info'      },
-  // banco usa 'devolvido_campo' para devoluções ao campo
-  devolvido_campo:      { label: 'Devolvido para correção',    cls: 'error'     },
-  devolvido:            { label: 'Devolvido para correção',    cls: 'error'     },
-  devolvido_assistente: { label: 'Devolvido ao assistente',    cls: 'error'    },
-  concluido:            { label: 'Concluído',                  cls: 'success'   },
-  cancelado:            { label: 'Cancelado',                  cls: 'cancelled' },
+  pendente_sync:      { label: 'Aguardando envio',        cls: 'offline'   },
+  aguardando_lab:     { label: 'Aguardando laboratório',  cls: 'pending'   },
+  em_analise:         { label: 'Em análise',              cls: 'info'      },
+  devolvido_campo:    { label: 'Devolvido para correção', cls: 'error'     },
+  em_andamento:       { label: 'Em andamento',            cls: 'info'      },
+  aguardando_revisao: { label: 'Em revisão',              cls: 'info'      },
+  concluido:          { label: 'Concluído',               cls: 'success'   },
+  cancelado:          { label: 'Cancelado',               cls: 'cancelled' },
 }
+const DEVOLVIDO = 'devolvido_campo'
 
-function isDevolvido(status) {
-  return status === 'devolvido_campo' || status === 'devolvido'
-}
-
+// Bug 3 fix: formatar numero_pe retornado pelo banco
 function formatarNumeroPE(pedido) {
   if (pedido.numero_pe && pedido.ano) {
     return `PE-${pedido.ano}-${String(pedido.numero_pe).padStart(4, '0')}`
@@ -36,14 +31,24 @@ export default function MeusPedidos({ onCorrigir, onNovoPedido }) {
   const { pedidos, loading, reenviarPedido } = useCampo()
   const [reenviadoId, setReenviadoId] = useState(null)
 
-  const devolvidos = pedidos.filter(p => isDevolvido(p.status))
-  const outros     = pedidos.filter(p => !isDevolvido(p.status))
+  // Vindo de um número do Painel (ex.: "em_andamento,aguardando_revisao")
+  const [params, setParams] = useSearchParams()
+  const statusFiltro = params.get('status') || ''
+  const listaStatus = statusFiltro ? statusFiltro.split(',') : null
+  const pedidosVisiveis = listaStatus ? pedidos.filter(p => listaStatus.includes(p.status)) : pedidos
 
-  async function handleReenviar(pedido, e) {
-    e.stopPropagation()
+  const devolvidos = pedidosVisiveis.filter(p => p.status === DEVOLVIDO)
+  const outros = pedidosVisiveis.filter(p => p.status !== DEVOLVIDO)
+
+  async function handleReenviar(pedido) {
     setReenviadoId(pedido.id)
-    try { await reenviarPedido(pedido.id) }
-    finally { setReenviadoId(null) }
+    try {
+      await reenviarPedido(pedido.id)
+    } catch {
+      /* continua guardado no aparelho; a fila tenta de novo quando a conexão voltar */
+    } finally {
+      setReenviadoId(null)
+    }
   }
 
   if (loading) {
@@ -57,7 +62,6 @@ export default function MeusPedidos({ onCorrigir, onNovoPedido }) {
           <span className={styles.bannerIcon}>⚠️</span>
           <span>
             Você tem <strong>{devolvidos.length}</strong> pedido(s) devolvido(s) para correção.
-            Clique no pedido para corrigir e reenviar.
           </span>
         </div>
       )}
@@ -67,10 +71,19 @@ export default function MeusPedidos({ onCorrigir, onNovoPedido }) {
         <button className={styles.btnNovo} onClick={onNovoPedido}>+ Novo Pedido</button>
       </div>
 
-      {pedidos.length === 0 && (
+      {listaStatus && (
+        <div className={styles.bannerFiltro}>
+          <span>🔎 Filtrado pelo Painel: {listaStatus.map(s => STATUS_LABEL[s]?.label || s).join(', ')}</span>
+          <button className={styles.btnLimparFiltro} onClick={() => setParams({}, { replace: true })}>
+            Ver todos
+          </button>
+        </div>
+      )}
+
+      {pedidosVisiveis.length === 0 && (
         <div className={styles.empty}>
-          <p>Nenhum pedido encontrado.</p>
-          <button className={styles.btnNovo} onClick={onNovoPedido}>Criar primeiro pedido</button>
+          <p>{listaStatus ? 'Nenhum pedido nessa situação.' : 'Nenhum pedido encontrado.'}</p>
+          {!listaStatus && <button className={styles.btnNovo} onClick={onNovoPedido}>Criar primeiro pedido</button>}
         </div>
       )}
 
@@ -109,39 +122,27 @@ export default function MeusPedidos({ onCorrigir, onNovoPedido }) {
 }
 
 function PedidoCard({ pedido, onCorrigir, onReenviar, reenviadoId, destaque }) {
-  const st   = STATUS_LABEL[pedido.status] || { label: pedido.status, cls: 'pending' }
+  const st = STATUS_LABEL[pedido.status] || { label: pedido.status, cls: 'pending' }
   const data = pedido.created_at
     ? format(new Date(pedido.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
     : '—'
-  const podeCorrigir = isDevolvido(pedido.status)
 
   return (
-    <div
-      className={`${styles.card} ${destaque ? styles.cardDestaque : ''} ${podeCorrigir ? styles.cardClicavel : ''}`}
-      onClick={podeCorrigir ? () => onCorrigir?.(pedido) : undefined}
-      role={podeCorrigir ? 'button' : undefined}
-      tabIndex={podeCorrigir ? 0 : undefined}
-      onKeyDown={podeCorrigir ? (e) => e.key === 'Enter' && onCorrigir?.(pedido) : undefined}
-      title={podeCorrigir ? 'Clique para corrigir e reenviar' : undefined}
-    >
+    <div className={`${styles.card} ${destaque ? styles.cardDestaque : ''}`}>
       <div className={styles.cardTop}>
+        {/* Bug 3 fix: exibir PE-{ano}-{numero_pe} quando disponível */}
         <span className={styles.numero}>{formatarNumeroPE(pedido)}</span>
-        <div className={styles.cardTopRight}>
-          {podeCorrigir && (
-            <span className={styles.editHint}>✏️ Toque para corrigir</span>
-          )}
-          <span className={`${styles.badge} ${styles[st.cls]}`}>{st.label}</span>
-        </div>
+        <span className={`${styles.badge} ${styles[st.cls]}`}>{st.label}</span>
       </div>
 
       <div className={styles.cardInfo}>
         <span>📅 {data}</span>
-        {pedido.empresa?.nome && <span>🏢 {pedido.empresa.nome}</span>}
-        {pedido.lote     && <span>📍 Lote {pedido.lote}</span>}
+        {pedido.empresa && <span>🏢 {pedido.empresa}</span>}
+        {pedido.lote    && <span>📍 Lote {pedido.lote}</span>}
         {pedido.material && <span>🪨 {pedido.material}</span>}
       </div>
 
-      {isDevolvido(pedido.status) && pedido.motivo_devolucao && (
+      {pedido.status === DEVOLVIDO && pedido.motivo_devolucao && (
         <div className={styles.motivo}>
           <strong>Motivo:</strong> {pedido.motivo_devolucao}
         </div>
@@ -151,17 +152,22 @@ function PedidoCard({ pedido, onCorrigir, onReenviar, reenviadoId, destaque }) {
         <div className={styles.offlineTag}>📶 Salvo localmente — aguardando conexão</div>
       )}
 
-      {pedido.status === 'pendente_sync' && (
-        <div className={styles.cardActions}>
+      <div className={styles.cardActions}>
+        {pedido.status === DEVOLVIDO && (
+          <button className={styles.btnCorrigir} onClick={() => onCorrigir?.(pedido)}>
+            ✏️ Corrigir e Reenviar
+          </button>
+        )}
+        {pedido.status === 'pendente_sync' && (
           <button
             className={styles.btnReenviar}
-            onClick={(e) => onReenviar(pedido, e)}
+            onClick={() => onReenviar(pedido)}
             disabled={reenviadoId === pedido.id}
           >
             {reenviadoId === pedido.id ? 'Enviando...' : '📤 Tentar Enviar Agora'}
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

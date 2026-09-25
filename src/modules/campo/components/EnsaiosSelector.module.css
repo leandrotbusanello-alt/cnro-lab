@@ -1,83 +1,27 @@
-.container { display: flex; flex-direction: column; gap: 1rem; }
+.container { display: flex; flex-direction: column; gap: 12px; }
 
-.countBadge {
-  display: inline-flex;
-  align-items: center;
-  background: rgba(19,178,172,0.12);
-  color: #0e9590;
-  border-radius: 20px;
-  padding: 4px 12px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  align-self: flex-start;
+.toggleAll {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 600; color: #374151; cursor: pointer;
 }
 
-/* ── Grupo (Especificação / Detalhar) ── */
-.grupo {
-  border: 1px solid #e2e6ee;
-  border-radius: 8px;
-  overflow: hidden;
-}
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
 
-.grupoHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #283272;
-  color: #fff;
-  padding: 0.55rem 0.9rem;
+.item {
+  display: flex; align-items: flex-start; gap: 10px;
+  border: 1.5px solid #e5e7eb; border-radius: 8px;
+  padding: 10px 12px; cursor: pointer;
+  transition: border-color .15s, background .15s;
 }
+.item:hover  { border-color: #0d9488; }
+.checked     { border-color: #0d9488; background: #f0fdfa; }
 
-.grupoTitulo {
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
+.info { display: flex; flex-direction: column; gap: 2px; }
+.nome { font-size: 13px; font-weight: 500; color: #111827; }
+.codigo { font-size: 11px; color: #6b7280; }
 
-.btnToggleGrupo {
-  background: rgba(255,255,255,0.15);
-  border: none;
-  color: #fff;
-  border-radius: 4px;
-  padding: 3px 8px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.btnToggleGrupo:hover { background: rgba(255,255,255,0.28); }
+.empty { color: #6b7280; font-size: 14px; padding: 12px 0; }
 
-/* ── Lista de checkboxes ── */
-.lista {
-  display: flex;
-  flex-direction: column;
-}
-
-.checkItem {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.55rem 0.9rem;
-  font-size: 0.88rem;
-  color: #2d3348;
-  cursor: pointer;
-  border-bottom: 1px solid #f1f3f7;
-  transition: background 0.12s;
-  user-select: none;
-}
-.checkItem:last-child { border-bottom: none; }
-.checkItem:hover { background: #f8f9fb; }
-.checkItem input { margin: 0; accent-color: #13B2AC; flex-shrink: 0; }
-.checkAtivo {
-  background: rgba(19,178,172,0.07);
-  color: #283272;
-  font-weight: 600;
-}
-
-.empty {
-  color: #9aa4b8;
-  font-size: 0.86rem;
-  padding: 0.75rem 0;
-  text-align: center;
+@media (max-width: 600px) {
+  .grid { grid-template-columns: 1fr; }
 }
