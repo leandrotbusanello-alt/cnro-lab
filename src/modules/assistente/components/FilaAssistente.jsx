@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAssist } from '../useAssistente'
 import { STATUS_ASSISTENTE } from '../constants'
 import { numeroOS, numeroPE, nomeEmpresa, rotuloMaterial, rotuloSubtipo, idade, dataHora, normalizarAmostras } from '../../laboratorio/utils'
@@ -13,6 +13,11 @@ export default function FilaAssistente() {
   const devolvidos = a.fila.filter(e => e.status === 'devolvido').length
   const emExecucao = a.fila.filter(e => e.status === 'em_andamento').length
   const aIniciar = a.fila.filter(e => e.status === 'pendente').length
+
+  // Vindo de um número do Painel (ex.: "?status=devolvido")
+  const [params, setParams] = useSearchParams()
+  const statusFiltro = params.get('status') || ''
+  const listaFiltrada = statusFiltro ? a.fila.filter(e => e.status === statusFiltro) : a.fila
 
   return (
     <>
@@ -37,17 +42,24 @@ export default function FilaAssistente() {
 
       {a.erro && <div className={`${ui.aviso} ${ui.avisoErro}`}>{a.erro}</div>}
 
+      {statusFiltro && (
+        <div className={`${ui.aviso} ${ui.avisoInfo}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>🔎 Filtrado pelo Painel: {STATUS_ASSISTENTE[statusFiltro]?.label || statusFiltro}</span>
+          <button type="button" className={ui.btnLink} onClick={() => setParams({}, { replace: true })}>Ver todos</button>
+        </div>
+      )}
+
       {a.loading ? (
         <div className={styles.carregando}><div className="spinner" /></div>
-      ) : a.fila.length === 0 ? (
+      ) : listaFiltrada.length === 0 ? (
         <div className={styles.vazio}>
           <span className={styles.vazioIcone}>✅</span>
-          <strong>Nenhum ensaio na sua fila</strong>
+          <strong>{statusFiltro ? 'Nenhum ensaio nessa situação' : 'Nenhum ensaio na sua fila'}</strong>
           <span>Quando o laboratorista atribuir um ensaio a você, ele aparece aqui.</span>
         </div>
       ) : (
         <div className={styles.lista}>
-          {a.fila.map(eo => <CardEnsaio key={eo.id} eo={eo} />)}
+          {listaFiltrada.map(eo => <CardEnsaio key={eo.id} eo={eo} />)}
         </div>
       )}
     </>

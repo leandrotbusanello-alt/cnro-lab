@@ -32,6 +32,10 @@ async function buscarSituacaoAtualServidor() {
   const { data: pedidos, error } = await supabase.from('pedidos_ensaio')
     .select('id, status, solicitante_id, laboratorista_id, ensaios_ids, created_at')
     .in('status', STATUS_ABERTOS)
+    // Lançamentos históricos em andamento (feitos pelo DEV) não são trabalho em aberto
+    // da equipe: ficam fora da "situação atual", como já ficam fora das filas.
+    // Nas contagens por período eles entram normalmente, pelas datas reais (migração 14).
+    .eq('lancamento_historico', false)
   if (error) throw error
 
   const idsComOS = (pedidos || [])
