@@ -26,6 +26,9 @@ export default function FichaEnsaio({
 }) {
   const [vista, setVista] = useState(() => (window.innerWidth < LARGURA_VISAO_LISTA ? 'lista' : 'grade'))
   const [confirmacao, setConfirmacao] = useState(null)   // { quem, rect }
+  const [abaAtiva, setAbaAtiva] = useState(0)             // frente e verso: qual folha aparece na grade
+  const folhas = indice.folhas || [indice]
+  const folha = folhas[Math.min(abaAtiva, folhas.length - 1)]
 
   const etapa = modo === 'revisao' ? 'calculista' : modo === 'preencher' ? 'executor' : null
   const bloqueado = !!(etapa && assinaturas[etapa])
@@ -51,6 +54,13 @@ export default function FichaEnsaio({
     onEstado?.({ ...estado, escolhas })
   }
 
+  function mudarVerificacao(a, marcado) {
+    const verificacoes = { ...(estado?.verificacoes || {}) }
+    if (marcado) verificacoes[a] = true
+    else delete verificacoes[a]
+    onEstado?.({ ...estado, verificacoes })
+  }
+
   function cliqueAssinatura(quem, el) {
     if (modo === 'leitura') return
     const rect = el.getBoundingClientRect()
@@ -59,7 +69,7 @@ export default function FichaEnsaio({
 
   const props = {
     indice, estado, modo, bloqueado, assinaturas,
-    onEntrada: mudarEntrada, onEscolha: mudarEscolha, onCliqueAssinatura: cliqueAssinatura,
+    onEntrada: mudarEntrada, onEscolha: mudarEscolha, onVerificacao: mudarVerificacao, onCliqueAssinatura: cliqueAssinatura,
   }
 
   return (
@@ -75,9 +85,27 @@ export default function FichaEnsaio({
       </div>
 
       {vista === 'grade' ? (
-        <div className={s.papel}>
-          <FichaGrade {...props} motor={motor} destacar={modo !== 'leitura'} idBase={`${idBase}-g`} />
-        </div>
+        <>
+          {folhas.length > 1 && (
+            <div className={s.abasFolha} role="tablist" aria-label="Páginas da ficha">
+              {folhas.map((f, i) => (
+                <button
+                  key={f.id || 'principal'}
+                  type="button"
+                  role="tab"
+                  aria-selected={f === folha}
+                  className={f === folha ? s.abaAtiva : ''}
+                  onClick={() => setAbaAtiva(i)}
+                >
+                  {f.titulo}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className={s.papel}>
+            <FichaGrade {...props} folha={folha} motor={motor} destacar={modo !== 'leitura'} idBase={`${idBase}-g`} />
+          </div>
+        </>
       ) : (
         <FichaLista {...props} podeAssinar={podeAssinar} idBase={`${idBase}-l`} />
       )}

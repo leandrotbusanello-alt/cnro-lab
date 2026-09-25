@@ -1,0 +1,121 @@
+{
+  "codigo": "FR-IMOB-08",
+  "versao": "Rev00",
+  "nome": "Equivalente de areia",
+  "arquivo": "FR-IMOB-08_Rev00.xlsx",
+  "_nota": "Planilha-mestre Rev00 da Qualidade, sem alterações. Rótulo e valor na mesma célula mesclada (\"Nº O.S:\" + valor), como na FR-IMOB-50. Resultado: 1 linha por ensaio (decisão de 25/09). Leituras gravadas como digitadas na ficha — confirmar a unidade da graduação da proveta (colunas *_mm).",
+  "pedido": {
+    "C6": {
+      "campo": "os",
+      "manter_texto": true
+    },
+    "C7": {
+      "campo": "material",
+      "manter_texto": true
+    },
+    "F7": {
+      "campo": "registro",
+      "manter_texto": true
+    },
+    "C8": {
+      "campo": "procedencia",
+      "manter_texto": true
+    },
+    "C9": {
+      "campo": "complemento",
+      "manter_texto": true
+    }
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "F6"
+      ],
+      "tipo": "data",
+      "manter_texto": true
+    },
+    {
+      "colunas": [
+        "F",
+        "G",
+        "H"
+      ],
+      "linhas": [
+        "13-14"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "assinaturas": {
+    "executor": "D22",
+    "calculista": "F22"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "F6"
+        ]
+      },
+      {
+        "titulo": "{n}º ensaio",
+        "colunas": [
+          "F",
+          "G",
+          "H"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "F6": "Data do ensaio",
+    "F13": "Leitura no topo da areia",
+    "G13": "Leitura no topo da areia",
+    "H13": "Leitura no topo da areia",
+    "F14": "Leitura no topo da argila",
+    "G14": "Leitura no topo da argila",
+    "H14": "Leitura no topo da argila"
+  },
+  "resultados": [
+    {
+      "tabela": "resultado_equivalencia_areia",
+      "linhas": [
+        {
+          "quando": "=ISNUMBER(H17)",
+          "campos": {
+            "amostra_ref": "1º ensaio",
+            "leitura_areia_mm": "=F13",
+            "leitura_argila_mm": "=F14",
+            "ea_pct": "=H17"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(H18)",
+          "campos": {
+            "amostra_ref": "2º ensaio",
+            "leitura_areia_mm": "=G13",
+            "leitura_argila_mm": "=G14",
+            "ea_pct": "=H18"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(H19)",
+          "campos": {
+            "amostra_ref": "3º ensaio",
+            "leitura_areia_mm": "=H13",
+            "leitura_argila_mm": "=H14",
+            "ea_pct": "=H19"
+          }
+        }
+      ]
+    }
+  ],
+  "pedido_exemplo": {
+    "os": "2026.03.31.02.142",
+    "material": "BRITA GRADUADA SIMPLES (BGS)",
+    "registro": "142/2026",
+    "procedencia": "CONSÓRCIO BR-163 (OBRA 108) - VÁRZEA GRANDE A JANGADA (SAU 08) / LOTE 02",
+    "complemento": "CAMADA: SUB-BASE / PROCEDÊNCIA: PEDREIRA QUIBRITA / COLETA: ESTOQUE DA OBRA."
+  }
+}

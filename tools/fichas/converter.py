@@ -212,18 +212,54 @@ def papeis_da_spec(spec):
                 p[a]['rotuloGrupo'] = g['rotulo']
     for quem, a in spec.get('assinaturas', {}).items():
         p[a] = {'tipo': 'assinatura', 'quem': quem}
+    for a in spec.get('_verificacoes', []):
+        # caixa de seleção independente (pontos de verificação): ☐/☒, cada uma por si
+        p[a] = {'tipo': 'verificacao'}
     return p
+
+
+def caixas_de_selecao(caminho, ws):
+    """Caixas de seleção (controles de formulário do Excel) da aba: [(endereço da célula, marcada)].
+    O controle fica num desenho VML ligado à aba; a posição vem de <x:Anchor> (coluna, dx, linha, dy, …)."""
+    import zipfile, posixpath
+    ns_rel = '{http://schemas.openxmlformats.org/package/2006/relationships}'
+    with zipfile.ZipFile(caminho) as z:
+        wbx = etree.fromstring(z.read('xl/workbook.xml'))
+        rels = etree.fromstring(z.read('xl/_rels/workbook.xml.rels'))
+        alvo_rid = {r.get('Id'): r.get('Target') for r in rels.iter(ns_rel + 'Relationship')}
+        rid = None
+        for sh in wbx.iter('{http://schemas.openxmlformats.org/spreadsheetml/2006/main}sheet'):
+            if sh.get('name') == ws.title:
+                rid = sh.get('{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id')
+        if not rid:
+            return []
+        folha = posixpath.normpath(posixpath.join('xl', alvo_rid[rid].lstrip('/').replace('xl/', '', 1)))
+        arq_rels = posixpath.join(posixpath.dirname(folha), '_rels', posixpath.basename(folha) + '.rels')
+        if arq_rels not in z.namelist():
+            return []
+        out = []
+        for r in etree.fromstring(z.read(arq_rels)).iter(ns_rel + 'Relationship'):
+            if not r.get('Type', '').endswith('/vmlDrawing'):
+                continue
+            vml = posixpath.normpath(posixpath.join(posixpath.dirname(folha), r.get('Target')))
+            texto = z.read(vml).decode('utf-8', errors='replace')
+            for forma in re.findall(r'<v:shape\b.*?</v:shape>', texto, re.S):
+                if not re.search(r'ObjectType="Checkbox"', forma, re.I):
+                    continue
+                m = re.search(r'<x:Anchor>\s*([^<]+)</x:Anchor>', forma)
+                if not m:
+                    continue
+                col0, _, lin0 = (int(x) for x in m.group(1).split(',')[:3])
+                marcada = bool(re.search(r'<x:Checked>\s*1', forma))
+                out.append((endereco(col0 + 1, lin0 + 1), marcada))
+        return out
 
 
 # ── conversão ────────────────────────────────────────────────────────────────
 
-def converter(spec, arquivo_spec):
-    caminho = AQUI / 'planilhas' / spec['arquivo']
-    wb = openpyxl.load_workbook(caminho, rich_text=True)
-    wbv = openpyxl.load_workbook(caminho, data_only=True)
-    ws = wb[spec['aba']] if spec.get('aba') else wb.worksheets[0]
+def converter_folha(caminho, wb, wbv, ws, spec, cores):
+    """Converte uma aba da planilha (frente, verso…). spec = papéis das células desta aba."""
     wsv = wbv[ws.title]
-    cores = Cores(wb)
 
     pa = ws.print_area
     pa = (pa if isinstance(pa, str) else pa[0]).split('!')[-1].replace('$', '')
@@ -251,6 +287,27 @@ def converter(spec, arquivo_spec):
             for cc in range(mc1, mc2 + 1):
                 if (rr, cc) != (mr1, mc1):
                     coberta.add((rr, cc))
+
+    # caixas de seleção do Excel → papel "verificacao" (automático; a spec pode listar ou desligar com false)
+    ver = spec.get('verificacoes', 'auto')
+    exemplo_ver = {}
+    if ver == 'auto':
+        # caixas em células que a spec já definiu (p.ex. Sim/Não como "escolhas" na FR-IMOB-13) ficam como estão
+        ja_definidas = papeis_da_spec(spec)
+        achadas = caixas_de_selecao(caminho, ws)
+        ver = []
+        for a, marcada in achadas:
+            cc, rr = separar(a)
+            for (mr1, mc1), (mr2, mc2) in mescla.items():   # dentro de uma mescla → a célula-âncora
+                if mr1 <= rr <= mr2 and mc1 <= cc <= mc2:
+                    a = endereco(mc1, mr1)
+                    break
+            if a in ja_definidas or a in ver:
+                continue
+            ver.append(a)
+            if marcada:
+                exemplo_ver[a] = True
+    spec = {**spec, '_verificacoes': ver or []}
 
     papeis = papeis_da_spec(spec)
     limpar = set(spec.get('limpar', []))
@@ -317,6 +374,12 @@ def converter(spec, arquivo_spec):
                 papel.pop('_manter')
                 papel['prefixo'] = str(v).rstrip() if v is not None else ''
                 papeis[a] = papel
+                v = None
+            elif papel and papel['tipo'] == 'verificacao':
+                # texto na própria célula da caixa (raro) vira o rótulo ao lado do ☐
+                if v is not None and str(v).strip():
+                    papel = {**papel, 'texto': str(v).strip()}
+                    papeis[a] = papel
                 v = None
             elif papel and papel['tipo'] in ('entrada', 'pedido', 'revisao', 'escolha'):
                 if v is not None:
@@ -408,8 +471,7 @@ def converter(spec, arquivo_spec):
 
     pm = ws.page_margins
     ps = ws.page_setup
-    modelo = {
-        'motor': MOTOR, 'codigo': spec['codigo'], 'versao': spec['versao'], 'titulo': spec['nome'],
+    folha = {
         'origem': {'c1': c1, 'r1': r1}, 'cols': colpx, 'rows': rowpx, 'cells': cells, 'imgs': imgs,
         **({'impressao': {'cols': c2_impressao - c1 + 1}} if c2 > c2_impressao else {}),
         'pagina': {
@@ -427,7 +489,59 @@ def converter(spec, arquivo_spec):
         if a not in cells:
             alertas.append(f'{a}: célula com papel "{p["tipo"]}" fora da área de impressão ou coberta por mescla.')
 
-    verificacao = {'exemplo': exemplo, 'excel': excel, 'pedido_exemplo': spec.get('pedido_exemplo', {})}
+    exemplo.update({'__verificacoes__': exemplo_ver} if exemplo_ver else {})
+    return folha, exemplo, excel, alertas
+
+
+CHAVES_DA_FOLHA = ('pedido', 'entradas', 'revisao', 'escolhas', 'assinaturas', 'linhas_assinatura', 'formulas',
+                   'colunas_tela', 'limpar', 'mesclas_extras', 'lista', 'rotulos', 'verificacoes')
+RE_ABA_FORMULA = re.compile(r"(?:'((?:[^']|'')+)'|([A-Za-z_][A-Za-z0-9_.]*))!\$?[A-Z]{1,3}\$?\d")
+
+
+def converter(spec, arquivo_spec):
+    """Ficha completa: aba principal (spec) + abas extras (spec['abas_extras'], p.ex. o verso)."""
+    caminho = AQUI / 'planilhas' / spec['arquivo']
+    wb = openpyxl.load_workbook(caminho, rich_text=True)
+    wbv = openpyxl.load_workbook(caminho, data_only=True)
+    cores = Cores(wb)
+    ws = wb[spec['aba']] if spec.get('aba') else wb.worksheets[0]
+    folha, exemplo, excel, alertas = converter_folha(caminho, wb, wbv, ws, spec, cores)
+    modelo = {'motor': MOTOR, 'codigo': spec['codigo'], 'versao': spec['versao'], 'titulo': spec['nome'], **folha}
+    verif_ex = exemplo.pop('__verificacoes__', {})
+
+    extras = spec.get('abas_extras', [])
+    apelidos = {ws.title: ''}
+    if extras:
+        modelo['titulo_aba'] = spec.get('titulo_aba', 'Frente')
+        modelo['abas'] = []
+        for ex in extras:
+            ident = ex['id']
+            if not re.fullmatch(r'[A-Z][A-Z0-9_]*', ident):
+                raise SystemExit(f'{spec["codigo"]}: id de aba inválido "{ident}" (use letras maiúsculas, p.ex. "VERSO").')
+            wsx = wb[ex['aba']]
+            apelidos[wsx.title] = ident
+            sub = {k: ex[k] for k in CHAVES_DA_FOLHA if k in ex}
+            fx, exx, xlx, alx = converter_folha(caminho, wb, wbv, wsx, sub, cores)
+            modelo['abas'].append({'id': ident, 'titulo': ex.get('titulo', ident), **fx})
+            ver_x = exx.pop('__verificacoes__', {})
+            exemplo.update({f'{ident}!{a}': v for a, v in exx.items()})
+            excel.update({f'{ident}!{a}': v for a, v in xlx.items()})
+            verif_ex.update({f'{ident}!{a}': v for a, v in ver_x.items()})
+            alertas += [f'[{ex.get("titulo", ident)}] {m}' for m in alx]
+        modelo['apelidos'] = apelidos
+
+    # fórmulas que apontam para abas que não fazem parte da ficha
+    todas = [('', modelo['cells'])] + [(ab['titulo'] + ' ', ab['cells']) for ab in modelo.get('abas', [])]
+    for rot, cells in todas:
+        for a, d in cells.items():
+            for m in RE_ABA_FORMULA.finditer(d.get('fx', '')):
+                nome = (m.group(1) or '').replace("''", "'") or m.group(2)
+                if nome not in apelidos:
+                    alertas.append(f'{rot}{a}: fórmula aponta para a aba "{nome}", que não faz parte da ficha (=' + d['fx'] + ')')
+
+    verificacao = {'exemplo': exemplo, 'excel': excel, 'pedido_exemplo': spec.get('pedido_exemplo', {}),
+                   **({'verificacoes': verif_ex} if verif_ex else {}),
+                   'abas_excel': {v: k for k, v in apelidos.items()}}
     return modelo, spec.get('resultados', []), verificacao, alertas
 
 
@@ -497,8 +611,15 @@ def main():
         (AQUI / 'saida' / f'{nome}.verificacao.json').write_text(json.dumps(verif, ensure_ascii=False), encoding='utf-8')
         n_fx = sum(1 for c in modelo['cells'].values() if 'fx' in c)
         n_in = sum(1 for c in modelo['cells'].values() if c.get('role', {}).get('tipo') == 'entrada')
-        print(f'{nome}: {len(modelo["cells"])} células · {n_fx} fórmulas · {n_in} entradas · '
-              f'{len(modelo["imgs"])} imagem(ns) · {len(mapa)} mapa(s) de resultado')
+        for ab in modelo.get('abas', []):
+            n_fx += sum(1 for c in ab['cells'].values() if 'fx' in c)
+            n_in += sum(1 for c in ab['cells'].values() if c.get('role', {}).get('tipo') == 'entrada')
+        n_ver = sum(1 for f in [modelo] + modelo.get('abas', []) for c in f['cells'].values()
+                    if c.get('role', {}).get('tipo') == 'verificacao')
+        abas = f' · abas: {modelo.get("titulo_aba", "Frente")} + ' + ', '.join(a['titulo'] for a in modelo['abas']) if modelo.get('abas') else ''
+        print(f'{nome}: {len(modelo["cells"]) + sum(len(a["cells"]) for a in modelo.get("abas", []))} células · {n_fx} fórmulas · '
+              f'{n_in} entradas{f" · {n_ver} verificações" if n_ver else ""} · '
+              f'{len(modelo["imgs"])} imagem(ns) · {len(mapa)} mapa(s) de resultado{abas}')
         for a in alertas:
             print('   ⚠', a)
         problemas += len(alertas)

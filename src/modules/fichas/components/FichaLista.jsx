@@ -9,7 +9,7 @@ import s from './Ficha.module.css'
  */
 export default function FichaLista({
   indice, estado, modo = 'preencher', bloqueado = false, idBase = 'lista',
-  assinaturas = {}, podeAssinar = {}, onEntrada, onEscolha, onCliqueAssinatura,
+  assinaturas = {}, podeAssinar = {}, onEntrada, onEscolha, onVerificacao, onCliqueAssinatura,
 }) {
   const grupos = useMemo(() => gruposDaLista(indice, { incluirRevisao: modo === 'revisao' }), [indice, modo])
   const ordem = useMemo(() => grupos.flatMap(g => g.itens.filter(i => i.endereco).map(i => i.endereco)), [grupos])
@@ -53,7 +53,21 @@ export default function FichaLista({
                   </div>
                 )
               }
-              const d = indice.modelo.cells[item.endereco]
+              if (item.tipo === 'verificacao') {
+                const marcado = !!estado?.verificacoes?.[item.endereco]
+                return (
+                  <label key={item.endereco} className={`${s.item} ${s.itemLargo} ${s.itemVerificacao}`}>
+                    <input
+                      type="checkbox"
+                      checked={marcado}
+                      disabled={!podeEntrada}
+                      onChange={() => onVerificacao?.(item.endereco, !marcado)}
+                    />
+                    <span>{item.rotulo}</span>
+                  </label>
+                )
+              }
+              const d = (indice.cells || indice.modelo.cells)[item.endereco]
               const editavel = item.tipo === 'revisao' ? podeRevisao : podeEntrada
               return (
                 <label key={item.endereco} className={`${s.item} ${item.multilinha ? s.itemLargo : ''}`}>

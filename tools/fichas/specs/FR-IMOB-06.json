@@ -1,0 +1,62 @@
+{
+  "codigo": "FR-IMOB-06",
+  "versao": "Rev00",
+  "nome": "Massa específica, densidade relativa e absorção de agregado graúdo",
+  "arquivo": "FR-IMOB-06_Rev00.xlsx",
+  "aba": "FR-IMOB-06 FRENTE",
+  "titulo_aba": "Frente",
+  "_nota": "Planilha-mestre Rev00 da Qualidade, sem alterações. Frente e verso em abas (botão Frente/Verso). Verso: identificação dos equipamentos e 5 pontos de verificação (caixas de seleção do Excel, detectadas automaticamente). Resultado: 1 linha por ensaio (decisão de 25/09). massa_seca = B−A; massa_submersa = D−C; massa_saturada = E−A; densidade_real = G as; densidade_aparente = G sb. densidade_efetiva fica vazia (a ficha não calcula).",
+  "pedido": {
+    "C5": "os",
+    "C6": "material",
+    "H6": "registro",
+    "D7": "procedencia",
+    "D8": "complemento"
+  },
+  "entradas": [
+    { "celulas": ["H5"], "tipo": "data" },
+    { "colunas": ["H", "I"], "linhas": ["13-17"], "tipo": "numero" }
+  ],
+  "assinaturas": { "executor": "D39", "calculista": "H39" },
+  "lista": {
+    "grupos": [
+      { "titulo": "Identificação", "celulas": ["H5"] },
+      { "titulo": "{n}º ensaio", "colunas": ["H", "I"] }
+    ]
+  },
+  "rotulos": {
+    "H5": "Data do ensaio",
+    "H13": "(A) Cesta vazia (g)", "I13": "(A) Cesta vazia (g)",
+    "H14": "(B) Cesta + amostra seca (g)", "I14": "(B) Cesta + amostra seca (g)",
+    "H15": "(C) Cesta imersa (g)", "I15": "(C) Cesta imersa (g)",
+    "H16": "(D) Cesta imersa + amostra (g)", "I16": "(D) Cesta imersa + amostra (g)",
+    "H17": "(E) Cesta + amostra saturada (g)", "I17": "(E) Cesta + amostra saturada (g)"
+  },
+  "abas_extras": [
+    {
+      "id": "VERSO",
+      "aba": "FR-IMOB-06 VERSO",
+      "titulo": "Verso",
+      "entradas": [
+        { "celulas": ["F7", "F8"], "tipo": "texto" }
+      ],
+      "rotulos": { "F7": "Balança — identificação", "F8": "Estufa — identificação" },
+      "lista": {
+        "grupos": [
+          { "titulo": "Equipamentos utilizados", "celulas": ["F7", "F8"] },
+          { "titulo": "Pontos de verificação", "linhas": "10-14" }
+        ]
+      }
+    }
+  ],
+  "resultados": [
+    {
+      "tabela": "resultado_densidade_agregado_graudo",
+      "linhas": [
+        { "quando": "=ISNUMBER(I20)", "campos": { "massa_seca_g": "=H14-H13", "massa_submersa_g": "=H16-H15", "massa_saturada_g": "=IF(ISNUMBER(H17),H17-H13,\"\")", "densidade_real": "=I20", "densidade_aparente": "=I23", "absorcao_pct": "=I34" } },
+        { "quando": "=ISNUMBER(I21)", "campos": { "massa_seca_g": "=I14-I13", "massa_submersa_g": "=I16-I15", "massa_saturada_g": "=IF(ISNUMBER(I17),I17-I13,\"\")", "densidade_real": "=I21", "densidade_aparente": "=I24", "absorcao_pct": "=I35" } }
+      ]
+    }
+  ],
+  "pedido_exemplo": {}
+}

@@ -47,7 +47,7 @@ const aleatorio = () => ((semente = (semente * 1103515245 + 12345) % 2147483648)
 function valoresAleatorios(indice, exemplo) {
   const out = {}
   for (const a of indice.papeis.entrada) {
-    const role = indice.modelo.cells[a].role
+    const role = indice.cells[a].role
     if (aleatorio() < 0.15) continue                                // alguns vazios, como na vida real
     if (role.dado === 'data') out[a] = 46000 + Math.floor(aleatorio() * 400)
     else if (role.dado === 'hora') out[a] = Math.floor(aleatorio() * 1440) / 1440
@@ -73,14 +73,14 @@ for (const arq of readdirSync(SAIDA).filter(f => f.endsWith('.modelo.json')).sor
   if (temExemplo) {
     const entradas = {}
     for (const a of [...indice.papeis.entrada, ...indice.papeis.revisao]) if (verif.exemplo[a] !== undefined) entradas[a] = verif.exemplo[a]
-    const motor = calcularFicha(indice, { entradas, escolhas: {} }, verif.pedido_exemplo)
+    const motor = calcularFicha(indice, { entradas, escolhas: {}, verificacoes: verif.verificacoes || {} }, verif.pedido_exemplo)
     const dif = comparar(indice, motor, verif.excel)
     console.log(`${nome}: exemplo do Excel → ${nFormulas - dif.length}/${nFormulas} fórmulas iguais`)
     dif.slice(0, 10).forEach(d => console.log(`   ✗ ${d.a}: sistema ${JSON.stringify(d.sistema)} · Excel ${JSON.stringify(d.excel)}`))
     falhas += dif.length
     const res = linhasResultado(mapa, motor)
     res.forEach(r => console.log(`   → ${r.tabela}: ${r.linhas.length} linha(s)`, JSON.stringify(r.linhas[0] || {})))
-    const dados = montarDados(indice, { entradas, escolhas: {} }, motor, { modeloId: 'teste' })
+    const dados = montarDados(indice, { entradas, escolhas: {}, verificacoes: verif.verificacoes || {} }, motor, { modeloId: 'teste' })
     console.log(`   → dados_resultado: ${Object.keys(dados.entradas).length} entradas, ${Object.keys(dados.calculados).length} calculados, ${JSON.stringify(dados).length} bytes`)
   } else {
     console.log(`${nome}: planilha sem dados de exemplo (use --libreoffice para conferir os cálculos)`)
@@ -101,15 +101,22 @@ for (const arq of readdirSync(SAIDA).filter(f => f.endsWith('.modelo.json')).sor
       const planilha = { ...entradas }
       for (const a of [...indice.papeis.entrada, ...indice.papeis.revisao, ...indice.papeis.pedido]) if (!(a in planilha)) planilha[a] = null
       for (const a of indice.papeis.escolha) {
-        const r = indice.modelo.cells[a].role
+        const r = indice.cells[a].role
         if (r.marca) planilha[a] = escolhas[r.grupo] === r.opcao ? r.marca : null
       }
       // fórmulas acrescentadas pela spec (não existem na planilha original): grava na cópia
-      for (const [a, d] of Object.entries(indice.modelo.cells)) if (d.fxi) planilha[a] = `=${d.fx}`
-      writeFileSync(arqIn, JSON.stringify(planilha))
-      execFileSync('python3', [join(AQUI, 'recalcular_libreoffice.py'), join(AQUI, 'planilhas', `${nome}.xlsx`), '', arqIn, arqOut])
-      const esperado = JSON.parse(readFileSync(arqOut, 'utf8'))
-      const motor = calcularFicha(indice, { entradas, escolhas }, {})
+      for (const [a, d] of Object.entries(indice.cells)) if (d.fxi) planilha[a] = `=${d.fx}`
+      // frente e verso: 'VERSO!F7' → '<nome da aba no Excel>!F7' (e de volta na saída)
+      const abasExcel = verif.abas_excel || {}
+      const paraExcel = a => { const m = /^([A-Z][A-Z0-9_]*)!(.+)$/.exec(a); return m && abasExcel[m[1]] ? `${abasExcel[m[1]]}!${m[2]}` : a }
+      const deExcel = Object.fromEntries(Object.entries(abasExcel).filter(([id]) => id).map(([id, nome]) => [nome, id]))
+      writeFileSync(arqIn, JSON.stringify(Object.fromEntries(Object.entries(planilha).map(([a, v]) => [paraExcel(a), v]))))
+      execFileSync('python3', [join(AQUI, 'recalcular_libreoffice.py'), join(AQUI, 'planilhas', `${nome}.xlsx`), abasExcel[''] || '', arqIn, arqOut])
+      const esperado = Object.fromEntries(Object.entries(JSON.parse(readFileSync(arqOut, 'utf8'))).map(([a, v]) => {
+        const i = a.lastIndexOf('!')
+        return [i > 0 && deExcel[a.slice(0, i)] ? `${deExcel[a.slice(0, i)]}!${a.slice(i + 1)}` : a, v]
+      }))
+      const motor = calcularFicha(indice, { entradas, escolhas, verificacoes: {} }, {})
       const dif = comparar(indice, motor, esperado)
       if (rodada === 1) {
         const res = linhasResultado(mapa, motor)

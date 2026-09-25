@@ -58,9 +58,28 @@ Requisitos: Python 3.10+ (`openpyxl`, `lxml`), Node 18+ e LibreOffice (só para 
                 "data_moldagem": { "expr": "=B20", "tipo": "data" } }                        // data → 'AAAA-MM-DD'
   } ],                                  // ou "linhas": [{ "quando": "…", "campos": {…} }, …]
 
+  // caixas de seleção do Excel (controles de formulário) viram "pontos de verificação" (☐/☒, cada uma
+  // independente). Detecção automática; a spec pode listar as células ou desligar com false.
+  // Caixas em células que já têm papel na spec (p.ex. Sim/Não em "escolhas") ficam como estão.
+  "verificacoes": "auto",
+
+  // frente e verso: outras abas da mesma planilha na mesma ficha (botão Frente/Verso, como as abas do Excel).
+  // Cada aba extra aceita as mesmas chaves de papéis (pedido, entradas, revisao, escolhas, verificacoes,
+  // formulas, limpar, mesclas_extras, lista, rotulos…). Endereços são os da própria aba.
+  // Fora dela (resultados, fórmulas da frente), use "VERSO!F7". Fórmulas entre abas do Excel funcionam.
+  "titulo_aba": "Frente",
+  "abas_extras": [ { "id": "VERSO", "aba": "FR-IMOB-06 VERSO", "titulo": "Verso",
+                     "entradas": [ { "celulas": ["F7", "F8"], "tipo": "texto" } ],
+                     "lista": { "grupos": [ { "titulo": "Pontos de verificação", "linhas": "10-14" } ] } } ],
+
   "pedido_exemplo": { "os": "…", "material": "…" }   // só para o teste
 }
 ```
+
+### Frente e verso
+- Cada aba é uma **folha** do modelo (`modelo.abas`); a impressão sai com **uma página A4 por aba**.
+- Dados salvos: `entradas` com endereço completo (`"VERSO!F7": "BAL-01"`) e `verificacoes` (`{"VERSO!B10": true}`).
+- O teste com LibreOffice grava e lê em todas as abas.
 
 ## Regras do conversor
 - **Fórmulas bloqueadas:** as aleatórias ou voláteis (`RANDBETWEEN`, `RAND`, `NOW`, `TODAY`, `INDIRECT`, `OFFSET`) nunca entram no sistema.

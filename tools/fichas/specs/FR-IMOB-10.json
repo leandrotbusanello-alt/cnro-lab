@@ -1,0 +1,42 @@
+{
+  "codigo": "FR-IMOB-10",
+  "versao": "Rev00",
+  "nome": "Densidade relativa máxima medida e massa específica máxima medida (Rice) — misturas asfálticas não compactadas",
+  "arquivo": "FR-IMOB-10_Rev00.xlsx",
+  "_nota": "Planilha-mestre Rev00 da Qualidade, sem alterações. Resultado: 1 linha por ensaio (decisão de 25/09). temperatura_c, gmm_referencia, diferenca_pct e conformidade ficam vazios: a ficha não tem esses campos.",
+  "pedido": {
+    "B7": { "campo": "os", "manter_texto": true },
+    "B8": { "campo": "material", "manter_texto": true },
+    "G8": { "campo": "registro", "manter_texto": true },
+    "B9": { "campo": "procedencia", "manter_texto": true },
+    "B10": { "campo": "complemento", "manter_texto": true }
+  },
+  "entradas": [
+    { "celulas": ["G7"], "tipo": "data", "manter_texto": true },
+    { "colunas": ["H", "I", "J"], "linhas": ["15-17"], "tipo": "numero" }
+  ],
+  "assinaturas": { "executor": "C29", "calculista": "G29" },
+  "lista": {
+    "grupos": [
+      { "titulo": "Identificação", "celulas": ["G7"] },
+      { "titulo": "{n}º ensaio", "colunas": ["H", "I", "J"] }
+    ]
+  },
+  "rotulos": {
+    "G7": "Data do ensaio",
+    "H15": "(A) Massa seca em ar (g)", "I15": "(A) Massa seca em ar (g)", "J15": "(A) Massa seca em ar (g)",
+    "H16": "(B) Recipiente com água (g)", "I16": "(B) Recipiente com água (g)", "J16": "(B) Recipiente com água (g)",
+    "H17": "(C) Recipiente + amostra submersa (g)", "I17": "(C) Recipiente + amostra submersa (g)", "J17": "(C) Recipiente + amostra submersa (g)"
+  },
+  "resultados": [
+    {
+      "tabela": "resultado_rice",
+      "linhas": [
+        { "quando": "=ISNUMBER(J19)", "campos": { "massa_amostra_seca_g": "=H15", "gmm_obtido": "=J19" } },
+        { "quando": "=ISNUMBER(J20)", "campos": { "massa_amostra_seca_g": "=I15", "gmm_obtido": "=J20" } },
+        { "quando": "=ISNUMBER(J21)", "campos": { "massa_amostra_seca_g": "=J15", "gmm_obtido": "=J21" } }
+      ]
+    }
+  ],
+  "pedido_exemplo": {}
+}

@@ -198,6 +198,25 @@ function comparar(a, b) {
 
 const media = l => l.reduce((s, x) => s + x, 0) / l.length
 
+/**
+ * Ajusta as abas das referências de uma fórmula:
+ *   sem aba → a aba da própria fórmula (null = principal);
+ *   com o nome do Excel → o id da aba na ficha (apelidos), '' → principal.
+ */
+function qualificar(ast, abaPadrao, apelidos) {
+  if (!ast || typeof ast !== 'object') return ast
+  if (ast.t === 'ref' || ast.t === 'rng') {
+    let aba = ast.aba
+    if (aba === null || aba === undefined) aba = abaPadrao
+    else if (Object.prototype.hasOwnProperty.call(apelidos, aba)) aba = apelidos[aba] || null
+    return aba === ast.aba ? ast : { ...ast, aba }
+  }
+  const out = { ...ast }
+  for (const k of ['a', 'b', 'e']) if (ast[k]) out[k] = qualificar(ast[k], abaPadrao, apelidos)
+  if (ast.args) out.args = ast.args.map(x => qualificar(x, abaPadrao, apelidos))
+  return out
+}
+
 // ── Motor ────────────────────────────────────────────────────────────────────
 
 export class Motor {
@@ -216,12 +235,18 @@ export class Motor {
 
   definir(endereco, valor) { this.valores.set(endereco, valor === undefined ? null : valor) }
 
-  /** Registra as fórmulas { 'D22': 'IFERROR(AVERAGE(D18:E21),"")', ... } e calcula a ordem de avaliação. */
-  definirFormulas(mapa) {
+  /**
+   * Registra as fórmulas { 'D22': 'IFERROR(AVERAGE(D18:E21),"")', 'VERSO!F9': 'F7*2', ... }
+   * e calcula a ordem de avaliação.
+   *   apelidos: nome da aba no Excel → id da aba na ficha ('' = aba principal).
+   *   Numa fórmula de outra aba ('VERSO!F9'), referência sem aba aponta para a própria aba.
+   */
+  definirFormulas(mapa, { apelidos = {} } = {}) {
     this.formulas.clear()
     for (const [a, src] of Object.entries(mapa)) {
       try {
-        const ast = analisar(src)
+        const abaDaFormula = separarEndereco(a)?.aba || null
+        const ast = qualificar(analisar(src), abaDaFormula, apelidos)
         this.formulas.set(a, { src, ast, deps: this.dependencias(ast) })
       } catch (e) {
         this.formulas.set(a, { src, ast: { t: 'e', v: '#NAME?' }, deps: [], erroAnalise: e.message })

@@ -44,12 +44,12 @@ function alinhamento(d) {
 }
 
 /**
- * Estrutura da tabela (calculada uma vez por modelo).
+ * Estrutura da tabela (calculada uma vez por folha).
  * soImpressao: só as colunas da área de impressão do Excel (sem as colunas "só de tela").
  */
-function montarEstrutura(indice, soImpressao) {
-  const { modelo, c1, r1, cobertas } = indice
-  const nCols = soImpressao ? indice.colsImpressao : modelo.cols.length
+function montarEstrutura(folha, soImpressao) {
+  const { modelo, c1, r1, cobertas } = folha
+  const nCols = soImpressao ? folha.colsImpressao : modelo.cols.length
   const linhas = []
   modelo.rows.forEach((altura, ri) => {
     const r = r1 + ri
@@ -65,7 +65,7 @@ function montarEstrutura(indice, soImpressao) {
       const vizinha = modelo.cells[colStr(c + cs) + r]
       const recortar = !d.w && vizinha && (vizinha.v !== undefined || vizinha.fx || vizinha.rt || vizinha.role)
       celulas.push({
-        a, d, rs, cs, h: Math.max(0, h - 1), oculta: largura === 0, soTela: ci >= indice.colsImpressao,
+        a, d, rs, cs, h: Math.max(0, h - 1), oculta: largura === 0, soTela: ci >= folha.colsImpressao,
         estilo: estiloTd(d), alinhamento: alinhamento(d), recortar,
         papel: d.role?.tipo || null,
       })
@@ -101,20 +101,25 @@ function MarcaAssinatura({ assinatura, linhasTexto }) {
 /**
  * Props
  *   indice, motor, estado        ficha (ver motor/ficha.js)
+ *   folha       qual aba desenhar (indice.folhas[i]); padrão: a principal (frente)
  *   modo        'preencher' | 'revisao' | 'leitura'
  *   destacar    realça os campos por tipo (não usar na impressão)
  *   bloqueado   ficha assinada: campos travados
  *   assinaturas { executor: {nome, url, em} | null, calculista: … }
  *   escala      número fixo (impressão); sem ele, ajusta à largura disponível
  *   idBase      prefixo dos ids dos campos (navegação com Enter)
- *   onEntrada(endereco, valor) · onEscolha(grupo, opcao) · onCliqueAssinatura(quem, elemento)
+ *   onEntrada(endereco, valor) · onEscolha(grupo, opcao) · onVerificacao(endereco, marcado)
+ *   onCliqueAssinatura(quem, elemento)
+ * Endereços passados para fora (estado, motor, callbacks) são os completos: 'B7' ou 'VERSO!B7'.
  */
 export default function FichaGrade({
-  indice, motor, estado, modo = 'leitura', destacar = false, bloqueado = false, assinaturas = {},
-  escala: escalaFixa, idBase = 'ficha', soImpressao = false, onEntrada, onEscolha, onCliqueAssinatura,
+  indice, folha: folhaProp, motor, estado, modo = 'leitura', destacar = false, bloqueado = false, assinaturas = {},
+  escala: escalaFixa, idBase = 'ficha', soImpressao = false, onEntrada, onEscolha, onVerificacao, onCliqueAssinatura,
 }) {
-  const estrutura = useMemo(() => montarEstrutura(indice, soImpressao), [indice, soImpressao])
-  const largura = soImpressao ? indice.larguraImpressao : indice.largura
+  const folha = folhaProp || indice.folhas?.[0] || indice
+  const pre = folha.prefixo || ''
+  const estrutura = useMemo(() => montarEstrutura(folha, soImpressao), [folha, soImpressao])
+  const largura = soImpressao ? folha.larguraImpressao : folha.largura
   const caixa = useRef(null)
   const [escalaAuto, setEscalaAuto] = useState(1)
 
@@ -134,10 +139,10 @@ export default function FichaGrade({
   const escala = escalaFixa || escalaAuto
   const podeEntrada = !bloqueado && (modo === 'preencher' || modo === 'revisao')
   const podeRevisao = !bloqueado && modo === 'revisao'
-  const ordem = indice.ordemDigitacao
+  const ordem = folha.ordemDigitacao
 
   function navegar(a, passo) {
-    const lista = modo === 'revisao' ? [...ordem, ...indice.papeis.revisao] : ordem
+    const lista = modo === 'revisao' ? [...ordem, ...(folha.revisao || indice.papeis.revisao)] : ordem
     const i = lista.indexOf(a)
     const prox = lista[i + passo]
     if (prox) document.getElementById(`${idBase}-${prox}`)?.focus()
@@ -145,7 +150,8 @@ export default function FichaGrade({
   }
 
   function conteudo(cel) {
-    const { a, d, papel } = cel
+    const { d, papel } = cel
+    const a = pre + cel.a
     if (papel === 'entrada' || papel === 'revisao') {
       const editavel = papel === 'entrada' ? podeEntrada : podeRevisao
       const campo = (
@@ -177,6 +183,13 @@ export default function FichaGrade({
     if (papel === 'escolha') {
       const marcado = estado?.escolhas?.[d.role.grupo] === d.role.opcao
       texto = d.role.marca ? (marcado ? d.role.marca : '') : `${marcado ? '☒' : '☐'} ${d.role.texto}`
+    } else if (papel === 'verificacao') {
+      const marcado = !!estado?.verificacoes?.[a]
+      return (
+        <div className={s.cc} style={{ height: cel.h, justifyContent: jc(cel), textAlign: 'center' }}>
+          <span><span className={s.verificacao}>{marcado ? '☒' : '☐'}</span>{d.role.texto ? ` ${d.role.texto}` : ''}</span>
+        </div>
+      )
     } else if (d.rt) {
       return <div className={`${s.cc} ${d.w ? s.quebra : ''}`} style={{ height: cel.h, justifyContent: jc(cel), textAlign: cel.alinhamento || undefined }}><span><Trechos rt={d.rt} /></span></div>
     } else if (d.fx || papel === 'pedido') {
@@ -213,10 +226,10 @@ export default function FichaGrade({
       if (p === 'entrada') out.push(podeEntrada ? s.dEntrada : s.dEntradaFixa)
       if (p === 'pedido') out.push(s.dPedido)
       if (p === 'revisao' && modo === 'revisao') out.push(podeRevisao ? s.dRevisao : s.dEntradaFixa)
-      if (p === 'escolha') out.push(podeEntrada ? s.dEntrada : s.dEntradaFixa)
+      if (p === 'escolha' || p === 'verificacao') out.push(podeEntrada ? s.dEntrada : s.dEntradaFixa)
       if (p === 'assinatura') out.push(s.dAssinatura)
     }
-    if (p === 'escolha' && podeEntrada) out.push(s.clicavel)
+    if ((p === 'escolha' || p === 'verificacao') && podeEntrada) out.push(s.clicavel)
     if (p === 'assinatura' && modo !== 'leitura') out.push(s.clicavel)
     return out.join(' ')
   }
@@ -225,13 +238,16 @@ export default function FichaGrade({
     if (cel.papel === 'escolha' && podeEntrada) {
       const { grupo, opcao } = cel.d.role
       onEscolha?.(grupo, estado?.escolhas?.[grupo] === opcao ? null : opcao)
+    } else if (cel.papel === 'verificacao' && podeEntrada) {
+      const a = pre + cel.a
+      onVerificacao?.(a, !estado?.verificacoes?.[a])
     } else if (cel.papel === 'assinatura' && modo !== 'leitura') {
       onCliqueAssinatura?.(cel.d.role.quem, e.currentTarget)
     }
   }
 
   function aoTeclar(cel, e) {
-    if ((e.key === 'Enter' || e.key === ' ') && (cel.papel === 'escolha' || cel.papel === 'assinatura')) {
+    if ((e.key === 'Enter' || e.key === ' ') && (cel.papel === 'escolha' || cel.papel === 'verificacao' || cel.papel === 'assinatura')) {
       e.preventDefault()
       aoClicar(cel, e)
     }
@@ -239,15 +255,22 @@ export default function FichaGrade({
 
   return (
     <div ref={caixa} className={s.caixaGrade} style={escalaFixa ? { width: largura * escala } : undefined}>
-      <div style={{ width: largura * escala, height: indice.altura * escala, position: 'relative' }}>
-        <div className={s.folhaGrade} style={{ width: largura, height: indice.altura, transform: `scale(${escala})` }}>
+      <div className={s.escalaGrade} style={{ width: largura * escala, height: folha.altura * escala }}>
+        {/* Impressão (escala fixa): zoom em vez de transform. Com transform, a folha continua ocupando o
+            tamanho original na paginação e o navegador quebra a ficha em duas páginas. */}
+        <div
+          className={s.folhaGrade}
+          style={escalaFixa
+            ? { width: largura, height: folha.altura, zoom: escala }
+            : { width: largura, height: folha.altura, transform: `scale(${escala})` }}
+        >
           <table className={s.grade} style={{ width: largura }}>
-            <colgroup>{indice.modelo.cols.slice(0, soImpressao ? indice.colsImpressao : undefined).map((w, i) => <col key={i} style={{ width: w }} />)}</colgroup>
+            <colgroup>{folha.modelo.cols.slice(0, soImpressao ? folha.colsImpressao : undefined).map((w, i) => <col key={i} style={{ width: w }} />)}</colgroup>
             <tbody>
               {estrutura.map(linha => (
                 <tr key={linha.r} style={{ height: linha.altura }}>
                   {linha.celulas.map(cel => {
-                    const interativa = (cel.papel === 'escolha' && podeEntrada) || (cel.papel === 'assinatura' && modo !== 'leitura')
+                    const interativa = ((cel.papel === 'escolha' || cel.papel === 'verificacao') && podeEntrada) || (cel.papel === 'assinatura' && modo !== 'leitura')
                     return (
                       <td
                         key={cel.a}
@@ -259,7 +282,8 @@ export default function FichaGrade({
                         onClick={interativa ? e => aoClicar(cel, e) : undefined}
                         onKeyDown={interativa ? e => aoTeclar(cel, e) : undefined}
                         tabIndex={interativa ? 0 : undefined}
-                        role={interativa ? 'button' : undefined}
+                        role={interativa ? (cel.papel === 'verificacao' ? 'checkbox' : 'button') : undefined}
+                        aria-checked={cel.papel === 'verificacao' ? !!estado?.verificacoes?.[pre + cel.a] : undefined}
                       >
                         {conteudo(cel)}
                         {cel.papel === 'assinatura' && (
@@ -275,7 +299,7 @@ export default function FichaGrade({
               ))}
             </tbody>
           </table>
-          {indice.modelo.imgs.map((im, i) => (
+          {folha.modelo.imgs.map((im, i) => (
             <img key={i} className={s.imagem} alt="" src={im.src} style={{ left: im.x, top: im.y, width: im.w, height: im.h }} />
           ))}
         </div>

@@ -1,0 +1,43 @@
+{
+  "codigo": "FR-IMOB-07",
+  "versao": "Rev00",
+  "nome": "Massa específica, densidade relativa e absorção de agregado miúdo",
+  "arquivo": "FR-IMOB-07_Rev00.xlsx",
+  "_nota": "Planilha-mestre Rev00 da Qualidade, sem alterações (a aba ainda se chama FR-LAB-31_REV.03). Resultado: 1 linha por ensaio (decisão de 25/09). massa_seca = B−A; massa_saturada = E−A; densidade_real = G sa; densidade_aparente = G sb. densidade_efetiva fica vazia (a ficha não calcula).",
+  "pedido": {
+    "C5": "os",
+    "C6": "material",
+    "F6": "registro",
+    "D7": "procedencia",
+    "D8": "complemento"
+  },
+  "entradas": [
+    { "celulas": ["F5"], "tipo": "data" },
+    { "colunas": ["F", "G"], "linhas": ["13-17"], "tipo": "numero" }
+  ],
+  "assinaturas": { "executor": "D39", "calculista": "F39" },
+  "lista": {
+    "grupos": [
+      { "titulo": "Identificação", "celulas": ["F5"] },
+      { "titulo": "{n}º ensaio", "colunas": ["F", "G"] }
+    ]
+  },
+  "rotulos": {
+    "F5": "Data do ensaio",
+    "F13": "(A) Picnômetro (g)", "G13": "(A) Picnômetro (g)",
+    "F14": "(B) Picnômetro + amostra seca (g)", "G14": "(B) Picnômetro + amostra seca (g)",
+    "F15": "(C) Picnômetro + amostra + água (g)", "G15": "(C) Picnômetro + amostra + água (g)",
+    "F16": "(D) Picnômetro + água (g)", "G16": "(D) Picnômetro + água (g)",
+    "F17": "(E) Picnômetro + massa saturada (g)", "G17": "(E) Picnômetro + massa saturada (g)"
+  },
+  "resultados": [
+    {
+      "tabela": "resultado_densidade_agregado_miudo",
+      "linhas": [
+        { "quando": "=ISNUMBER(G20)", "campos": { "massa_seca_g": "=F14-F13", "massa_saturada_g": "=IF(ISNUMBER(F17),F17-F13,\"\")", "densidade_real": "=G20", "densidade_aparente": "=G23", "absorcao_pct": "=G34" } },
+        { "quando": "=ISNUMBER(G21)", "campos": { "massa_seca_g": "=G14-G13", "massa_saturada_g": "=IF(ISNUMBER(G17),G17-G13,\"\")", "densidade_real": "=G21", "densidade_aparente": "=G24", "absorcao_pct": "=G35" } }
+      ]
+    }
+  ],
+  "pedido_exemplo": {}
+}
