@@ -1,0 +1,46 @@
+{
+ "_nota": "Dados fictícios de conferência (lote 6). Conta à mão em esperado_lote6.",
+ "pedido": {
+  "os": "OS-0412/2026",
+  "material": "Solo — subleito",
+  "registro": "AM-2026-0981",
+  "procedencia": "BR-163 km 512",
+  "complemento": "Teste de conferência (dados fictícios)"
+ },
+ "estado": {
+  "entradas": {
+   "J7": 46293,
+   "D17": "12",
+   "E17": "27",
+   "D18": 125.4,
+   "D19": 118.2,
+   "D20": 25.1,
+   "E18": 130.0,
+   "E19": 122.5,
+   "E20": 24.8,
+   "I17": "—",
+   "I19": 2500.0,
+   "K17": "—",
+   "K19": 110.0,
+   "E30": 0,
+   "E31": 85.3,
+   "E32": 310.6,
+   "E33": 180.2,
+   "E34": 160.4,
+   "E35": 38.5,
+   "E36": 22.7,
+   "K35": "B",
+   "VERSO!E6": "BAL-03",
+   "VERSO!E7": "EST-01",
+   "VERSO!E8": "PEN-50",
+   "VERSO!E14": "PEN-200"
+  },
+  "escolhas": {},
+  "verificacoes": {
+   "VERSO!A16": true,
+   "VERSO!A17": true,
+   "VERSO!A18": true,
+   "VERSO!A19": true
+  }
+ }
+}

@@ -1,0 +1,397 @@
+{
+  "codigo": "FR-IMOB-38",
+  "versao": "Rev00",
+  "nome": "Controle de espessuras",
+  "arquivo": "FR-IMOB-38_Rev00.xlsx",
+  "titulo_aba": "Frente",
+  "_nota": "Planilha-mestre Rev00 sem alterações (sem exemplo; lote 6, 28/09). 25 linhas (15–39). A mestre não tem fórmulas; acrescentada por decisão do usuário a média das espessuras (F40). Sem tabela resultado_* própria: fica em dados_resultado (resultado_densidade_cbuq é da densidade do CBUQ e ficaria com linhas só de espessura).",
+  "pedido": {
+    "B7": {
+      "campo": "os",
+      "manter_texto": true
+    },
+    "B8": {
+      "campo": "material",
+      "manter_texto": true
+    },
+    "E8": {
+      "campo": "registro",
+      "manter_texto": true
+    },
+    "B9": {
+      "campo": "procedencia",
+      "manter_texto": true
+    },
+    "B10": {
+      "campo": "complemento",
+      "manter_texto": true
+    }
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "E7"
+      ],
+      "tipo": "data",
+      "manter_texto": true
+    },
+    {
+      "colunas": [
+        "B",
+        "C",
+        "D",
+        "E"
+      ],
+      "linhas": [
+        "15-39"
+      ],
+      "tipo": "texto"
+    },
+    {
+      "colunas": [
+        "F"
+      ],
+      "linhas": [
+        "15-39"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "formulas": {
+    "F40": "=IF(COUNT(F15:F39)=0,\"\",AVERAGE(F15:F39))"
+  },
+  "formatos": {
+    "F15:F40": "0.0"
+  },
+  "assinaturas": {
+    "executor": "B42",
+    "calculista": "E42"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "E7"
+        ]
+      },
+      {
+        "titulo": "Pontos 1–5",
+        "celulas": [
+          "B15",
+          "C15",
+          "D15",
+          "E15",
+          "F15",
+          "B16",
+          "C16",
+          "D16",
+          "E16",
+          "F16",
+          "B17",
+          "C17",
+          "D17",
+          "E17",
+          "F17",
+          "B18",
+          "C18",
+          "D18",
+          "E18",
+          "F18",
+          "B19",
+          "C19",
+          "D19",
+          "E19",
+          "F19"
+        ]
+      },
+      {
+        "titulo": "Pontos 6–10",
+        "celulas": [
+          "B20",
+          "C20",
+          "D20",
+          "E20",
+          "F20",
+          "B21",
+          "C21",
+          "D21",
+          "E21",
+          "F21",
+          "B22",
+          "C22",
+          "D22",
+          "E22",
+          "F22",
+          "B23",
+          "C23",
+          "D23",
+          "E23",
+          "F23",
+          "B24",
+          "C24",
+          "D24",
+          "E24",
+          "F24"
+        ]
+      },
+      {
+        "titulo": "Pontos 11–15",
+        "celulas": [
+          "B25",
+          "C25",
+          "D25",
+          "E25",
+          "F25",
+          "B26",
+          "C26",
+          "D26",
+          "E26",
+          "F26",
+          "B27",
+          "C27",
+          "D27",
+          "E27",
+          "F27",
+          "B28",
+          "C28",
+          "D28",
+          "E28",
+          "F28",
+          "B29",
+          "C29",
+          "D29",
+          "E29",
+          "F29"
+        ]
+      },
+      {
+        "titulo": "Pontos 16–20",
+        "celulas": [
+          "B30",
+          "C30",
+          "D30",
+          "E30",
+          "F30",
+          "B31",
+          "C31",
+          "D31",
+          "E31",
+          "F31",
+          "B32",
+          "C32",
+          "D32",
+          "E32",
+          "F32",
+          "B33",
+          "C33",
+          "D33",
+          "E33",
+          "F33",
+          "B34",
+          "C34",
+          "D34",
+          "E34",
+          "F34"
+        ]
+      },
+      {
+        "titulo": "Pontos 21–25",
+        "celulas": [
+          "B35",
+          "C35",
+          "D35",
+          "E35",
+          "F35",
+          "B36",
+          "C36",
+          "D36",
+          "E36",
+          "F36",
+          "B37",
+          "C37",
+          "D37",
+          "E37",
+          "F37",
+          "B38",
+          "C38",
+          "D38",
+          "E38",
+          "F38",
+          "B39",
+          "C39",
+          "D39",
+          "E39",
+          "F39"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "E7": "Data do ensaio",
+    "B15": "Nº",
+    "C15": "Km",
+    "D15": "Sentido",
+    "E15": "Faixa",
+    "F15": "Espessura (cm)",
+    "B16": "Nº",
+    "C16": "Km",
+    "D16": "Sentido",
+    "E16": "Faixa",
+    "F16": "Espessura (cm)",
+    "B17": "Nº",
+    "C17": "Km",
+    "D17": "Sentido",
+    "E17": "Faixa",
+    "F17": "Espessura (cm)",
+    "B18": "Nº",
+    "C18": "Km",
+    "D18": "Sentido",
+    "E18": "Faixa",
+    "F18": "Espessura (cm)",
+    "B19": "Nº",
+    "C19": "Km",
+    "D19": "Sentido",
+    "E19": "Faixa",
+    "F19": "Espessura (cm)",
+    "B20": "Nº",
+    "C20": "Km",
+    "D20": "Sentido",
+    "E20": "Faixa",
+    "F20": "Espessura (cm)",
+    "B21": "Nº",
+    "C21": "Km",
+    "D21": "Sentido",
+    "E21": "Faixa",
+    "F21": "Espessura (cm)",
+    "B22": "Nº",
+    "C22": "Km",
+    "D22": "Sentido",
+    "E22": "Faixa",
+    "F22": "Espessura (cm)",
+    "B23": "Nº",
+    "C23": "Km",
+    "D23": "Sentido",
+    "E23": "Faixa",
+    "F23": "Espessura (cm)",
+    "B24": "Nº",
+    "C24": "Km",
+    "D24": "Sentido",
+    "E24": "Faixa",
+    "F24": "Espessura (cm)",
+    "B25": "Nº",
+    "C25": "Km",
+    "D25": "Sentido",
+    "E25": "Faixa",
+    "F25": "Espessura (cm)",
+    "B26": "Nº",
+    "C26": "Km",
+    "D26": "Sentido",
+    "E26": "Faixa",
+    "F26": "Espessura (cm)",
+    "B27": "Nº",
+    "C27": "Km",
+    "D27": "Sentido",
+    "E27": "Faixa",
+    "F27": "Espessura (cm)",
+    "B28": "Nº",
+    "C28": "Km",
+    "D28": "Sentido",
+    "E28": "Faixa",
+    "F28": "Espessura (cm)",
+    "B29": "Nº",
+    "C29": "Km",
+    "D29": "Sentido",
+    "E29": "Faixa",
+    "F29": "Espessura (cm)",
+    "B30": "Nº",
+    "C30": "Km",
+    "D30": "Sentido",
+    "E30": "Faixa",
+    "F30": "Espessura (cm)",
+    "B31": "Nº",
+    "C31": "Km",
+    "D31": "Sentido",
+    "E31": "Faixa",
+    "F31": "Espessura (cm)",
+    "B32": "Nº",
+    "C32": "Km",
+    "D32": "Sentido",
+    "E32": "Faixa",
+    "F32": "Espessura (cm)",
+    "B33": "Nº",
+    "C33": "Km",
+    "D33": "Sentido",
+    "E33": "Faixa",
+    "F33": "Espessura (cm)",
+    "B34": "Nº",
+    "C34": "Km",
+    "D34": "Sentido",
+    "E34": "Faixa",
+    "F34": "Espessura (cm)",
+    "B35": "Nº",
+    "C35": "Km",
+    "D35": "Sentido",
+    "E35": "Faixa",
+    "F35": "Espessura (cm)",
+    "B36": "Nº",
+    "C36": "Km",
+    "D36": "Sentido",
+    "E36": "Faixa",
+    "F36": "Espessura (cm)",
+    "B37": "Nº",
+    "C37": "Km",
+    "D37": "Sentido",
+    "E37": "Faixa",
+    "F37": "Espessura (cm)",
+    "B38": "Nº",
+    "C38": "Km",
+    "D38": "Sentido",
+    "E38": "Faixa",
+    "F38": "Espessura (cm)",
+    "B39": "Nº",
+    "C39": "Km",
+    "D39": "Sentido",
+    "E39": "Faixa",
+    "F39": "Espessura (cm)"
+  },
+  "abas_extras": [
+    {
+      "id": "VERSO",
+      "aba": "VERSO",
+      "titulo": "Verso",
+      "entradas": [
+        {
+          "celulas": [
+            "C6",
+            "C7",
+            "C8"
+          ],
+          "tipo": "texto"
+        }
+      ],
+      "rotulos": {
+        "C6": "Escala de aço — identificação",
+        "C7": "Trena — identificação",
+        "C8": "Paquímetro — identificação"
+      },
+      "lista": {
+        "grupos": [
+          {
+            "titulo": "Equipamentos utilizados",
+            "celulas": [
+              "C6",
+              "C7",
+              "C8"
+            ]
+          },
+          {
+            "titulo": "Pontos de verificação",
+            "linhas": "10-12"
+          }
+        ]
+      }
+    }
+  ],
+  "pedido_exemplo": {}
+}

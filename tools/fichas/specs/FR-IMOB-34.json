@@ -1,0 +1,239 @@
+{
+  "codigo": "FR-IMOB-34",
+  "versao": "Rev00",
+  "nome": "Granulometria por peneiramento",
+  "arquivo": "FR-IMOB-34_Rev00.xlsx",
+  "titulo_aba": "Frente",
+  "_nota": "Planilha-mestre Rev00 sem alterações (sem exemplo preenchido; modelada em 28/09, lote 6). A mestre calcula umidade, amostra total/parcial, K1 = 100/Ms e K2 = %passante nº10 / Ms parcial, mas não tem as colunas \"peso que passa\" e \"% passa\". Fórmulas acrescentadas por decisão do usuário (28/09): amostra total (2\" a nº 10): peso que passa = Ms seca − retidos acumulados, % passa = peso que passa × K1; amostra parcial (nº 40 e nº 200): peso que passa = Ms parcial seca − retidos acumulados, % passa = peso que passa × K2 (DNER-ME 080). Peneira em branco conta como zero quando há peneira preenchida abaixo. L31 (K2) protegida contra \"% nº 10\" vazio. Faixa (K35): a mestre repetia fixo o \"A\" da tabela DNIT 141 (fora da ficha); virou lista A–F (só registro). Linhas 37–70: quadro vazio da mestre (provável lugar da curva, sem gráfico) — mantido. Tara das cápsulas digitada (cadastro de taras pendente). Resultado: 1 linha em resultado_granulometria (% passante por peneira).",
+  "pedido": {
+    "C7": "os",
+    "C8": "material",
+    "J8": "registro",
+    "D9": "procedencia",
+    "D10": "complemento"
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "J7"
+      ],
+      "tipo": "data"
+    },
+    {
+      "celulas": [
+        "D17",
+        "E17",
+        "I17",
+        "K17"
+      ],
+      "tipo": "texto"
+    },
+    {
+      "celulas": [
+        "D18",
+        "E18",
+        "D19",
+        "E19",
+        "D20",
+        "E20",
+        "I18",
+        "K18",
+        "I19",
+        "K19"
+      ],
+      "tipo": "numero"
+    },
+    {
+      "colunas": [
+        "E"
+      ],
+      "linhas": [
+        "30-36"
+      ],
+      "tipo": "numero"
+    },
+    {
+      "celulas": [
+        "K35"
+      ],
+      "tipo": "texto",
+      "opcoes": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F"
+      ]
+    }
+  ],
+  "formulas": {
+    "F30": "=IF(OR($I$23=\"\",COUNT(E30:$E$34)=0),\"\",$I$23-SUM($E$30:E30))",
+    "G30": "=IF(OR(F30=\"\",$L$29=\"\"),\"\",F30*$L$29)",
+    "F31": "=IF(OR($I$23=\"\",COUNT(E31:$E$34)=0),\"\",$I$23-SUM($E$30:E31))",
+    "G31": "=IF(OR(F31=\"\",$L$29=\"\"),\"\",F31*$L$29)",
+    "F32": "=IF(OR($I$23=\"\",COUNT(E32:$E$34)=0),\"\",$I$23-SUM($E$30:E32))",
+    "G32": "=IF(OR(F32=\"\",$L$29=\"\"),\"\",F32*$L$29)",
+    "F33": "=IF(OR($I$23=\"\",COUNT(E33:$E$34)=0),\"\",$I$23-SUM($E$30:E33))",
+    "G33": "=IF(OR(F33=\"\",$L$29=\"\"),\"\",F33*$L$29)",
+    "F34": "=IF(OR($I$23=\"\",COUNT(E34:$E$34)=0),\"\",$I$23-SUM($E$30:E34))",
+    "G34": "=IF(OR(F34=\"\",$L$29=\"\"),\"\",F34*$L$29)",
+    "F35": "=IF(OR($K$23=\"\",COUNT(E35:$E$36)=0),\"\",$K$23-SUM($E$35:E35))",
+    "G35": "=IF(OR(F35=\"\",$L$31=\"\"),\"\",F35*$L$31)",
+    "F36": "=IF(OR($K$23=\"\",COUNT(E36:$E$36)=0),\"\",$K$23-SUM($E$35:E36))",
+    "G36": "=IF(OR(F36=\"\",$L$31=\"\"),\"\",F36*$L$31)",
+    "L31": "=IF(OR(K23=\"\",G34=\"\"),\"\",G34/K23)"
+  },
+  "assinaturas": {
+    "executor": "B73",
+    "calculista": "H73"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "J7"
+        ]
+      },
+      {
+        "titulo": "Umidade",
+        "celulas": [
+          "D17",
+          "D18",
+          "D19",
+          "D20",
+          "E17",
+          "E18",
+          "E19",
+          "E20"
+        ]
+      },
+      {
+        "titulo": "Amostra",
+        "celulas": [
+          "I17",
+          "I18",
+          "I19",
+          "K17",
+          "K18",
+          "K19"
+        ]
+      },
+      {
+        "titulo": "Peneiramento",
+        "celulas": [
+          "E30",
+          "E31",
+          "E32",
+          "E33",
+          "E34",
+          "E35",
+          "E36",
+          "K35"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "J7": "Data do ensaio",
+    "D17": "Umidade 1 — cápsula nº",
+    "E17": "Umidade 2 — cápsula nº",
+    "D18": "Umidade 1 — peso bruto úmido (g)",
+    "E18": "Umidade 2 — peso bruto úmido (g)",
+    "D19": "Umidade 1 — peso bruto seco (g)",
+    "E19": "Umidade 2 — peso bruto seco (g)",
+    "D20": "Umidade 1 — peso da cápsula (g)",
+    "E20": "Umidade 2 — peso da cápsula (g)",
+    "I17": "Amostra total — cápsula nº",
+    "K17": "Amostra parcial — cápsula nº",
+    "I18": "Amostra total — peso úmido (g) (linha 18)",
+    "K18": "Amostra parcial — peso úmido (g) (linha 18)",
+    "I19": "Amostra total — peso úmido (g)",
+    "K19": "Amostra parcial — peso úmido (g)",
+    "K35": "Faixa (DNIT 141-ES)",
+    "E30": "Peso retido parcial na peneira 2\" (g)",
+    "E31": "Peso retido parcial na peneira 1\" (g)",
+    "E32": "Peso retido parcial na peneira 3/8\" (g)",
+    "E33": "Peso retido parcial na peneira nº 4 (g)",
+    "E34": "Peso retido parcial na peneira nº 10 (g)",
+    "E35": "Peso retido parcial na peneira nº 40 (g)",
+    "E36": "Peso retido parcial na peneira nº 200 (g)"
+  },
+  "abas_extras": [
+    {
+      "id": "VERSO",
+      "aba": "Granulometria Peneiramento VERS",
+      "titulo": "Verso",
+      "entradas": [
+        {
+          "celulas": [
+            "E6",
+            "E7",
+            "E8",
+            "E9",
+            "E10",
+            "E11",
+            "E12",
+            "E13",
+            "E14"
+          ],
+          "tipo": "texto"
+        }
+      ],
+      "rotulos": {
+        "E6": "Balança — identificação",
+        "E7": "Estufa — identificação",
+        "E8": "Peneira 2\" — identificação",
+        "E9": "Peneira 1\" — identificação",
+        "E10": "Peneira 3/8\" — identificação",
+        "E11": "Peneira nº 4 — identificação",
+        "E12": "Peneira nº 10 — identificação",
+        "E13": "Peneira nº 40 — identificação",
+        "E14": "Peneira nº 200 — identificação"
+      },
+      "lista": {
+        "grupos": [
+          {
+            "titulo": "Equipamentos utilizados",
+            "celulas": [
+              "E6",
+              "E7",
+              "E8",
+              "E9",
+              "E10",
+              "E11",
+              "E12",
+              "E13",
+              "E14"
+            ]
+          },
+          {
+            "titulo": "Pontos de verificação",
+            "linhas": "16-19"
+          }
+        ]
+      }
+    }
+  ],
+  "resultados": [
+    {
+      "tabela": "resultado_granulometria",
+      "linhas": [
+        {
+          "quando": "=COUNT(G30:G36)>0",
+          "campos": {
+            "p_2pol_pct": "=G30",
+            "p_1pol_pct": "=G31",
+            "p_38pol_pct": "=G32",
+            "p_4_pct": "=G33",
+            "p_10_pct": "=G34",
+            "p_40_pct": "=G35",
+            "p_200_pct": "=G36"
+          }
+        }
+      ]
+    }
+  ],
+  "pedido_exemplo": {}
+}

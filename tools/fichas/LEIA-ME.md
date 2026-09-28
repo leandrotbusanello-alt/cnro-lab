@@ -9,7 +9,8 @@ A **spec** só diz o papel de cada célula (quem preenche o quê) e como gerar o
 1. Coloque a planilha em `planilhas/<CODIGO>_<REV>.xlsx`. Use a versão **com fórmulas e sem dados**; se tiver um exemplo preenchido, melhor ainda, porque ele vira teste automático.
 2. Crie `specs/<CODIGO>.json` (modelo abaixo; veja as specs existentes).
 3. Rode `python3 tools/fichas/converter.py <CODIGO>` e resolva os avisos ⚠.
-4. Rode `node tools/fichas/testar_motor.mjs --libreoffice`. Todas as fórmulas precisam conferir.
+4. Rode `node tools/fichas/testar_motor.mjs --libreoffice` (ou só as fichas novas: `… --libreoffice FR-IMOB-34 FR-IMOB-35`). Todas as fórmulas precisam conferir.
+   Confira também com conta à mão e a prévia de impressão (ver "Ferramentas de conferência").
 5. Rode `python3 tools/fichas/converter.py` (sem código): isso regenera `supabase/migrations/13b_fichas_modelo_carga.sql`, que é rodado no SQL Editor.
 
 **Revisão nova (Rev01):** troque `versao` e `arquivo` na spec e gere de novo. Os ensaios já iniciados continuam na revisão anterior.
@@ -86,7 +87,8 @@ Requisitos: Python 3.10+ (`openpyxl`, `lxml`), Node 18+ e LibreOffice (só para 
   Não é preciso declarar nada na spec; o conversor segue as referências das fórmulas.
 
 ### Frente e verso
-- Cada aba é uma **folha** do modelo (`modelo.abas`); a impressão sai com **uma página A4 por aba**.
+- Cada aba é uma **folha** do modelo (`modelo.abas`); a impressão sai com **uma página A4 por aba**
+  (exceto a folha longa com altura automática — ver "Quebra de página").
 - Dados salvos: `entradas` com endereço completo (`"VERSO!F7": "BAL-01"`) e `verificacoes` (`{"VERSO!B10": true}`).
 - O teste com LibreOffice grava e lê em todas as abas.
 
@@ -135,6 +137,29 @@ Requisitos: Python 3.10+ (`openpyxl`, `lxml`), Node 18+ e LibreOffice (só para 
   **vazio**, **valor da célula** (=, ≠, >, <, ≥, ≤, entre) e **expressão simples** do tipo `$S$16<>100`.
 - Estilos: cor da fonte, preenchimento, negrito, itálico. Tipo não suportado gera aviso ⚠.
 - Erros digitados como valor na planilha (`#N/A` em tabela de faixas) continuam erro no motor, como no Excel.
+
+### Quebra de página (impressão)
+- Planilha com "ajustar à largura" e **altura automática** (`fitToHeight = 0`, `pagina.ajuste = [1, 0]`): se a folha, na escala
+  da largura, passa de **1,25 página**, ela sai em **várias páginas A4**, cortadas entre linhas, como no Excel (FR-IMOB-37, 124 linhas → 3 páginas).
+  Até 1,25 página ela é reduzida para caber numa página (a ficha física é uma página por aba; FR-06 e FR-30 passam 6% e 12%).
+- O corte não cai no meio de uma mescla vertical (sobe para o início dela); mescla mais alta que uma página é cortada.
+- Código: `paginaDa`/`cortarEmPaginas` em `src/modules/fichas/components/ImpressaoFicha.jsx`. Sem cabeçalho repetido (as planilhas não usam "linhas a repetir").
+
+## Ferramentas de conferência (`tools/fichas/previa/`)
+Requisitos extras: Python `playwright` (Chromium já instalado) e `pdftoppm`; `Pillow` para comparar imagens.
+- **Prévia no navegador:** `npx vite --config tools/fichas/previa/vite.config.mjs` → `http://localhost:5199/?ficha=FR-IMOB-37_Rev00&estado=aleatorio&modo=impressao`
+  (`estado` = arquivo de `estados/` sem `.json`, `aleatorio` ou `vazio`; `modo` = `impressao`, `ficha`; `&assinar=1` põe assinaturas de exemplo).
+  Usa os modelos de `tools/fichas/saida` e o código real das fichas (motor, `FichaGrade`, `ImpressaoFicha`); o Supabase é trocado por um stub.
+- **Impressão em PDF/PNG:** `python3 tools/fichas/previa/imprimir.py FR-IMOB-37_Rev00 [--todas] [--estado …] [--assinar] [--dpi 90] [--saida DIR]`
+  → `DIR/<ficha>__<estado>.pdf`, um PNG por página e `…resultados.json` (linhas de `resultado_*`). Padrão: `previa/saida/` (fora do git);
+  estado = `estados/<ficha>.json` se existir (rotulado `dados`), senão `aleatorio`.
+- **Dados de teste:** `estados/<ficha>.json` = `{ "pedido": {…}, "estado": { "entradas", "escolhas", "verificacoes" } }` — valores fisicamente
+  coerentes, usados na conta à mão (lote 6: FR-34 a 38). O `aleatorio` (`estadoAleatorio.js`, semente fixa) enche todos os campos para ver o layout.
+- **Fichas anteriores não podem mudar** ao mexer no motor, conversor ou componentes:
+  - cálculos: `node tools/fichas/previa/comparar_motor.mjs --gravar base.json` antes; `--comparar base.json` depois
+    (valores de todas as fórmulas, `dados_resultado.calculados` e `resultado_*`, com 3 estados aleatórios + `estados/`; ficha nova = "nova");
+  - impressão: `imprimir.py --todas --estado aleatorio --saida antes` com o código antigo (p.ex. `git stash`), de novo com o novo
+    (`--saida depois`) e `python3 tools/fichas/previa/comparar_impressao.py antes depois` (pixel a pixel; páginas de fichas novas aparecem como "só depois").
 
 ## Regras do conversor
 - **Fórmulas bloqueadas:** as aleatórias ou voláteis (`RANDBETWEEN`, `RAND`, `NOW`, `TODAY`, `INDIRECT`, `OFFSET`) nunca entram no sistema.

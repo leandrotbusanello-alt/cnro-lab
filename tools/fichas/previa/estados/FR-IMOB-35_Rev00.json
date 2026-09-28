@@ -1,0 +1,62 @@
+{
+ "_nota": "Dados fictícios de conferência (lote 6). Conta à mão em esperado_lote6.",
+ "pedido": {
+  "os": "OS-0412/2026",
+  "material": "Solo — subleito",
+  "registro": "AM-2026-0981",
+  "procedencia": "BR-163 km 512",
+  "complemento": "Teste de conferência (dados fictícios)"
+ },
+ "estado": {
+  "entradas": {
+   "E7": 46293,
+   "VERSO!C6": "BAL-07",
+   "VERSO!C7": "CONE-02",
+   "VERSO!C8": "FR-11",
+   "D16": 46292,
+   "D17": "1",
+   "D18": "1",
+   "D19": 0,
+   "D20": 15,
+   "D21": "12+300 N",
+   "D22": "LD",
+   "D23": 6500,
+   "D24": 3210,
+   "D26": "3",
+   "D27": 1520,
+   "D29": 1400,
+   "D32": 2650,
+   "D35": "PR-118",
+   "D36": 1985,
+   "D37": 11.2,
+   "D40": "45",
+   "D41": 100.0,
+   "D42": 92.5,
+   "E16": 46292,
+   "E17": "1",
+   "E18": "2",
+   "E19": 0,
+   "E20": 15,
+   "E21": "12+340 N",
+   "E22": "LE",
+   "E23": 6480,
+   "E24": 3350,
+   "E26": "3",
+   "E27": 1518,
+   "E29": 1400,
+   "E32": 2410,
+   "E35": "PR-118",
+   "E36": 1985,
+   "E37": 11.2,
+   "E40": "45",
+   "E41": 95.2,
+   "E42": 88.6
+  },
+  "escolhas": {},
+  "verificacoes": {
+   "VERSO!A10": true,
+   "VERSO!A11": true,
+   "VERSO!A12": true
+  }
+ }
+}

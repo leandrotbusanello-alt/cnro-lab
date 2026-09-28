@@ -1,0 +1,461 @@
+{
+  "codigo": "FR-IMOB-35",
+  "versao": "Rev00",
+  "nome": "Massa específica aparente in situ — frasco de areia",
+  "arquivo": "FR-IMOB-35_Rev00.xlsx",
+  "titulo_aba": "Frente",
+  "_nota": "Planilha-mestre Rev00 sem alterações (sem exemplo; lote 6, 28/09). 5 furos (colunas D–H). A mestre não tem fórmulas; acrescentadas por decisão do usuário (NBR 7185 / DNER-ME 092): A−B; P = (A−B) − C; V = P/d; Ps = Ph·100/(100+h); Ds = Ps/V; GC = Ds/Dm·100; umidade: Pa = Ph1 − Ps1, h = Pa/Ps1·100. A umidade de campo (linha 31) vem do quadro \"Umidade\" da própria ficha. O quadro de umidade não tem linha de tara: Ph1 e Ps1 são digitados líquidos. Formatos numéricos das colunas E–H igualados aos de uso (a mestre tinha formatos diferentes entre os furos, p.ex. GC em 0% e volume em 0000). Densidades em g/dm³ como na ficha (d, Ds e Dm na mesma unidade; o GC não depende dela). Resultado: 1 linha por furo em resultado_frasco_areia; massas específicas gravadas em g/cm³ (÷1000, como a FR-32; valor < 50 é tomado como já em g/cm³).",
+  "pedido": {
+    "B7": {
+      "campo": "os",
+      "manter_texto": true
+    },
+    "B8": {
+      "campo": "material",
+      "manter_texto": true
+    },
+    "E8": {
+      "campo": "registro",
+      "manter_texto": true
+    },
+    "B9": {
+      "campo": "procedencia",
+      "manter_texto": true
+    },
+    "B10": {
+      "campo": "complemento",
+      "manter_texto": true
+    }
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "E7"
+      ],
+      "tipo": "data",
+      "manter_texto": true
+    },
+    {
+      "colunas": [
+        "D",
+        "E",
+        "F",
+        "G",
+        "H"
+      ],
+      "linhas": [
+        16
+      ],
+      "tipo": "data"
+    },
+    {
+      "colunas": [
+        "D",
+        "E",
+        "F",
+        "G",
+        "H"
+      ],
+      "linhas": [
+        17,
+        18,
+        21,
+        22,
+        26,
+        35,
+        40
+      ],
+      "tipo": "texto"
+    },
+    {
+      "colunas": [
+        "D",
+        "E",
+        "F",
+        "G",
+        "H"
+      ],
+      "linhas": [
+        19,
+        20,
+        23,
+        24,
+        27,
+        29,
+        32,
+        36,
+        37,
+        41,
+        42
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "formulas": {
+    "D25": "=IF(COUNT(D23:D24)<2,\"\",D23-D24)",
+    "D28": "=IF(OR(D25=\"\",D27=\"\"),\"\",D25-D27)",
+    "D30": "=IF(OR(D28=\"\",D29=\"\",D29=0),\"\",D28/D29)",
+    "D31": "=IF(D44=\"\",\"\",D44)",
+    "D33": "=IF(OR(D32=\"\",D31=\"\"),\"\",D32*100/(100+D31))",
+    "D34": "=IF(OR(D33=\"\",D30=\"\",D30=0),\"\",D33/D30)",
+    "D38": "=IF(OR(D34=\"\",D36=\"\",D36=0),\"\",D34/D36*100)",
+    "D43": "=IF(COUNT(D41:D42)<2,\"\",D41-D42)",
+    "D44": "=IF(OR(D43=\"\",D42=\"\",D42=0),\"\",D43/D42*100)",
+    "E25": "=IF(COUNT(E23:E24)<2,\"\",E23-E24)",
+    "E28": "=IF(OR(E25=\"\",E27=\"\"),\"\",E25-E27)",
+    "E30": "=IF(OR(E28=\"\",E29=\"\",E29=0),\"\",E28/E29)",
+    "E31": "=IF(E44=\"\",\"\",E44)",
+    "E33": "=IF(OR(E32=\"\",E31=\"\"),\"\",E32*100/(100+E31))",
+    "E34": "=IF(OR(E33=\"\",E30=\"\",E30=0),\"\",E33/E30)",
+    "E38": "=IF(OR(E34=\"\",E36=\"\",E36=0),\"\",E34/E36*100)",
+    "E43": "=IF(COUNT(E41:E42)<2,\"\",E41-E42)",
+    "E44": "=IF(OR(E43=\"\",E42=\"\",E42=0),\"\",E43/E42*100)",
+    "F25": "=IF(COUNT(F23:F24)<2,\"\",F23-F24)",
+    "F28": "=IF(OR(F25=\"\",F27=\"\"),\"\",F25-F27)",
+    "F30": "=IF(OR(F28=\"\",F29=\"\",F29=0),\"\",F28/F29)",
+    "F31": "=IF(F44=\"\",\"\",F44)",
+    "F33": "=IF(OR(F32=\"\",F31=\"\"),\"\",F32*100/(100+F31))",
+    "F34": "=IF(OR(F33=\"\",F30=\"\",F30=0),\"\",F33/F30)",
+    "F38": "=IF(OR(F34=\"\",F36=\"\",F36=0),\"\",F34/F36*100)",
+    "F43": "=IF(COUNT(F41:F42)<2,\"\",F41-F42)",
+    "F44": "=IF(OR(F43=\"\",F42=\"\",F42=0),\"\",F43/F42*100)",
+    "G25": "=IF(COUNT(G23:G24)<2,\"\",G23-G24)",
+    "G28": "=IF(OR(G25=\"\",G27=\"\"),\"\",G25-G27)",
+    "G30": "=IF(OR(G28=\"\",G29=\"\",G29=0),\"\",G28/G29)",
+    "G31": "=IF(G44=\"\",\"\",G44)",
+    "G33": "=IF(OR(G32=\"\",G31=\"\"),\"\",G32*100/(100+G31))",
+    "G34": "=IF(OR(G33=\"\",G30=\"\",G30=0),\"\",G33/G30)",
+    "G38": "=IF(OR(G34=\"\",G36=\"\",G36=0),\"\",G34/G36*100)",
+    "G43": "=IF(COUNT(G41:G42)<2,\"\",G41-G42)",
+    "G44": "=IF(OR(G43=\"\",G42=\"\",G42=0),\"\",G43/G42*100)",
+    "H25": "=IF(COUNT(H23:H24)<2,\"\",H23-H24)",
+    "H28": "=IF(OR(H25=\"\",H27=\"\"),\"\",H25-H27)",
+    "H30": "=IF(OR(H28=\"\",H29=\"\",H29=0),\"\",H28/H29)",
+    "H31": "=IF(H44=\"\",\"\",H44)",
+    "H33": "=IF(OR(H32=\"\",H31=\"\"),\"\",H32*100/(100+H31))",
+    "H34": "=IF(OR(H33=\"\",H30=\"\",H30=0),\"\",H33/H30)",
+    "H38": "=IF(OR(H34=\"\",H36=\"\",H36=0),\"\",H34/H36*100)",
+    "H43": "=IF(COUNT(H41:H42)<2,\"\",H41-H42)",
+    "H44": "=IF(OR(H43=\"\",H42=\"\",H42=0),\"\",H43/H42*100)"
+  },
+  "formatos": {
+    "D19:H20": "0.0",
+    "D29:H29": "0",
+    "D36:H36": "0",
+    "D37:H37": "0.0",
+    "D25:H25": "0.0",
+    "D28:H28": "0.0",
+    "D30:H30": "0.000",
+    "D31:H31": "0.0",
+    "D33:H33": "0.0",
+    "D34:H34": "0.000",
+    "D38:H38": "0.0",
+    "D43:H43": "0.0",
+    "D44:H44": "0.0"
+  },
+  "assinaturas": {
+    "executor": "B47",
+    "calculista": "F47"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "E7"
+        ]
+      },
+      {
+        "titulo": "Furo 1",
+        "celulas": [
+          "D16",
+          "D17",
+          "D18",
+          "D19",
+          "D20",
+          "D21",
+          "D22",
+          "D23",
+          "D24",
+          "D26",
+          "D27",
+          "D29",
+          "D32",
+          "D35",
+          "D36",
+          "D37",
+          "D40",
+          "D41",
+          "D42"
+        ]
+      },
+      {
+        "titulo": "Furo 2",
+        "celulas": [
+          "E16",
+          "E17",
+          "E18",
+          "E19",
+          "E20",
+          "E21",
+          "E22",
+          "E23",
+          "E24",
+          "E26",
+          "E27",
+          "E29",
+          "E32",
+          "E35",
+          "E36",
+          "E37",
+          "E40",
+          "E41",
+          "E42"
+        ]
+      },
+      {
+        "titulo": "Furo 3",
+        "celulas": [
+          "F16",
+          "F17",
+          "F18",
+          "F19",
+          "F20",
+          "F21",
+          "F22",
+          "F23",
+          "F24",
+          "F26",
+          "F27",
+          "F29",
+          "F32",
+          "F35",
+          "F36",
+          "F37",
+          "F40",
+          "F41",
+          "F42"
+        ]
+      },
+      {
+        "titulo": "Furo 4",
+        "celulas": [
+          "G16",
+          "G17",
+          "G18",
+          "G19",
+          "G20",
+          "G21",
+          "G22",
+          "G23",
+          "G24",
+          "G26",
+          "G27",
+          "G29",
+          "G32",
+          "G35",
+          "G36",
+          "G37",
+          "G40",
+          "G41",
+          "G42"
+        ]
+      },
+      {
+        "titulo": "Furo 5",
+        "celulas": [
+          "H16",
+          "H17",
+          "H18",
+          "H19",
+          "H20",
+          "H21",
+          "H22",
+          "H23",
+          "H24",
+          "H26",
+          "H27",
+          "H29",
+          "H32",
+          "H35",
+          "H36",
+          "H37",
+          "H40",
+          "H41",
+          "H42"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "E7": "Data do ensaio",
+    "D16": "Data",
+    "D17": "Camada nº",
+    "D18": "Furo nº",
+    "D19": "Profundidade do furo — de (cm)",
+    "D20": "Profundidade do furo — a (cm)",
+    "D21": "Km — Norte/Sul",
+    "D22": "Posição (LE/LD)",
+    "D23": "Peso do frasco com areia — antes (A) (g)",
+    "D24": "Peso do frasco com areia — depois (B) (g)",
+    "D26": "Funil nº",
+    "D27": "Peso da areia no funil (C) (g)",
+    "D29": "Densidade da areia (g/dm³)",
+    "D32": "Peso do solo úmido Ph (g)",
+    "D35": "Ensaio de laboratório nº",
+    "D36": "Densidade máxima Dm (g/dm³)",
+    "D37": "Umidade ótima (%)",
+    "D40": "Umidade — cápsula nº",
+    "D41": "Umidade — peso do solo úmido Ph1 (g)",
+    "D42": "Umidade — peso do solo seco Ps1 (g)",
+    "E16": "Data",
+    "E17": "Camada nº",
+    "E18": "Furo nº",
+    "E19": "Profundidade do furo — de (cm)",
+    "E20": "Profundidade do furo — a (cm)",
+    "E21": "Km — Norte/Sul",
+    "E22": "Posição (LE/LD)",
+    "E23": "Peso do frasco com areia — antes (A) (g)",
+    "E24": "Peso do frasco com areia — depois (B) (g)",
+    "E26": "Funil nº",
+    "E27": "Peso da areia no funil (C) (g)",
+    "E29": "Densidade da areia (g/dm³)",
+    "E32": "Peso do solo úmido Ph (g)",
+    "E35": "Ensaio de laboratório nº",
+    "E36": "Densidade máxima Dm (g/dm³)",
+    "E37": "Umidade ótima (%)",
+    "E40": "Umidade — cápsula nº",
+    "E41": "Umidade — peso do solo úmido Ph1 (g)",
+    "E42": "Umidade — peso do solo seco Ps1 (g)",
+    "F16": "Data",
+    "F17": "Camada nº",
+    "F18": "Furo nº",
+    "F19": "Profundidade do furo — de (cm)",
+    "F20": "Profundidade do furo — a (cm)",
+    "F21": "Km — Norte/Sul",
+    "F22": "Posição (LE/LD)",
+    "F23": "Peso do frasco com areia — antes (A) (g)",
+    "F24": "Peso do frasco com areia — depois (B) (g)",
+    "F26": "Funil nº",
+    "F27": "Peso da areia no funil (C) (g)",
+    "F29": "Densidade da areia (g/dm³)",
+    "F32": "Peso do solo úmido Ph (g)",
+    "F35": "Ensaio de laboratório nº",
+    "F36": "Densidade máxima Dm (g/dm³)",
+    "F37": "Umidade ótima (%)",
+    "F40": "Umidade — cápsula nº",
+    "F41": "Umidade — peso do solo úmido Ph1 (g)",
+    "F42": "Umidade — peso do solo seco Ps1 (g)",
+    "G16": "Data",
+    "G17": "Camada nº",
+    "G18": "Furo nº",
+    "G19": "Profundidade do furo — de (cm)",
+    "G20": "Profundidade do furo — a (cm)",
+    "G21": "Km — Norte/Sul",
+    "G22": "Posição (LE/LD)",
+    "G23": "Peso do frasco com areia — antes (A) (g)",
+    "G24": "Peso do frasco com areia — depois (B) (g)",
+    "G26": "Funil nº",
+    "G27": "Peso da areia no funil (C) (g)",
+    "G29": "Densidade da areia (g/dm³)",
+    "G32": "Peso do solo úmido Ph (g)",
+    "G35": "Ensaio de laboratório nº",
+    "G36": "Densidade máxima Dm (g/dm³)",
+    "G37": "Umidade ótima (%)",
+    "G40": "Umidade — cápsula nº",
+    "G41": "Umidade — peso do solo úmido Ph1 (g)",
+    "G42": "Umidade — peso do solo seco Ps1 (g)",
+    "H16": "Data",
+    "H17": "Camada nº",
+    "H18": "Furo nº",
+    "H19": "Profundidade do furo — de (cm)",
+    "H20": "Profundidade do furo — a (cm)",
+    "H21": "Km — Norte/Sul",
+    "H22": "Posição (LE/LD)",
+    "H23": "Peso do frasco com areia — antes (A) (g)",
+    "H24": "Peso do frasco com areia — depois (B) (g)",
+    "H26": "Funil nº",
+    "H27": "Peso da areia no funil (C) (g)",
+    "H29": "Densidade da areia (g/dm³)",
+    "H32": "Peso do solo úmido Ph (g)",
+    "H35": "Ensaio de laboratório nº",
+    "H36": "Densidade máxima Dm (g/dm³)",
+    "H37": "Umidade ótima (%)",
+    "H40": "Umidade — cápsula nº",
+    "H41": "Umidade — peso do solo úmido Ph1 (g)",
+    "H42": "Umidade — peso do solo seco Ps1 (g)"
+  },
+  "abas_extras": [
+    {
+      "id": "VERSO",
+      "aba": "VERSO",
+      "titulo": "Verso",
+      "entradas": [
+        {
+          "celulas": [
+            "C6",
+            "C7",
+            "C8"
+          ],
+          "tipo": "texto"
+        }
+      ],
+      "rotulos": {
+        "C6": "Balança — identificação",
+        "C7": "Cone — identificação",
+        "C8": "Frasco de areia — identificação"
+      },
+      "lista": {
+        "grupos": [
+          {
+            "titulo": "Equipamentos utilizados",
+            "celulas": [
+              "C6",
+              "C7",
+              "C8"
+            ]
+          },
+          {
+            "titulo": "Pontos de verificação",
+            "linhas": "10-12"
+          }
+        ]
+      }
+    }
+  ],
+  "resultados": [
+    {
+      "tabela": "resultado_frasco_areia",
+      "repetir": {
+        "var": "c",
+        "valores": [
+          "D",
+          "E",
+          "F",
+          "G",
+          "H"
+        ],
+        "quando": "=OR(ISNUMBER({c}34),ISNUMBER({c}38))"
+      },
+      "campos": {
+        "km": {
+          "expr": "={c}21",
+          "tipo": "texto"
+        },
+        "posicao": {
+          "expr": "={c}22",
+          "tipo": "texto"
+        },
+        "camada": {
+          "expr": "={c}17",
+          "tipo": "texto"
+        },
+        "umidade_obtida_pct": "={c}31",
+        "massa_esp_obtida": "=IF(ISNUMBER({c}34),IF({c}34>50,{c}34/1000,{c}34),\"\")",
+        "massa_esp_ref_proctor": "=IF(ISNUMBER({c}36),IF({c}36>50,{c}36/1000,{c}36),\"\")",
+        "grau_compactacao_pct": "={c}38"
+      }
+    }
+  ],
+  "pedido_exemplo": {}
+}

@@ -5,6 +5,7 @@
 //   node tools/fichas/testar_motor.mjs                 # compara com os valores gravados pelo Excel
 //   node tools/fichas/testar_motor.mjs --libreoffice   # + 3 rodadas com valores aleatórios recalculados
 //                                                      #   no LibreOffice (conferência independente)
+//   node tools/fichas/testar_motor.mjs --libreoffice FR-IMOB-34 FR-IMOB-35   # só estas fichas
 //
 // Rode depois de python3 tools/fichas/converter.py (que gera a pasta saida/). Sai com código 1 se algo divergir.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -19,6 +20,7 @@ import { ehErro } from '../../src/modules/fichas/motor/formulas.js'
 const AQUI = dirname(fileURLToPath(import.meta.url))
 const SAIDA = join(AQUI, 'saida')
 const usarLibre = process.argv.includes('--libreoffice')
+const filtro = process.argv.slice(2).filter(a => !a.startsWith('--'))
 
 function igual(a, b) {
   const vazioA = a === null || a === undefined || a === ''
@@ -64,6 +66,7 @@ function valoresAleatorios(indice, exemplo) {
 let falhas = 0
 for (const arq of readdirSync(SAIDA).filter(f => f.endsWith('.modelo.json')).sort()) {
   const nome = arq.replace('.modelo.json', '')
+  if (filtro.length && !filtro.some(c => nome.startsWith(c))) continue
   const { modelo, mapa_resultados: mapa } = JSON.parse(readFileSync(join(SAIDA, arq), 'utf8'))
   const verif = JSON.parse(readFileSync(join(SAIDA, `${nome}.verificacao.json`), 'utf8'))
   const indice = indexarModelo(modelo)
