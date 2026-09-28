@@ -11,7 +11,9 @@ A **spec** só diz o papel de cada célula (quem preenche o quê) e como gerar o
 3. Rode `python3 tools/fichas/converter.py <CODIGO>` e resolva os avisos ⚠.
 4. Rode `node tools/fichas/testar_motor.mjs --libreoffice` (ou só as fichas novas: `… --libreoffice FR-IMOB-34 FR-IMOB-35`). Todas as fórmulas precisam conferir.
    Confira também com conta à mão e a prévia de impressão (ver "Ferramentas de conferência").
-5. Rode `python3 tools/fichas/converter.py` (sem código): isso regenera `supabase/migrations/13b_fichas_modelo_carga.sql`, que é rodado no SQL Editor.
+5. Rode `python3 tools/fichas/converter.py` (sem código): isso regenera `supabase/migrations/13b_fichas_modelo_carga.sql`.
+6. SQL do lote para o SQL Editor: `python3 tools/fichas/sql_lote.py lote8 FR-IMOB-44 FR-IMOB-45 … --saida DIR` → partes de até ~200 KB
+   (`carga_<lote>_parteN.sql`); ficha maior que isso sai em duas partes (`Na`/`Nb`, modelo marcado "parcial" até rodar a `b`).
 
 **Revisão nova (Rev01):** troque `versao` e `arquivo` na spec e gere de novo. Os ensaios já iniciados continuam na revisão anterior.
 
@@ -103,6 +105,7 @@ Requisitos: Python 3.10+ (`openpyxl`, `lxml`), Node 18+ e LibreOffice (só para 
 - As células que o gráfico lê fora da área entram como auxiliares (como as das fórmulas).
 - Se a tabela que o gráfico lia foi limpa da ficha, aponte a série para outro lugar:
   `"graficos_series": { "0.0": { "x": "E29:E39", "y": "P47:P57" } }` (gráfico.série, a partir de 0).
+- Eixo log: a "unidade principal" do Excel é o **fator** entre as marcas (10 = uma década; ≤ 1 → uma década) — FR-IMOB-45.
 - Como no Excel: ponto com erro (`#N/D`) é pulado e a linha liga os vizinhos; célula vazia ou com texto
   interrompe a linha; em eixo log, valores ≤ 0 também interrompem.
 
@@ -184,6 +187,8 @@ quadro com os resultados **aprovados** e imprime no layout da planilha da Qualid
 - **Formato novo no motor de formatação:** mês por extenso sem dia (`[$-416]mmm\-yy` → "set-26").
 
 ## Regras do conversor
+- **Imagens:** entram as da área de impressão; restos de desenho (tamanho zero/negativo) e imagens que começam fora da área
+  (p.ex. nas colunas só de tela) são descartados (FR-IMOB-46 Rev01).
 - **`so_layout`** (spec): só o desenho da planilha, sem fórmulas nem auxiliares — usado pelos quadros de controle.
 - **Fórmulas bloqueadas:** as aleatórias ou voláteis (`RANDBETWEEN`, `RAND`, `NOW`, `TODAY`, `INDIRECT`, `OFFSET`) nunca entram no sistema.
 - **Fórmula em célula de entrada:** é descartada, com aviso. É assim que se tira uma fórmula errada da ficha

@@ -133,6 +133,23 @@
    "id": "p98",
    "numero_pe": 98,
    "ano": 2026,
+   "material": "asfalto",
+   "sub_tipo": "cps_extraidos_pista",
+   "dados_amostra": [
+    {
+     "tipo_mistura": "CBUQ Faixa C",
+     "data_extracao": "2026-09-21"
+    }
+   ],
+   "empresa_id": "e1",
+   "lote": "Lote 3",
+   "created_at": "2026-09-01T12:00:00Z"
+  },
+  {
+   "status": "em_andamento",
+   "id": "p99",
+   "numero_pe": 99,
+   "ano": 2026,
    "material": "concreto",
    "sub_tipo": "concreto",
    "dados_amostra": [
@@ -149,8 +166,8 @@
   },
   {
    "status": "em_andamento",
-   "id": "p99",
-   "numero_pe": 99,
+   "id": "p100",
+   "numero_pe": 100,
    "ano": 2026,
    "material": "concreto",
    "sub_tipo": "concreto",
@@ -403,6 +420,22 @@
    "pedido_id": "p98",
    "status": "aprovado",
    "dados_resultado": {
+    "codigo": "FR-IMOB-46",
+    "versao": "Rev01",
+    "calculados": {
+     "W19": 1.02,
+     "W20": 0.98,
+     "T19": 0.61,
+     "T20": 0.43
+    }
+   },
+   "resultado_id": "r15"
+  },
+  {
+   "id": "eo16",
+   "pedido_id": "p99",
+   "status": "aprovado",
+   "dados_resultado": {
     "codigo": "FR-IMOB-50",
     "versao": "Rev00",
     "entradas": {
@@ -476,11 +509,11 @@
      "lancamento_7": "Bombeado"
     }
    },
-   "resultado_id": "r15"
+   "resultado_id": "r16"
   },
   {
-   "id": "eo16",
-   "pedido_id": "p99",
+   "id": "eo17",
+   "pedido_id": "p100",
    "status": "aprovado",
    "dados_resultado": {
     "codigo": "FR-IMOB-50",
@@ -494,7 +527,7 @@
      "P21": 44
     }
    },
-   "resultado_id": "r16"
+   "resultado_id": "r17"
   }
  ],
  "fichas_os": [
@@ -617,6 +650,22 @@
   {
    "teor_obtido_pct": 5.2,
    "resultado_id": "r14"
+  }
+ ],
+ "resultado_densidade_cbuq": [
+  {
+   "gmb_obtido": 2.284,
+   "va_pct": 5.52,
+   "grau_compactacao_pct": 98.6,
+   "espessura_medida_mm": 42.4,
+   "resultado_id": "r15"
+  },
+  {
+   "gmb_obtido": 2.262,
+   "va_pct": 6.42,
+   "grau_compactacao_pct": 97.66,
+   "espessura_medida_mm": 44.76,
+   "resultado_id": "r15"
   }
  ]
 }

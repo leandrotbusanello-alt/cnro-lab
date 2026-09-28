@@ -1,0 +1,196 @@
+{
+  "codigo": "FR-IMOB-47",
+  "versao": "Rev00",
+  "nome": "Pavimentação asfáltica — pré-misturado a frio",
+  "arquivo": "FR-IMOB-47_Rev00.xlsx",
+  "titulo_aba": "Frente",
+  "_nota": "Planilha-mestre Rev00 (lote 8, 28/09; sem exemplo). Os limites da faixa (M/N) buscavam numa tabela que não existe mais (HLOOKUP com #REF!) e a lista da faixa (M18) aponta para células vazias: faixa, limites e tolerância da faixa de trabalho (O/P, que vinham com valores fixos de um traço) viram campos livres (decisão do usuário: dúvida → campo livre). Retidos e massa inicial vinham com zeros/213 de exemplo: viram campos. Massa total = soma (fórmulas da mestre). Gráfico da curva na ficha. Sem resultado_* (granulometria de mistura sem tabela) → dados_resultado.",
+  "pedido": {
+    "B7": {
+      "campo": "os",
+      "manter_texto": true
+    },
+    "B8": {
+      "campo": "material",
+      "manter_texto": true
+    },
+    "G8": {
+      "campo": "registro",
+      "manter_texto": true
+    },
+    "B9": {
+      "campo": "procedencia",
+      "manter_texto": true
+    },
+    "B10": {
+      "campo": "complemento",
+      "manter_texto": true
+    }
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "G7"
+      ],
+      "tipo": "data",
+      "manter_texto": true
+    },
+    {
+      "celulas": [
+        "M18"
+      ],
+      "tipo": "texto"
+    },
+    {
+      "colunas": [
+        "D",
+        "H"
+      ],
+      "linhas": [
+        20,
+        "21-28"
+      ],
+      "tipo": "numero"
+    },
+    {
+      "colunas": [
+        "M",
+        "N",
+        "O",
+        "P"
+      ],
+      "linhas": [
+        "21-27"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "assinaturas": {
+    "executor": "B51",
+    "calculista": "I51"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "G7",
+          "M18"
+        ]
+      },
+      {
+        "titulo": "Amostra 01",
+        "celulas": [
+          "D20",
+          "D21",
+          "D22",
+          "D23",
+          "D24",
+          "D25",
+          "D26",
+          "D27",
+          "D28"
+        ]
+      },
+      {
+        "titulo": "Amostra 02",
+        "celulas": [
+          "H20",
+          "H21",
+          "H22",
+          "H23",
+          "H24",
+          "H25",
+          "H26",
+          "H27",
+          "H28"
+        ]
+      },
+      {
+        "titulo": "Faixa e tolerância",
+        "celulas": [
+          "M21",
+          "N21",
+          "O21",
+          "P21",
+          "M22",
+          "N22",
+          "O22",
+          "P22",
+          "M23",
+          "N23",
+          "O23",
+          "P23",
+          "M24",
+          "N24",
+          "O24",
+          "P24",
+          "M25",
+          "N25",
+          "O25",
+          "P25",
+          "M26",
+          "N26",
+          "O26",
+          "P26",
+          "M27",
+          "N27",
+          "O27",
+          "P27"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "G7": "Data do ensaio",
+    "M18": "Faixa (DNIT 153)",
+    "D20": "Amostra 01 — massa inicial (g)",
+    "H20": "Amostra 02 — massa inicial (g)",
+    "D21": "Amostra 01 — retido — 1\" (g)",
+    "H21": "Amostra 02 — retido — 1\" (g)",
+    "D22": "Amostra 01 — retido — 3/4\" (g)",
+    "H22": "Amostra 02 — retido — 3/4\" (g)",
+    "D23": "Amostra 01 — retido — 1/2\" (g)",
+    "H23": "Amostra 02 — retido — 1/2\" (g)",
+    "D24": "Amostra 01 — retido — 3/8\" (g)",
+    "H24": "Amostra 02 — retido — 3/8\" (g)",
+    "D25": "Amostra 01 — retido — nº 4 (g)",
+    "H25": "Amostra 02 — retido — nº 4 (g)",
+    "D26": "Amostra 01 — retido — nº 10 (g)",
+    "H26": "Amostra 02 — retido — nº 10 (g)",
+    "D27": "Amostra 01 — retido — nº 200 (g)",
+    "H27": "Amostra 02 — retido — nº 200 (g)",
+    "D28": "Amostra 01 — retido — fundo (g)",
+    "H28": "Amostra 02 — retido — fundo (g)",
+    "M21": "Faixa — 1\" — mínimo (%)",
+    "N21": "Faixa — 1\" — máximo (%)",
+    "O21": "Tolerância da faixa de trabalho — 1\" — mínimo (%)",
+    "P21": "Tolerância da faixa de trabalho — 1\" — máximo (%)",
+    "M22": "Faixa — 3/4\" — mínimo (%)",
+    "N22": "Faixa — 3/4\" — máximo (%)",
+    "O22": "Tolerância da faixa de trabalho — 3/4\" — mínimo (%)",
+    "P22": "Tolerância da faixa de trabalho — 3/4\" — máximo (%)",
+    "M23": "Faixa — 1/2\" — mínimo (%)",
+    "N23": "Faixa — 1/2\" — máximo (%)",
+    "O23": "Tolerância da faixa de trabalho — 1/2\" — mínimo (%)",
+    "P23": "Tolerância da faixa de trabalho — 1/2\" — máximo (%)",
+    "M24": "Faixa — 3/8\" — mínimo (%)",
+    "N24": "Faixa — 3/8\" — máximo (%)",
+    "O24": "Tolerância da faixa de trabalho — 3/8\" — mínimo (%)",
+    "P24": "Tolerância da faixa de trabalho — 3/8\" — máximo (%)",
+    "M25": "Faixa — nº 4 — mínimo (%)",
+    "N25": "Faixa — nº 4 — máximo (%)",
+    "O25": "Tolerância da faixa de trabalho — nº 4 — mínimo (%)",
+    "P25": "Tolerância da faixa de trabalho — nº 4 — máximo (%)",
+    "M26": "Faixa — nº 10 — mínimo (%)",
+    "N26": "Faixa — nº 10 — máximo (%)",
+    "O26": "Tolerância da faixa de trabalho — nº 10 — mínimo (%)",
+    "P26": "Tolerância da faixa de trabalho — nº 10 — máximo (%)",
+    "M27": "Faixa — nº 200 — mínimo (%)",
+    "N27": "Faixa — nº 200 — máximo (%)",
+    "O27": "Tolerância da faixa de trabalho — nº 200 — mínimo (%)",
+    "P27": "Tolerância da faixa de trabalho — nº 200 — máximo (%)"
+  },
+  "resultados": [],
+  "pedido_exemplo": {}
+}

@@ -41,6 +41,8 @@ function dmaxDasPeneiras(v, peneiras) {
   return dmax
 }
 
+const CPS_FR46 = Array.from({ length: 21 }, (_, i) => 19 + i)    // linhas dos CPs na FR-IMOB-46 Rev01
+
 const PENEIRAS_39 = [['E', 25.4], ['F', 19.1], ['G', 12.5], ['H', 9.5], ['I', 4.75], ['J', 2], ['K', 0.42], ['L', 0.18], ['M', 0.075]]
 
 export const QUADROS = {
@@ -104,10 +106,13 @@ export const QUADROS = {
       D: peneiraFR21(21), E: peneiraFR21(22), F: peneiraFR21(23), G: peneiraFR21(24), H: peneiraFR21(25),
       I: peneiraFR21(26), J: peneiraFR21(27), K: peneiraFR21(28), L: peneiraFR21(29),
       N: tabela('resultado_teor_betume', 'teor_obtido_pct'),
-      O: tabela('resultado_densidade_cbuq', 'gmb_obtido'),        // FR-46 (pendente) — vazio até a ficha existir
+      O: tabela('resultado_densidade_cbuq', 'gmb_obtido'),        // FR-46
       P: tabela('resultado_rice', 'gmm_obtido'),
       R: tabela('resultado_densidade_cbuq', 'va_pct'),
-      // Q (RT), S (VAM), T (RBV), U (absorção): sem ficha de CP extraído — vazios
+      // FR-46 (densidade aparente e GC de CPs de pista): RT e absorção por CP, lidas da ficha (dados_resultado)
+      Q: ficha('FR-IMOB-46', CPS_FR46.map(r => `W${r}`)),
+      U: ficha('FR-IMOB-46', CPS_FR46.map(r => `T${r}`)),
+      // S (VAM), T (RBV): sem ficha de CP extraído — vazios
       V: { tipo: 'funcao', fn: l => media(valoresTabela(l, ['resultado_densidade_cbuq'], 'espessura_medida_mm').map(x => x / 10)) ?? numero(l.amostra.espessura) }, // cm
       W: tabela('resultado_densidade_cbuq', 'grau_compactacao_pct'),
       X: l => locais(l.amostra),

@@ -537,6 +537,10 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
             h = y_off[clamp_r(to.row - (r1 - 1))] + to.rowOff / EMU_PX - y
         else:
             w, h = an.ext.width / EMU_PX, an.ext.height / EMU_PX
+        # restos de desenho (tamanho zero/negativo) ou imagem que começa fora da área de impressão
+        # (nas colunas só de tela ou além): não entram (FR-IMOB-46 Rev01)
+        if w <= 1 or h <= 1 or x >= x_off[min(len(x_off) - 1, c2_impressao - c1 + 1)] - 1:
+            continue
         dados = im._data()
         mime = 'image/png' if dados[:4] == b'\x89PNG' else 'image/jpeg'
         imgs.append({'x': round(x, 1), 'y': round(y, 1), 'w': round(w, 1), 'h': round(h, 1),

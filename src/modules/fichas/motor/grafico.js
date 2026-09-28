@@ -101,7 +101,8 @@ export function escalaDoEixo(ex = {}, dados = [], divisoes = 8) {
     if (min === null || min <= 0) min = limpo(Math.pow(base, Math.floor(lb(max !== null ? Math.min(dMin, max) : dMin) + 1e-9)))
     if (max === null) max = limpo(Math.pow(base, Math.ceil(lb(Math.max(dMax, min)) - 1e-9)))
     if (max <= min) max = limpo(min * base)
-    const passo = Math.pow(base, ex.unidade > 0 ? ex.unidade : 1)   // no log, a unidade é em potências da base
+    // no log, a unidade principal do Excel é o FATOR entre as marcas (10 = uma década, 100 = duas); ≤ 1 → uma década
+    const passo = ex.unidade > 1 ? ex.unidade : base
     for (let v = min, n = 0; v <= max * (1 + 1e-9) && n < 60; v = limpo(v * passo), n++) {
       marcas.push(v)
       for (let k = 2; k < base; k++) {

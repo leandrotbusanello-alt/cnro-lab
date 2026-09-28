@@ -1,0 +1,205 @@
+{
+  "codigo": "FR-IMOB-44",
+  "versao": "Rev00",
+  "nome": "Granulometria por peneiramento do microrrevestimento asfáltico",
+  "arquivo": "FR-IMOB-44_Rev00.xlsx",
+  "titulo_aba": "Frente",
+  "_nota": "Planilha-mestre Rev00 (lote 8, 28/09; sem exemplo). Mesmo desenho da FR-21: faixa DNIT 035 em lista suspensa (M18), limites (M/N) e tolerância (O/P) pelas tabelas fora da área (auxiliares). A coluna E (retido acumulado da Amostra 01) tinha zeros fixos: recebeu a fórmula da Amostra 02 (coluna I), por decisão do usuário (fórmulas que faltam). A coluna D veio com valores de exemplo e a H com zeros: viram campos digitados. Massa inicial e massa total digitadas (a massa total da Amostra 01, D30, estava vazia e a da Amostra 02 era 0 fixo), como na FR-21. Gráfico da curva na ficha. Verso: A2 com #REF! limpo; área do verso reduzida ao conteúdo (A1:E20). Sem resultado_* (granulometria de mistura sem tabela) → dados_resultado.",
+  "pedido": {
+    "B7": {
+      "campo": "os",
+      "manter_texto": true
+    },
+    "B8": {
+      "campo": "material",
+      "manter_texto": true
+    },
+    "G8": {
+      "campo": "registro",
+      "manter_texto": true
+    },
+    "B9": {
+      "campo": "procedencia",
+      "manter_texto": true
+    },
+    "B10": {
+      "campo": "complemento",
+      "manter_texto": true
+    }
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "G7"
+      ],
+      "tipo": "data",
+      "manter_texto": true
+    },
+    {
+      "celulas": [
+        "M18"
+      ],
+      "tipo": "texto"
+    },
+    {
+      "colunas": [
+        "D",
+        "H"
+      ],
+      "linhas": [
+        20,
+        "21-30"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "formulas": {
+    "E21": "=IF(D21=\"\",\"\",D21)",
+    "E22": "=IF(D22=\"\",\"\",D22+E21)",
+    "E23": "=IF(D23=\"\",\"\",D23+E22)",
+    "E24": "=IF(D24=\"\",\"\",D24+E23)",
+    "E25": "=IF(D25=\"\",\"\",D25+E24)",
+    "E26": "=IF(D26=\"\",\"\",D26+E25)",
+    "E27": "=IF(D27=\"\",\"\",D27+E26)",
+    "E28": "=IF(D28=\"\",\"\",D28+E27)",
+    "E29": "=IF(D29=\"\",\"\",D29+E28)"
+  },
+  "assinaturas": {
+    "executor": "B55",
+    "calculista": "K55"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "G7",
+          "M18"
+        ]
+      },
+      {
+        "titulo": "Amostra 01",
+        "celulas": [
+          "D20",
+          "D21",
+          "D22",
+          "D23",
+          "D24",
+          "D25",
+          "D26",
+          "D27",
+          "D28",
+          "D29",
+          "D30"
+        ]
+      },
+      {
+        "titulo": "Amostra 02",
+        "celulas": [
+          "H20",
+          "H21",
+          "H22",
+          "H23",
+          "H24",
+          "H25",
+          "H26",
+          "H27",
+          "H28",
+          "H29",
+          "H30"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "G7": "Data do ensaio",
+    "M18": "Faixa (DNIT 035)",
+    "D20": "Amostra 01 — massa inicial (g)",
+    "H20": "Amostra 02 — massa inicial (g)",
+    "D30": "Amostra 01 — massa total (g)",
+    "H30": "Amostra 02 — massa total (g)",
+    "D21": "Amostra 01 — retido — 3/8\" (g)",
+    "H21": "Amostra 02 — retido — 3/8\" (g)",
+    "D22": "Amostra 01 — retido — nº 4 (g)",
+    "H22": "Amostra 02 — retido — nº 4 (g)",
+    "D23": "Amostra 01 — retido — nº 8 (g)",
+    "H23": "Amostra 02 — retido — nº 8 (g)",
+    "D24": "Amostra 01 — retido — nº 16 (g)",
+    "H24": "Amostra 02 — retido — nº 16 (g)",
+    "D25": "Amostra 01 — retido — nº 30 (g)",
+    "H25": "Amostra 02 — retido — nº 30 (g)",
+    "D26": "Amostra 01 — retido — nº 50 (g)",
+    "H26": "Amostra 02 — retido — nº 50 (g)",
+    "D27": "Amostra 01 — retido — nº 100 (g)",
+    "H27": "Amostra 02 — retido — nº 100 (g)",
+    "D28": "Amostra 01 — retido — nº 200 (g)",
+    "H28": "Amostra 02 — retido — nº 200 (g)",
+    "D29": "Amostra 01 — retido — fundo (g)",
+    "H29": "Amostra 02 — retido — fundo (g)"
+  },
+  "abas_extras": [
+    {
+      "id": "VERSO",
+      "aba": "VERSO ",
+      "titulo": "Verso",
+      "area_impressao": "A1:E20",
+      "limpar": [
+        "A2"
+      ],
+      "entradas": [
+        {
+          "celulas": [
+            "E6",
+            "E7",
+            "E8",
+            "E9",
+            "E10",
+            "E11",
+            "E12",
+            "E13",
+            "E14",
+            "E15"
+          ],
+          "tipo": "texto"
+        }
+      ],
+      "rotulos": {
+        "E6": "Balança — identificação",
+        "E7": "Estufa — identificação",
+        "E8": "Peneira 3/8\" — identificação",
+        "E9": "Peneira nº 4 — identificação",
+        "E10": "Peneira nº 8 — identificação",
+        "E11": "Peneira nº 16 — identificação",
+        "E12": "Peneira nº 30 — identificação",
+        "E13": "Peneira nº 50 — identificação",
+        "E14": "Peneira nº 100 — identificação",
+        "E15": "Peneira nº 200 — identificação"
+      },
+      "lista": {
+        "grupos": [
+          {
+            "titulo": "Equipamentos utilizados",
+            "celulas": [
+              "E6",
+              "E7",
+              "E8",
+              "E9",
+              "E10",
+              "E11",
+              "E12",
+              "E13",
+              "E14",
+              "E15"
+            ]
+          },
+          {
+            "titulo": "Pontos de verificação",
+            "linhas": "17-20"
+          }
+        ]
+      }
+    }
+  ],
+  "resultados": [],
+  "pedido_exemplo": {}
+}

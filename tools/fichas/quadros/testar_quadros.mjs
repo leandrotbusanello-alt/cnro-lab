@@ -139,11 +139,20 @@ function verificar(codigo, dados, filtros, conferir) {
 // ── FR-41 CBUQ endurecido ──
 {
   const peds = [pedido('asfalto', 'cps_extraidos_pista', { tipo_mistura: 'CBUQ Faixa C', data_extracao: '2026-09-20', espessura: 5.1 })]
-  const ensaios = [{ pedido_id: peds[0].id, dados_resultado: { codigo: 'FR-IMOB-22' }, resultados: { resultado_teor_betume: [{ teor_obtido_pct: 5.2 }] } }]
-  verificar('FR-IMOB-41', { pedidos: peds, ensaios, empresasPorId: EMPRESAS }, {}, (r, meta) => {
+  const peds2 = [pedido('asfalto', 'cps_extraidos_pista', { tipo_mistura: 'CBUQ Faixa C', data_extracao: '2026-09-21' })]
+  const ensaios = [
+    { pedido_id: peds[0].id, dados_resultado: { codigo: 'FR-IMOB-22' }, resultados: { resultado_teor_betume: [{ teor_obtido_pct: 5.2 }] } },
+    // FR-46: 2 CPs (resultado_densidade_cbuq + RT/absorção em dados_resultado)
+    { pedido_id: peds2[0].id, dados_resultado: { codigo: 'FR-IMOB-46', versao: 'Rev01', calculados: { W19: 1.02, W20: 0.98, T19: 0.61, T20: 0.43 } },
+      resultados: { resultado_densidade_cbuq: [{ gmb_obtido: 2.284, va_pct: 5.52, grau_compactacao_pct: 98.6, espessura_medida_mm: 42.4 }, { gmb_obtido: 2.262, va_pct: 6.42, grau_compactacao_pct: 97.66, espessura_medida_mm: 44.76 }] } },
+  ]
+  verificar('FR-IMOB-41', { pedidos: [...peds, ...peds2], ensaios, empresasPorId: EMPRESAS }, {}, (r, meta) => {
     const L0 = meta.bloco.linha
-    perto(r.entradas[`N${L0}`], 5.2, 'FR-41 teor'); perto(r.entradas[`V${L0}`], 5.1, 'FR-41 espessura (campo, enquanto não há FR-46)')
-    ok(r.entradas[`O${L0}`] === undefined, 'FR-41 Gmb vazio (FR-46 pendente)')
+    perto(r.entradas[`N${L0}`], 5.2, 'FR-41 teor'); perto(r.entradas[`V${L0}`], 5.1, 'FR-41 espessura (campo, sem FR-46)')
+    ok(r.entradas[`O${L0}`] === undefined, 'FR-41 Gmb vazio sem FR-46')
+    perto(r.entradas[`O${L0 + 1}`], (2.284 + 2.262) / 2, 'FR-41 Gmb (FR-46)'); perto(r.entradas[`W${L0 + 1}`], (98.6 + 97.66) / 2, 'FR-41 GC (FR-46)')
+    perto(r.entradas[`V${L0 + 1}`], (4.24 + 4.476) / 2, 'FR-41 espessura em cm (FR-46)'); perto(r.entradas[`Q${L0 + 1}`], 1.0, 'FR-41 RT (FR-46)')
+    perto(r.entradas[`U${L0 + 1}`], 0.52, 'FR-41 absorção (FR-46)'); perto(r.entradas[`R${L0 + 1}`], (5.52 + 6.42) / 2, 'FR-41 Vv (FR-46)')
   })
 }
 
