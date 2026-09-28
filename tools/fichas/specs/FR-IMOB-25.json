@@ -1,0 +1,210 @@
+{
+  "codigo": "FR-IMOB-25",
+  "versao": "Rev00",
+  "nome": "Estudo de composição granulométrica (com cal)",
+  "arquivo": "FR-IMOB-25_Rev00.xlsx",
+  "area_impressao": "A1:Z63",
+  "_nota": "Planilha-mestre Rev00 sem alterações de conteúdo (sem exemplo preenchido; modelada por Claude em 28/09), no mesmo padrão da FR-19: 6 colunas de material (D, G, J, M, P, S), 15 peneiras (1\" a nº 200). A área de impressão do Excel (B6:Z60) cortava o cabeçalho, o logotipo e o rodapé Elaborado/Revisado/Aprovado: na ficha online a área é A1:Z63 (observação para a Qualidade). Listas suspensas: material de cada coluna (D12…S12) e faixa de projeto (W15). A tabela de faixas normativas e as tolerâncias (colunas AA…BF, fora da área) entram como células auxiliares. Os valores de composição da planilha (35/50/13/2) eram exemplo: viram campos. Os 'xxxxxx' do cabeçalho são campos (O.S. e complemento vêm do pedido). Dois gráficos (insumos e mistura) aparecem na ficha. Estudo: sem resultado_* (fica em dados_resultado).",
+  "pedido": {
+    "G7": "os",
+    "G8": "complemento"
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "W7"
+      ],
+      "tipo": "data"
+    },
+    {
+      "celulas": [
+        "D12",
+        "G12",
+        "J12",
+        "M12",
+        "P12",
+        "S12",
+        "W15"
+      ],
+      "tipo": "texto"
+    },
+    {
+      "celulas": [
+        "D13",
+        "G13",
+        "J13",
+        "M13",
+        "P13",
+        "S13",
+        "D14",
+        "G14",
+        "J14",
+        "M14",
+        "P14",
+        "S14"
+      ],
+      "tipo": "texto"
+    },
+    {
+      "colunas": [
+        "D",
+        "G",
+        "J",
+        "M",
+        "P",
+        "S"
+      ],
+      "linhas": [
+        15,
+        "18-32"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "assinaturas": {
+    "executor": "C59",
+    "calculista": "W59"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "W7",
+          "W15"
+        ]
+      },
+      {
+        "titulo": "Material {n}",
+        "colunas": [
+          "D",
+          "G",
+          "J",
+          "M",
+          "P",
+          "S"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "W7": "Data do estudo",
+    "W15": "Faixa granulométrica de projeto",
+    "D12": "Material",
+    "D13": "Registro da amostra",
+    "D14": "Procedência",
+    "D15": "Composição (%)",
+    "D18": "% passa — peneira 1\"",
+    "D19": "% passa — peneira 3/4\"",
+    "D20": "% passa — peneira 1/2\"",
+    "D21": "% passa — peneira 3/8\"",
+    "D22": "% passa — peneira 5/16\"",
+    "D23": "% passa — peneira nº 4",
+    "D24": "% passa — peneira nº 8",
+    "D25": "% passa — peneira nº 10",
+    "D26": "% passa — peneira nº 16",
+    "D27": "% passa — peneira nº 30",
+    "D28": "% passa — peneira nº 40",
+    "D29": "% passa — peneira nº 50",
+    "D30": "% passa — peneira nº 80",
+    "D31": "% passa — peneira nº 100",
+    "D32": "% passa — peneira nº 200",
+    "G12": "Material",
+    "G13": "Registro da amostra",
+    "G14": "Procedência",
+    "G15": "Composição (%)",
+    "G18": "% passa — peneira 1\"",
+    "G19": "% passa — peneira 3/4\"",
+    "G20": "% passa — peneira 1/2\"",
+    "G21": "% passa — peneira 3/8\"",
+    "G22": "% passa — peneira 5/16\"",
+    "G23": "% passa — peneira nº 4",
+    "G24": "% passa — peneira nº 8",
+    "G25": "% passa — peneira nº 10",
+    "G26": "% passa — peneira nº 16",
+    "G27": "% passa — peneira nº 30",
+    "G28": "% passa — peneira nº 40",
+    "G29": "% passa — peneira nº 50",
+    "G30": "% passa — peneira nº 80",
+    "G31": "% passa — peneira nº 100",
+    "G32": "% passa — peneira nº 200",
+    "J12": "Material",
+    "J13": "Registro da amostra",
+    "J14": "Procedência",
+    "J15": "Composição (%)",
+    "J18": "% passa — peneira 1\"",
+    "J19": "% passa — peneira 3/4\"",
+    "J20": "% passa — peneira 1/2\"",
+    "J21": "% passa — peneira 3/8\"",
+    "J22": "% passa — peneira 5/16\"",
+    "J23": "% passa — peneira nº 4",
+    "J24": "% passa — peneira nº 8",
+    "J25": "% passa — peneira nº 10",
+    "J26": "% passa — peneira nº 16",
+    "J27": "% passa — peneira nº 30",
+    "J28": "% passa — peneira nº 40",
+    "J29": "% passa — peneira nº 50",
+    "J30": "% passa — peneira nº 80",
+    "J31": "% passa — peneira nº 100",
+    "J32": "% passa — peneira nº 200",
+    "M12": "Material",
+    "M13": "Registro da amostra",
+    "M14": "Procedência",
+    "M15": "Composição (%)",
+    "M18": "% passa — peneira 1\"",
+    "M19": "% passa — peneira 3/4\"",
+    "M20": "% passa — peneira 1/2\"",
+    "M21": "% passa — peneira 3/8\"",
+    "M22": "% passa — peneira 5/16\"",
+    "M23": "% passa — peneira nº 4",
+    "M24": "% passa — peneira nº 8",
+    "M25": "% passa — peneira nº 10",
+    "M26": "% passa — peneira nº 16",
+    "M27": "% passa — peneira nº 30",
+    "M28": "% passa — peneira nº 40",
+    "M29": "% passa — peneira nº 50",
+    "M30": "% passa — peneira nº 80",
+    "M31": "% passa — peneira nº 100",
+    "M32": "% passa — peneira nº 200",
+    "P12": "Material",
+    "P13": "Registro da amostra",
+    "P14": "Procedência",
+    "P15": "Composição (%)",
+    "P18": "% passa — peneira 1\"",
+    "P19": "% passa — peneira 3/4\"",
+    "P20": "% passa — peneira 1/2\"",
+    "P21": "% passa — peneira 3/8\"",
+    "P22": "% passa — peneira 5/16\"",
+    "P23": "% passa — peneira nº 4",
+    "P24": "% passa — peneira nº 8",
+    "P25": "% passa — peneira nº 10",
+    "P26": "% passa — peneira nº 16",
+    "P27": "% passa — peneira nº 30",
+    "P28": "% passa — peneira nº 40",
+    "P29": "% passa — peneira nº 50",
+    "P30": "% passa — peneira nº 80",
+    "P31": "% passa — peneira nº 100",
+    "P32": "% passa — peneira nº 200",
+    "S12": "Material",
+    "S13": "Registro da amostra",
+    "S14": "Procedência",
+    "S15": "Composição (%)",
+    "S18": "% passa — peneira 1\"",
+    "S19": "% passa — peneira 3/4\"",
+    "S20": "% passa — peneira 1/2\"",
+    "S21": "% passa — peneira 3/8\"",
+    "S22": "% passa — peneira 5/16\"",
+    "S23": "% passa — peneira nº 4",
+    "S24": "% passa — peneira nº 8",
+    "S25": "% passa — peneira nº 10",
+    "S26": "% passa — peneira nº 16",
+    "S27": "% passa — peneira nº 30",
+    "S28": "% passa — peneira nº 40",
+    "S29": "% passa — peneira nº 50",
+    "S30": "% passa — peneira nº 80",
+    "S31": "% passa — peneira nº 100",
+    "S32": "% passa — peneira nº 200"
+  },
+  "resultados": [],
+  "pedido_exemplo": {}
+}

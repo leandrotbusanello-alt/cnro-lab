@@ -8,6 +8,7 @@ import {
 } from '../../lib/syncQueue'
 import { listarModelos, modeloVigente, prepararModelos } from '../fichas/fichasRepo'
 import { apagarFotosApoio } from '../fichas/components/FotoApoio'
+import { apagarFotosLocais } from '../fichas/fotosFicha'
 import { STATUS_NA_FILA } from './constants'
 import { ehDev, ehHistorico } from '../../lib/historico'
 
@@ -252,5 +253,7 @@ export async function enviarParaRevisao(ctx, eo, dados, assinadoEm) {
   })
   await apagarRascunho(eo.id)
   await apagarFotosApoio(eo.id).catch(() => {})
+  // fotos da ficha: já estão no servidor (o envio exige); a cópia do aparelho não é mais necessária
+  await apagarFotosLocais(eo.id).catch(() => {})
   return r
 }

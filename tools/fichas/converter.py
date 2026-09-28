@@ -210,6 +210,9 @@ def papeis_da_spec(spec):
                 p[a]['marca'] = g['marca']
             if g.get('rotulo'):         # nome do grupo na visão em lista (senão, o texto à esquerda)
                 p[a]['rotuloGrupo'] = g['rotulo']
+    for a in spec.get('fotos', []):
+        # quadro de foto: o assistente tira/escolhe a foto, que é guardada no Storage (bucket "fotos")
+        p[a] = {'tipo': 'foto'}
     for quem, a in spec.get('assinaturas', {}).items():
         p[a] = {'tipo': 'assinatura', 'quem': quem}
     for a in spec.get('_verificacoes', []):
@@ -377,6 +380,12 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
                 papel['prefixo'] = str(v).rstrip() if v is not None else ''
                 papeis[a] = papel
                 v = None
+            elif papel and papel['tipo'] == 'foto':
+                # o texto do quadro ("Inserir Foto 01") aparece enquanto não há foto
+                if v is not None and str(v).strip():
+                    papel = {**papel, 'texto': str(v).strip()}
+                    papeis[a] = papel
+                v = None
             elif papel and papel['tipo'] == 'verificacao':
                 # texto na própria célula da caixa (raro) vira o rótulo ao lado do ☐
                 if v is not None and str(v).strip():
@@ -392,7 +401,8 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
             if isinstance(v, CellRichText):
                 d['rt'] = trechos(v, cores)
             elif v is not None and 'fx' not in d:
-                d['v'] = serial_excel(v)
+                # erro digitado como valor (#N/A em tabela de faixas): continua erro, como no Excel
+                d['v'] = {'err': v} if ws.cell(r, c).data_type == 'e' else serial_excel(v)
             if papel:
                 d['role'] = {k: x for k, x in papel.items() if not k.startswith('_')}
             if d or mr:
@@ -421,6 +431,8 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
         return (t or None), span, (ar, ac)
     for a, d in cells.items():
         papel = d.get('role')
+        if papel and papel['tipo'] == 'foto' and a in rotulos_spec:
+            papel['rot'] = rotulos_spec[a]
         if not papel or papel['tipo'] not in ('entrada', 'revisao'):
             continue
         c, r = separar(a)
@@ -500,6 +512,7 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
     refs_graficos = [ref for g in graficos for ref in refs_do_grafico(g)]
 
     aux = celulas_auxiliares(ws, wsv, cells, (c1, r1, c2, r2), formulas_spec, alertas, refs_graficos)
+    formatacao_condicional(ws, cells, (c1, r1, c2, r2), cores, alertas)
 
     pm = ws.page_margins
     ps = ws.page_setup
@@ -525,6 +538,75 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
 
     exemplo.update({'__verificacoes__': exemplo_ver} if exemplo_ver else {})
     return folha, exemplo, excel, alertas
+
+
+RE_CF_COMPARA = re.compile(r"^\$?([A-Z]{1,3})\$?(\d+)\s*(<>|>=|<=|=|>|<)\s*(\"[^\"]*\"|-?[\d.]+)$")
+OP_CF = {'=': 'equal', '<>': 'notEqual', '>': 'greaterThan', '<': 'lessThan', '>=': 'greaterThanOrEqual', '<=': 'lessThanOrEqual'}
+
+
+def _valor_cf(t):
+    t = t.strip()
+    if t.startswith('"') and t.endswith('"'):
+        return t[1:-1]
+    try:
+        return float(t)
+    except ValueError:
+        return None
+
+
+def formatacao_condicional(ws, cells, area, cores, alertas):
+    """Formatação condicional do Excel → role de estilo por célula (cells[a]['cf'] = [regras]).
+    Tipos: contém erro / não contém erro / valor da célula (cellIs) / expressão simples ($S$16<>100).
+    Estilo: cor da fonte, preenchimento, negrito, itálico. A ficha aplica na hora, com os valores calculados."""
+    c1, r1, c2, r2 = area
+    for cf in ws.conditional_formatting:
+        for regra in sorted(cf.rules, key=lambda r: r.priority or 0):
+            dxf = regra.dxf
+            estilo = {}
+            if dxf is not None:
+                if dxf.font is not None:
+                    if dxf.font.color is not None:
+                        estilo['c'] = '#000000' if dxf.font.color.type == 'auto' else cores(dxf.font.color)
+                    if dxf.font.b: estilo['b'] = 1
+                    if dxf.font.i: estilo['i'] = 1
+                if dxf.fill is not None and getattr(dxf.fill, 'bgColor', None) is not None:
+                    bg = cores(dxf.fill.bgColor)
+                    if bg and not (dxf.fill.bgColor.type == 'rgb' and dxf.fill.bgColor.rgb in (None, '00000000')):
+                        estilo['bg'] = bg
+            estilo = {k: v for k, v in estilo.items() if v}
+            if not estilo:
+                continue
+            r = {'estilo': estilo, 'p': regra.priority or 0}
+            if regra.stopIfTrue: r['parar'] = 1
+            if regra.type == 'containsErrors':
+                r['t'] = 'erro'
+            elif regra.type == 'notContainsErrors':
+                r['t'] = 'semErro'
+            elif regra.type == 'containsBlanks':
+                r['t'] = 'vazio'
+            elif regra.type == 'cellIs' and regra.operator:
+                vals = [_valor_cf(f) for f in regra.formula or []]
+                if not vals or any(v is None for v in vals):
+                    alertas.append(f'formatação condicional em {cf.sqref}: valor não constante ({regra.formula}) — ignorada.')
+                    continue
+                r.update({'t': 'valor', 'op': regra.operator, 'v': vals})
+            elif regra.type == 'expression' and regra.formula:
+                m = RE_CF_COMPARA.match(regra.formula[0].strip())
+                if not m or '$' not in regra.formula[0]:
+                    alertas.append(f'formatação condicional em {cf.sqref}: expressão não suportada ({regra.formula[0]}) — ignorada.')
+                    continue
+                r.update({'t': 'valor', 'ref': m.group(1) + m.group(2), 'op': OP_CF[m.group(3)], 'v': [_valor_cf(m.group(4))]})
+            else:
+                alertas.append(f'formatação condicional em {cf.sqref}: tipo "{regra.type}" não suportado — ignorada.')
+                continue
+            for rng in str(cf.sqref).split():
+                ca, ra, cb, rb = range_boundaries(rng)
+                for rr in range(max(ra, r1), min(rb, r2) + 1):
+                    for cc in range(max(ca, c1), min(cb, c2) + 1):
+                        d = cells.get(endereco(cc, rr))
+                        if d is not None:
+                            d.setdefault('cf', []).append(r)
+                            d['cf'].sort(key=lambda x: x['p'])
 
 
 RE_REF_LOCAL = re.compile(r"(?<![A-Za-z0-9_!'.$])\$?([A-Z]{1,3})\$?(\d+)(?::\$?([A-Z]{1,3})\$?(\d+))?(?![A-Za-z0-9_(!])")
@@ -569,7 +651,7 @@ def celulas_auxiliares(ws, wsv, cells, area, formulas_spec, alertas, refs_extras
             aux[a] = {'fx': v[1:]}
             pendentes += refs_locais(v[1:])
         elif v is not None:
-            aux[a] = {'v': serial_excel(v)}
+            aux[a] = {'v': {'err': v} if ws.cell(rr, cc).data_type == 'e' else serial_excel(v)}
     if len(aux) > 3000:
         alertas.append(f'{len(aux)} células auxiliares — confira se a área de impressão está certa.')
     return aux
@@ -927,7 +1009,7 @@ def ler_grafico(cx, tema, ws_titulo, alertas, nome_arq):
     return g
 
 
-CHAVES_DA_FOLHA = ('graficos_series', 'pedido', 'entradas', 'revisao', 'escolhas', 'assinaturas', 'linhas_assinatura', 'formulas',
+CHAVES_DA_FOLHA = ('graficos_series', 'fotos', 'pedido', 'entradas', 'revisao', 'escolhas', 'assinaturas', 'linhas_assinatura', 'formulas',
                    'colunas_tela', 'limpar', 'mesclas_extras', 'lista', 'rotulos', 'verificacoes', 'area_impressao', 'graficos')
 RE_ABA_FORMULA = re.compile(r"(?:'((?:[^']|'')+)'|([A-Za-z_][A-Za-z0-9_.]*))!\$?[A-Z]{1,3}\$?\d")
 

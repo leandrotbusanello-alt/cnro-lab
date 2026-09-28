@@ -10,6 +10,7 @@ import { obterModelo } from '../../fichas/fichasRepo'
 import { camposDoPedido } from '../../fichas/camposPedido'
 import { estadoDosDados } from '../../fichas/motor/ficha.js'
 import { useFicha } from '../../fichas/useFicha'
+import { useFotosFicha } from '../../fichas/fotosFicha'
 import { INTERVALO_RASCUNHO_SERVIDOR } from '../../fichas/constants'
 import FichaEnsaio from '../../fichas/components/FichaEnsaio'
 import FotoApoio from '../../fichas/components/FotoApoio'
@@ -102,6 +103,8 @@ export default function ExecucaoEnsaio() {
   // ── Salvamento automático ────────────────────────────────────────────────
   const emExecucao = eo?.status === 'em_andamento'
   const alterar = useCallback(novo => { setEstado(novo); sujoServidor.current = true }, [])
+  // quadros de foto (ex.: FR-IMOB-27): a foto fica no aparelho e sobe para o servidor assim que possível
+  const fotos = useFotosFicha({ ensaioOsId: eo?.id, usuarioId: a.eu?.id, estado, onEstado: alterar })
 
   useEffect(() => {
     if (!eo || !estado || !emExecucao) return undefined
@@ -119,6 +122,7 @@ export default function ExecucaoEnsaio() {
     if (!manual && !sujoServidor.current) return
     setSalvando(true)
     try {
+      if (fotos.pendentes) fotos.enviarPendentes()   // o próximo salvamento já leva o caminho no servidor
       sujoServidor.current = false
       const r = await a.acoes.salvarRascunho(eo, ficha.dados())
       const agora = new Date().toISOString()
@@ -131,7 +135,7 @@ export default function ExecucaoEnsaio() {
     } finally {
       setSalvando(false)
     }
-  }, [eo, estado, assinatura, ficha, a.acoes])
+  }, [eo, estado, assinatura, ficha, a.acoes, fotos])
 
   useEffect(() => {
     if (!emExecucao) return undefined
@@ -157,9 +161,16 @@ export default function ExecucaoEnsaio() {
     }
   }
 
-  function pedirEnvio() {
+  async function pedirEnvio() {
     setAviso(null)
     const sit = ficha.situacao
+    if (sit.fotosPendentes) {
+      const restam = await fotos.enviarPendentes()
+      if (restam) {
+        setAviso({ tipo: 'erro', texto: `${restam} foto(s) ainda não foram enviadas ao servidor. Conecte-se à internet e tente de novo.` })
+        return
+      }
+    }
     if (sit.invalidos.length) {
       setAviso({ tipo: 'erro', texto: `Corrija ${sit.invalidos.length} campo(s) marcados em vermelho (${sit.invalidos.slice(0, 5).join(', ')}).` })
       return
@@ -180,7 +191,7 @@ export default function ExecucaoEnsaio() {
   async function enviar() {
     setOcupado(true)
     try {
-      const r = await a.acoes.enviar(eo, ficha.dados(), historico ? dataParaISO(dataExec) : assinatura.em)
+      const r = await a.acoes.enviar(eo, ficha.dados(fotos.estadoAtual() || estado), historico ? dataParaISO(dataExec) : assinatura.em)
       navigate('/assistente', {
         replace: true,
         state: {
@@ -288,6 +299,7 @@ export default function ExecucaoEnsaio() {
               onAssinar={() => { setAssinatura({ nome: executor?.nome, em: new Date().toISOString() }); sujoServidor.current = true }}
               onRemoverAssinatura={() => { setAssinatura(null); sujoServidor.current = true }}
               idBase={`eo-${eo.id.slice(0, 8)}`}
+              fotos={fotos}
             />
           </div>
           {fotoAberta && <FotoApoio ensaioOsId={eo.id} onFechar={() => setFotoAberta(false)} />}

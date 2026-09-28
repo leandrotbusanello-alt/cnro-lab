@@ -101,7 +101,25 @@ Requisitos: Python 3.10+ (`openpyxl`, `lxml`), Node 18+ e LibreOffice (só para 
 - As células que o gráfico lê fora da área entram como auxiliares (como as das fórmulas).
 - Se a tabela que o gráfico lia foi limpa da ficha, aponte a série para outro lugar:
   `"graficos_series": { "0.0": { "x": "E29:E39", "y": "P47:P57" } }` (gráfico.série, a partir de 0).
-- Células vazias ou com texto interrompem a linha (como `#N/D` no Excel); em eixo log, valores ≤ 0 também.
+- Como no Excel: ponto com erro (`#N/D`) é pulado e a linha liga os vizinhos; célula vazia ou com texto
+  interrompe a linha; em eixo log, valores ≤ 0 também interrompem.
+
+### Quadros de foto
+- `"fotos": ["B15", "E15"]` na spec: a célula vira um quadro de foto (o texto do Excel, p.ex. "Inserir Foto 01",
+  aparece enquanto não há foto). Rótulo da visão em lista: `rotulos`.
+- O assistente tira ou escolhe a foto; ela é reduzida no aparelho (lado maior 1600 px, JPEG), guardada no
+  aparelho (funciona sem internet) e enviada ao Storage, bucket privado `fotos`, na pasta do usuário:
+  `<usuarios.id>/fichas/<ensaios_os.id>/<célula>-<hora>.jpg`. Em `dados_resultado.fotos` fica o caminho.
+- A ficha só vai para revisão (e só é aprovada) com todas as fotos no servidor. O laboratorista pode trocar
+  foto na revisão. Trocar/remover não apaga o arquivo antigo do Storage.
+- Código: `src/modules/fichas/fotosFicha.js` (redução, envio, URLs) e `components/FotoCelula.jsx`.
+
+### Formatação condicional
+- Regras do Excel dentro da área da ficha entram por célula (`cells[a].cf`) e a ficha aplica na hora,
+  com os valores calculados: **contém erro** (p.ex. esconder `#N/D` com fonte branca), **não contém erro**,
+  **vazio**, **valor da célula** (=, ≠, >, <, ≥, ≤, entre) e **expressão simples** do tipo `$S$16<>100`.
+- Estilos: cor da fonte, preenchimento, negrito, itálico. Tipo não suportado gera aviso ⚠.
+- Erros digitados como valor na planilha (`#N/A` em tabela de faixas) continuam erro no motor, como no Excel.
 
 ## Regras do conversor
 - **Fórmulas bloqueadas:** as aleatórias ou voláteis (`RANDBETWEEN`, `RAND`, `NOW`, `TODAY`, `INDIRECT`, `OFFSET`) nunca entram no sistema.

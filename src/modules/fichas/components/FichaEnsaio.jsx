@@ -13,7 +13,8 @@ const NOME = { executor: 'Responsável executor', calculista: 'Responsável calc
  *   <FichaEnsaio indice motor estado onEstado modo="preencher|revisao|leitura"
  *                assinaturas={{executor, calculista}} podeAssinar={{executor:true}}
  *                motivoSemAssinatura="…" usuarioNome="…"
- *                onAssinar={quem => …} onRemoverAssinatura={quem => …} />
+ *                onAssinar={quem => …} onRemoverAssinatura={quem => …}
+ *                fotos={useFotosFicha(…)} />   ← fichas com quadro de foto (FR-IMOB-27)
  *
  * Assinar: o usuário clica no campo da assinatura, confirma, e a assinatura aparece
  * na ficha (e na impressão). Com a ficha assinada pelo responsável da etapa, os
@@ -22,7 +23,7 @@ const NOME = { executor: 'Responsável executor', calculista: 'Responsável calc
 export default function FichaEnsaio({
   indice, motor, estado, onEstado, modo = 'leitura',
   assinaturas = {}, podeAssinar = {}, motivoSemAssinatura, usuarioNome,
-  onAssinar, onRemoverAssinatura, idBase = 'ficha',
+  onAssinar, onRemoverAssinatura, idBase = 'ficha', fotos,
 }) {
   const [vista, setVista] = useState(() => (window.innerWidth < LARGURA_VISAO_LISTA ? 'lista' : 'grade'))
   const [confirmacao, setConfirmacao] = useState(null)   // { quem, rect }
@@ -70,6 +71,7 @@ export default function FichaEnsaio({
   const props = {
     indice, estado, modo, bloqueado, assinaturas,
     onEntrada: mudarEntrada, onEscolha: mudarEscolha, onVerificacao: mudarVerificacao, onCliqueAssinatura: cliqueAssinatura,
+    fotos,
   }
 
   return (
@@ -82,6 +84,9 @@ export default function FichaEnsaio({
           Lista
         </button>
         {bloqueado && <span className={s.travada}>🔒 Assinada — remova a assinatura para editar</span>}
+        {fotos?.enviando && <span className={s.fotoAviso}>⏫ Enviando foto…</span>}
+        {!fotos?.enviando && fotos?.pendentes > 0 && <span className={s.fotoAviso}>⏳ {fotos.pendentes} foto(s) aguardando internet para envio</span>}
+        {fotos?.erro && <span className={s.fotoErro} role="alert">{fotos.erro}</span>}
       </div>
 
       {vista === 'grade' ? (

@@ -7,7 +7,7 @@
 //                     legenda: { pos, ocultos, area, fonte }, vazios }]
 // Aqui ficam só as contas (escalas, marcas dos eixos, pontos das séries); o desenho é o componente Grafico.jsx.
 // ─────────────────────────────────────────────────────────────────────────────
-import { colStr, separarEndereco } from './formulas.js'
+import { colStr, ehErro, separarEndereco } from './formulas.js'
 
 const PT = 96 / 72
 export const pt = v => (v || 0) * PT
@@ -49,7 +49,7 @@ export function nomeDaSerie(serie, motor, cells, prefixo, i) {
 }
 
 /**
- * Pontos da série. Ponto sem número (vazio, texto, erro) interrompe a linha ('gap'); com
+ * Pontos da série. Ponto vazio ou com texto interrompe a linha ('gap'); erro (#N/D) é pulado; com
  * vazios = 'zero', a célula vazia vale 0 (como no Excel). Em eixo log, valores ≤ 0 também interrompem.
  * Retorna trechos contínuos: [[{x,y}, …], …].
  */
@@ -66,6 +66,9 @@ export function pontosDaSerie(serie, motor, prefixo, { logX, logY, vazios } = {}
     const ok = typeof x === 'number' && Number.isFinite(x) && typeof y === 'number' && Number.isFinite(y) &&
       !(logX && x <= 0) && !(logY && y <= 0)
     if (ok) atual.push({ x, y })
+    // como no Excel: erro (#N/D) só omite o ponto — a linha liga os vizinhos; vazio interrompe
+    // (a não ser que o gráfico diga "ligar pontos": vazios = 'span')
+    else if (ehErro(y) || ehErro(x) || (vazios === 'span' && (y === null || x === null))) return
     else quebrar()
   })
   quebrar()

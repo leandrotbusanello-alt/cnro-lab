@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { gruposDaLista } from '../motor/ficha.js'
 import CampoCelula from './CampoCelula'
 import Grafico from './Grafico'
+import FotoCelula from './FotoCelula'
 import s from './Ficha.module.css'
 
 /**
@@ -10,7 +11,7 @@ import s from './Ficha.module.css'
  */
 export default function FichaLista({
   indice, motor, estado, modo = 'preencher', bloqueado = false, idBase = 'lista',
-  assinaturas = {}, podeAssinar = {}, onEntrada, onEscolha, onVerificacao, onCliqueAssinatura,
+  assinaturas = {}, podeAssinar = {}, onEntrada, onEscolha, onVerificacao, onCliqueAssinatura, fotos,
 }) {
   const grupos = useMemo(() => gruposDaLista(indice, { incluirRevisao: modo === 'revisao' }), [indice, modo])
   const ordem = useMemo(() => grupos.flatMap(g => g.itens.filter(i => i.endereco).map(i => i.endereco)), [grupos])
@@ -55,6 +56,22 @@ export default function FichaLista({
                         </button>
                       ))}
                     </div>
+                  </div>
+                )
+              }
+              if (item.tipo === 'foto') {
+                return (
+                  <div key={item.endereco} className={`${s.item} ${s.itemLargo}`}>
+                    <span className={s.itemRotulo}>{item.rotulo}</span>
+                    <FotoCelula
+                      lista
+                      foto={estado?.fotos?.[item.endereco]}
+                      texto="Sem foto"
+                      rotulo={item.rotulo}
+                      editavel={podeEntrada && !!fotos}
+                      onEscolher={f => fotos?.adicionar(item.endereco, f)}
+                      onRemover={() => fotos?.remover(item.endereco)}
+                    />
                   </div>
                 )
               }

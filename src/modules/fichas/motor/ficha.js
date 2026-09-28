@@ -9,6 +9,7 @@
 // role.tipo: 'entrada' (assistente) · 'revisao' (laboratorista) · 'pedido' (dados do pedido)
 //            'escolha' (Sim/Não) · 'assinatura' (executor | calculista)
 //            'verificacao' (caixa de seleção independente, ☐/☒ — pontos de verificação do verso)
+//            'foto' (quadro de foto: role.texto = texto do quadro vazio; a foto fica no Storage)
 //
 // Listas suspensas: role.opcoes (entrada de texto escolhida numa lista, como a validação de dados do Excel).
 // Auxiliares: modelo.aux (e abas[i].aux) = { 'W17': {v} | {fx} } — células fora da área usadas pelas fórmulas.
@@ -18,7 +19,9 @@
 //   modelo.apelidos: nome da aba no Excel → id ('' = principal), para as fórmulas entre abas.
 //
 // estado (o que o usuário preencheu):
-//   { entradas: {D18: 65.13, 'VERSO!F7': 'BAL-01', …}, escolhas: {grupo: 'Sim'}, verificacoes: {'VERSO!B10': true} }
+//   { entradas: {D18: 65.13, 'VERSO!F7': 'BAL-01', …}, escolhas: {grupo: 'Sim'}, verificacoes: {'VERSO!B10': true},
+//     fotos: { B15: { caminho: '<usuario>/fichas/<ensaio>/B15-….jpg', local?: 'fotoficha:…' } } }
+//   (local = cópia guardada no aparelho; sem caminho = ainda não enviada ao servidor)
 // ─────────────────────────────────────────────────────────────────────────────
 import { Motor, colNum, colStr, ehErro, separarEndereco } from './formulas.js'
 
@@ -80,7 +83,7 @@ export function indexarModelo(modelo) {
   const cells = {}
   const formulas = {}
   const estaticos = {}
-  const papeis = { entrada: [], revisao: [], pedido: [], escolha: [], verificacao: [], assinatura: {} }
+  const papeis = { entrada: [], revisao: [], pedido: [], escolha: [], verificacao: [], foto: [], assinatura: {} }
   for (const f of folhas) {
     // células auxiliares (fora da área da ficha: tabelas de faixas, listas…): calculadas, não desenhadas
     for (const [local, d] of Object.entries(f.modelo.aux || {})) {
@@ -117,7 +120,7 @@ export function indexarModelo(modelo) {
 }
 
 export function estadoVazio() {
-  return { entradas: {}, escolhas: {}, verificacoes: {} }
+  return { entradas: {}, escolhas: {}, verificacoes: {}, fotos: {} }
 }
 
 /** Estado a partir de dados_resultado salvos (aceita dados antigos/vazios). */
@@ -126,6 +129,7 @@ export function estadoDosDados(dados) {
     entradas: { ...(dados?.entradas || {}) },
     escolhas: { ...(dados?.escolhas || {}) },
     verificacoes: { ...(dados?.verificacoes || {}) },
+    fotos: { ...(dados?.fotos || {}) },
   }
 }
 
@@ -184,6 +188,10 @@ export function montarDados(indice, estado, motor, { modeloId } = {}) {
   for (const [g, v] of Object.entries(estado?.escolhas || {})) if (v) escolhas[g] = v
   const verificacoes = {}
   for (const [a, v] of Object.entries(estado?.verificacoes || {})) if (v) verificacoes[a] = true
+  const fotos = {}
+  for (const [a, f] of Object.entries(estado?.fotos || {})) {
+    if (f && (f.caminho || f.local)) fotos[a] = { ...(f.caminho ? { caminho: f.caminho } : {}), ...(f.local ? { local: f.local } : {}), ...(f.em ? { em: f.em } : {}) }
+  }
   const calculados = {}
   for (const a of Object.keys(indice.formulas)) {
     const v = normalizarSaida(motor.valores.get(a))
@@ -201,6 +209,7 @@ export function montarDados(indice, estado, motor, { modeloId } = {}) {
     versao: indice.modelo.versao,
     entradas, escolhas, pedido, calculados,
     ...(indice.papeis.verificacao.length ? { verificacoes } : {}),
+    ...(indice.papeis.foto.length ? { fotos } : {}),
     atualizado_em: new Date().toISOString(),
   }
 }
@@ -214,7 +223,14 @@ export function situacaoPreenchimento(indice, estado) {
     if (v && typeof v === 'object' && 'invalido' in v) invalidos.push(a)
     else if (v !== null && v !== undefined && v !== '') preenchidos++
   }
-  return { preenchidos, total: indice.papeis.entrada.length, invalidos }
+  // quadros de foto contam como campos; pendentes = fotos ainda só no aparelho (não enviadas)
+  let pendentes = 0
+  for (const a of indice.papeis.foto) {
+    const f = estado?.fotos?.[a]
+    if (f?.caminho || f?.local) preenchidos++
+    if (f?.local && !f.caminho) pendentes++
+  }
+  return { preenchidos, total: indice.papeis.entrada.length + indice.papeis.foto.length, invalidos, fotosPendentes: pendentes }
 }
 
 // ── Resultados normalizados (resultado_*) ────────────────────────────────────
@@ -336,7 +352,7 @@ export function gruposDaLista(indice, { incluirRevisao = false } = {}) {
   for (const folha of indice.folhas) {
     const doFolha = a => (folha.prefixo ? a.startsWith(folha.prefixo) : !a.includes('!'))
     const entradasFolha = indice.papeis.entrada.filter(doFolha)
-    const marcaveis = [...indice.papeis.entrada, ...indice.papeis.escolha, ...indice.papeis.verificacao].filter(doFolha)
+    const marcaveis = [...indice.papeis.entrada, ...indice.papeis.escolha, ...indice.papeis.verificacao, ...indice.papeis.foto].filter(doFolha)
     const defs = folha.modelo.lista?.grupos || []
     const inicio = grupos.length
     const titulo = t => (varias && folha.id ? `${folha.titulo} — ${t}` : t)
@@ -356,6 +372,10 @@ export function gruposDaLista(indice, { incluirRevisao = false } = {}) {
         usados.add(a)
         const local = a.replace(/^.*!/, '')
         return { tipo: 'verificacao', endereco: a, rotulo: role.rot || role.texto || textoADireita(folha, a) || textoAEsquerda(folha, local) || local }
+      }
+      if (role.tipo === 'foto') {
+        usados.add(a)
+        return { tipo: 'foto', endereco: a, rotulo: role.rot || role.texto || a.replace(/^.*!/, ''), texto: role.texto || '' }
       }
       if (role.tipo !== 'entrada' && !(incluirRevisao && role.tipo === 'revisao')) return null
       usados.add(a)

@@ -9,6 +9,7 @@ import { obterModelo } from '../../fichas/fichasRepo'
 import { camposDoPedido } from '../../fichas/camposPedido'
 import { estadoDosDados } from '../../fichas/motor/ficha.js'
 import { useFicha } from '../../fichas/useFicha'
+import { useFotosFicha } from '../../fichas/fotosFicha'
 import { CONFORMIDADES, MODULOS_QUE_IMPRIMEM } from '../../fichas/constants'
 import FichaEnsaio from '../../fichas/components/FichaEnsaio'
 import ImpressaoFicha from '../../fichas/components/ImpressaoFicha'
@@ -97,15 +98,26 @@ export default function RevisaoFicha({ pedido, ensaioOs: eo, podeRevisar, ocupad
     setEstado(novo)
     setAlterado(true)
   }
+  // quadros de foto: o laboratorista também pode trocar uma foto na revisão (vai para a pasta dele no Storage)
+  const fotos = useFotosFicha({ ensaioOsId: eo.id, usuarioId: lab.perfil?.id, estado, onEstado: alterar })
+
+  async function fotosEnviadas() {
+    if (!fotos.pendentes) return true
+    const restam = await fotos.enviarPendentes()
+    if (restam) setAviso(`${restam} foto(s) ainda não foram enviadas ao servidor. Verifique a internet e tente de novo.`)
+    return !restam
+  }
 
   async function salvar() {
     setAviso(null)
-    const ok = await rodar(() => lab.acoes.salvarRevisaoFicha(pedido, eo, ficha.dados()), 'Correções salvas.')
+    if (!(await fotosEnviadas())) return
+    const ok = await rodar(() => lab.acoes.salvarRevisaoFicha(pedido, eo, ficha.dados(fotos.estadoAtual() || estado)), 'Correções salvas.')
     if (ok) setAlterado(false)
   }
 
   async function aprovar() {
     setAviso(null)
+    if (!(await fotosEnviadas())) return
     const sit = ficha.situacao
     if (sit?.invalidos?.length) {
       setAviso(`Corrija ${sit.invalidos.length} campo(s) marcados em vermelho (${sit.invalidos.slice(0, 5).join(', ')}).`)
@@ -121,7 +133,7 @@ export default function RevisaoFicha({ pedido, ensaioOs: eo, podeRevisar, ocupad
     if (!assinaturaCalc) { setAviso('Assine a ficha no campo “Responsável calculista” antes de aprovar.'); return }
     if (!dataAprovOk) { setAviso('Informe a data da aprovação (entre a data do envio e hoje).'); return }
     const ok = await rodar(() => lab.acoes.aprovarEnsaioFicha(pedido, eo, {
-      dados: ficha.dados(),
+      dados: ficha.dados(fotos.estadoAtual() || estado),
       resultados: ficha.resultados(),
       conformidade,
       observacoes: observacoes.trim() || null,
@@ -189,6 +201,7 @@ export default function RevisaoFicha({ pedido, ensaioOs: eo, podeRevisar, ocupad
               }}
               onRemoverAssinatura={quem => { if (quem === 'calculista') setAssinaturaCalc(null) }}
               idBase={`rev-${eo.id.slice(0, 8)}`}
+              fotos={fotos}
             />
           )}
         </div>

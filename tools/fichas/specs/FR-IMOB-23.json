@@ -1,0 +1,117 @@
+{
+  "codigo": "FR-IMOB-23",
+  "versao": "Rev00",
+  "nome": "Material finamente pulverizado — Determinação da massa específica real",
+  "arquivo": "FR-IMOB-23_Rev00.xlsx",
+  "aba": "FR-IMOB-23_Rev00",
+  "titulo_aba": "Frente",
+  "_nota": "Planilha-mestre Rev00 da Qualidade, sem alterações (sem exemplo preenchido; modelada por Claude em 28/09). Rótulo e valor na mesma célula (\"Nº O.S: …\"), como na FR-08. Frente: leituras inicial/final e massa, 2 ensaios; µ = m/(Lf − Li) e média. Verso: identificação dos equipamentos e 5 pontos de verificação (caixas de seleção do Excel). Sem resultado_* (não há tabela de massa específica de fíler/cimento): os dados ficam em dados_resultado.",
+  "pedido": {
+    "B7": {
+      "campo": "os",
+      "manter_texto": true
+    },
+    "B8": {
+      "campo": "material",
+      "manter_texto": true
+    },
+    "E8": {
+      "campo": "registro",
+      "manter_texto": true
+    },
+    "B9": {
+      "campo": "procedencia",
+      "manter_texto": true
+    },
+    "B10": {
+      "campo": "complemento",
+      "manter_texto": true
+    }
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "E7"
+      ],
+      "tipo": "data",
+      "manter_texto": true
+    },
+    {
+      "colunas": [
+        "F",
+        "G"
+      ],
+      "linhas": [
+        "15-17"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "assinaturas": {
+    "executor": "B25",
+    "calculista": "F25"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "E7"
+        ]
+      },
+      {
+        "titulo": "{n}º ensaio",
+        "colunas": [
+          "F",
+          "G"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "E7": "Data do ensaio",
+    "F15": "(Li) Leitura inicial",
+    "G15": "(Li) Leitura inicial",
+    "F16": "(Lf) Leitura final",
+    "G16": "(Lf) Leitura final",
+    "F17": "(m) Peso do material",
+    "G17": "(m) Peso do material"
+  },
+  "abas_extras": [
+    {
+      "id": "VERSO",
+      "aba": "VERSO",
+      "titulo": "Verso",
+      "entradas": [
+        {
+          "celulas": [
+            "C6",
+            "C7"
+          ],
+          "tipo": "texto"
+        }
+      ],
+      "rotulos": {
+        "C6": "Balança — identificação",
+        "C7": "Peneira — identificação"
+      },
+      "lista": {
+        "grupos": [
+          {
+            "titulo": "Equipamentos utilizados",
+            "celulas": [
+              "C6",
+              "C7"
+            ]
+          },
+          {
+            "titulo": "Pontos de verificação",
+            "linhas": "9-13"
+          }
+        ]
+      }
+    }
+  ],
+  "resultados": [],
+  "pedido_exemplo": {}
+}

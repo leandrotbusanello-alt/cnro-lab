@@ -1,0 +1,126 @@
+{
+  "codigo": "FR-IMOB-27",
+  "versao": "Rev00",
+  "nome": "Determinação expedita da resistência à água (adesividade) sobre agregados graúdos",
+  "arquivo": "FR-IMOB-27_Rev00.xlsx",
+  "_nota": "Planilha-mestre Rev00 sem alterações (sem exemplo preenchido; modelada por Claude em 28/09). Avaliação visual: 4 quadros de foto (campo de foto: o assistente tira ou escolhe a foto no aparelho; ela é reduzida e guardada no Storage, bucket privado 'fotos'; aparece na ficha, na revisão e na impressão) com descrição; resultado Satisfatório/Insatisfatório (as duas caixas de seleção do Excel viram uma escolha exclusiva). Rótulo e valor na mesma célula, como na FR-08. Sem resultado_* (não há tabela de adesividade): dados em dados_resultado.",
+  "pedido": {
+    "B7": {
+      "campo": "os",
+      "manter_texto": true
+    },
+    "B8": {
+      "campo": "material",
+      "manter_texto": true
+    },
+    "E8": {
+      "campo": "registro",
+      "manter_texto": true
+    },
+    "B9": {
+      "campo": "procedencia",
+      "manter_texto": true
+    },
+    "B10": {
+      "campo": "complemento",
+      "manter_texto": true
+    }
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "E7"
+      ],
+      "tipo": "data",
+      "manter_texto": true
+    },
+    {
+      "celulas": [
+        "B16",
+        "E16",
+        "B18",
+        "E18"
+      ],
+      "tipo": "texto",
+      "multilinha": true,
+      "manter_texto": true
+    }
+  ],
+  "escolhas": [
+    {
+      "grupo": "resultado",
+      "rotulo": "Resultado",
+      "celulas": {
+        "D20": "Insatisfatório",
+        "F20": "Satisfatório"
+      }
+    }
+  ],
+  "assinaturas": {
+    "executor": "B23",
+    "calculista": "F23"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "E7"
+        ]
+      },
+      {
+        "titulo": "Foto 01",
+        "celulas": [
+          "B15",
+          "B16"
+        ]
+      },
+      {
+        "titulo": "Foto 02",
+        "celulas": [
+          "E15",
+          "E16"
+        ]
+      },
+      {
+        "titulo": "Foto 03",
+        "celulas": [
+          "B17",
+          "B18"
+        ]
+      },
+      {
+        "titulo": "Foto 04",
+        "celulas": [
+          "E17",
+          "E18"
+        ]
+      },
+      {
+        "titulo": "Resultado",
+        "celulas": [
+          "D20"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "E7": "Data do ensaio",
+    "B16": "Descrição — foto 01",
+    "E16": "Descrição — foto 02",
+    "B18": "Descrição — foto 03",
+    "E18": "Descrição — foto 04",
+    "B15": "Foto 01",
+    "E15": "Foto 02",
+    "B17": "Foto 03",
+    "E17": "Foto 04"
+  },
+  "resultados": [],
+  "pedido_exemplo": {},
+  "fotos": [
+    "B15",
+    "E15",
+    "B17",
+    "E17"
+  ]
+}

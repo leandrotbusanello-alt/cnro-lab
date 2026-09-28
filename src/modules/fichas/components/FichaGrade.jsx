@@ -1,8 +1,9 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { colStr } from '../motor/formulas.js'
+import { colStr, ehErro } from '../motor/formulas.js'
 import { formatar } from '../motor/formatacao.js'
 import CampoCelula from './CampoCelula'
 import Grafico from './Grafico'
+import FotoCelula from './FotoCelula'
 import s from './Ficha.module.css'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -34,6 +35,49 @@ function estiloTd(d) {
   if (f.c) st.color = f.c
   st.verticalAlign = d.vt === 'center' || d.vt === 'justify' || d.vt === 'distributed' ? 'middle' : d.vt === 'top' ? 'top' : 'bottom'
   return st
+}
+
+const COMPARA = {
+  equal: (x, [a]) => x === a, notEqual: (x, [a]) => x !== a,
+  greaterThan: (x, [a]) => x > a, lessThan: (x, [a]) => x < a,
+  greaterThanOrEqual: (x, [a]) => x >= a, lessThanOrEqual: (x, [a]) => x <= a,
+  between: (x, [a, b]) => x >= Math.min(a, b) && x <= Math.max(a, b),
+  notBetween: (x, [a, b]) => x < Math.min(a, b) || x > Math.max(a, b),
+}
+
+/**
+ * Formatação condicional do Excel (d.cf, em ordem de prioridade): as regras verdadeiras se somam,
+ * a de maior prioridade vence quando mexem na mesma propriedade; "parar" interrompe.
+ */
+function estiloCondicional(d, a, pre, motor, estado) {
+  if (!d.cf) return null
+  const valorDe = end => {
+    const v = motor?.valores?.get(pre + end)
+    return v === undefined ? (estado?.entradas?.[pre + end] ?? null) : v
+  }
+  const out = {}
+  for (const r of d.cf) {
+    const v = valorDe(r.ref || a)
+    let ok = false
+    if (r.t === 'erro') ok = ehErro(v)
+    else if (r.t === 'semErro') ok = !ehErro(v)
+    else if (r.t === 'vazio') ok = v === null || v === ''
+    else if (r.t === 'valor' && !ehErro(v)) {
+      // como no Excel: célula vazia vale 0; texto nunca é igual a número (só "diferente")
+      const numerico = typeof r.v[0] === 'number'
+      const x = v === null ? (numerico ? 0 : '') : typeof v === 'number' ? v : String(v).toLowerCase()
+      const alvo = r.v.map(k => (typeof k === 'number' ? k : String(k).toLowerCase()))
+      ok = (typeof x === typeof alvo[0]) ? !!COMPARA[r.op]?.(x, alvo) : r.op === 'notEqual'
+    }
+    if (!ok) continue
+    const e = r.estilo
+    if (e.c && !out.color) out.color = e.c
+    if (e.bg && !out.background) out.background = e.bg
+    if (e.b && !out.fontWeight) out.fontWeight = 700
+    if (e.i && !out.fontStyle) out.fontStyle = 'italic'
+    if (r.parar) break
+  }
+  return out
 }
 
 function alinhamento(d) {
@@ -111,11 +155,13 @@ function MarcaAssinatura({ assinatura, linhasTexto }) {
  *   idBase      prefixo dos ids dos campos (navegação com Enter)
  *   onEntrada(endereco, valor) · onEscolha(grupo, opcao) · onVerificacao(endereco, marcado)
  *   onCliqueAssinatura(quem, elemento)
+ *   fotos       useFotosFicha(…) — quadros de foto editáveis (sem ele, as fotos só aparecem)
  * Endereços passados para fora (estado, motor, callbacks) são os completos: 'B7' ou 'VERSO!B7'.
  */
 export default function FichaGrade({
   indice, folha: folhaProp, motor, estado, modo = 'leitura', destacar = false, bloqueado = false, assinaturas = {},
   escala: escalaFixa, idBase = 'ficha', soImpressao = false, onEntrada, onEscolha, onVerificacao, onCliqueAssinatura,
+  fotos,
 }) {
   const folha = folhaProp || indice.folhas?.[0] || indice
   const pre = folha.prefixo || ''
@@ -178,10 +224,23 @@ export default function FichaGrade({
       if (!d.role.prefixo) return campo
       // rótulo e campo na mesma célula ("Data do ensaio: ____")
       return (
-        <div className={s.comPrefixo} style={{ height: cel.h }}>
+        <div className={`${s.comPrefixo} ${d.role.ml ? s.comPrefixoMl : ''}`} style={{ height: cel.h }}>
           <span className={s.prefixo}>{d.role.prefixo}</span>
           {campo}
         </div>
+      )
+    }
+    if (papel === 'foto') {
+      return (
+        <FotoCelula
+          foto={estado?.fotos?.[a]}
+          texto={d.role.texto}
+          rotulo={d.role.rot}
+          altura={cel.h}
+          editavel={podeEntrada && !!fotos}
+          onEscolher={f => fotos?.adicionar(a, f)}
+          onRemover={() => fotos?.remover(a)}
+        />
       )
     }
     let texto = null
@@ -232,7 +291,7 @@ export default function FichaGrade({
       if (p === 'entrada') out.push(podeEntrada ? s.dEntrada : s.dEntradaFixa)
       if (p === 'pedido') out.push(s.dPedido)
       if (p === 'revisao' && modo === 'revisao') out.push(podeRevisao ? s.dRevisao : s.dEntradaFixa)
-      if (p === 'escolha' || p === 'verificacao') out.push(podeEntrada ? s.dEntrada : s.dEntradaFixa)
+      if (p === 'escolha' || p === 'verificacao' || p === 'foto') out.push(podeEntrada ? s.dEntrada : s.dEntradaFixa)
       if (p === 'assinatura') out.push(s.dAssinatura)
     }
     if ((p === 'escolha' || p === 'verificacao') && podeEntrada) out.push(s.clicavel)
@@ -283,7 +342,7 @@ export default function FichaGrade({
                         rowSpan={cel.rs > 1 ? cel.rs : undefined}
                         colSpan={cel.cs > 1 ? cel.cs : undefined}
                         className={classes(cel)}
-                        style={cel.estilo}
+                        style={cel.d.cf ? { ...cel.estilo, ...estiloCondicional(cel.d, cel.a, pre, motor, estado) } : cel.estilo}
                         title={cel.d.fx && modo !== 'leitura' ? `=${cel.d.fx}` : undefined}
                         onClick={interativa ? e => aoClicar(cel, e) : undefined}
                         onKeyDown={interativa ? e => aoTeclar(cel, e) : undefined}

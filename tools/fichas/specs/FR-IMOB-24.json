@@ -1,0 +1,119 @@
+{
+  "codigo": "FR-IMOB-24",
+  "versao": "Rev00",
+  "nome": "Produtos betuminosos semissólidos — Determinação da massa específica e densidade relativa",
+  "arquivo": "FR-IMOB-24_Rev00.xlsx",
+  "aba": "FR-IMOB-24_Rev00",
+  "titulo_aba": "Frente",
+  "_nota": "Planilha-mestre Rev00 da Qualidade, sem alterações (sem exemplo preenchido; modelada por Claude em 28/09). Rótulo e valor na mesma célula, como na FR-08. Frente: massas A, B, C, D do picnômetro, 2 ensaios; densidade relativa = (C−A)/((B−A)−(D−C)) e média; massa específica = densidade × 0,997 e média (a linha da média diz '3º Ensaio =' na planilha — mantido como está; observação para a Qualidade). Verso igual ao da FR-23 (inclusive 'Peneira' e pontos de peneiramento, que não se aplicam a este ensaio — observação para a Qualidade). Sem resultado_* (não há tabela de densidade de ligante): dados em dados_resultado.",
+  "pedido": {
+    "B7": {
+      "campo": "os",
+      "manter_texto": true
+    },
+    "B8": {
+      "campo": "material",
+      "manter_texto": true
+    },
+    "E8": {
+      "campo": "registro",
+      "manter_texto": true
+    },
+    "B9": {
+      "campo": "procedencia",
+      "manter_texto": true
+    },
+    "B10": {
+      "campo": "complemento",
+      "manter_texto": true
+    }
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "E7"
+      ],
+      "tipo": "data",
+      "manter_texto": true
+    },
+    {
+      "colunas": [
+        "F",
+        "G"
+      ],
+      "linhas": [
+        "15-18"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "assinaturas": {
+    "executor": "B30",
+    "calculista": "F30"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "E7"
+        ]
+      },
+      {
+        "titulo": "{n}º ensaio",
+        "colunas": [
+          "F",
+          "G"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "E7": "Data do ensaio",
+    "F15": "(A) Picnômetro com tampa (g)",
+    "G15": "(A) Picnômetro com tampa (g)",
+    "F16": "(B) Picnômetro + água (g)",
+    "G16": "(B) Picnômetro + água (g)",
+    "F17": "(C) Picnômetro + amostra CAP (g)",
+    "G17": "(C) Picnômetro + amostra CAP (g)",
+    "F18": "(D) Picnômetro + amostra CAP + água (g)",
+    "G18": "(D) Picnômetro + amostra CAP + água (g)"
+  },
+  "abas_extras": [
+    {
+      "id": "VERSO",
+      "aba": "VERSO",
+      "titulo": "Verso",
+      "entradas": [
+        {
+          "celulas": [
+            "C6",
+            "C7"
+          ],
+          "tipo": "texto"
+        }
+      ],
+      "rotulos": {
+        "C6": "Balança — identificação",
+        "C7": "Peneira — identificação"
+      },
+      "lista": {
+        "grupos": [
+          {
+            "titulo": "Equipamentos utilizados",
+            "celulas": [
+              "C6",
+              "C7"
+            ]
+          },
+          {
+            "titulo": "Pontos de verificação",
+            "linhas": "9-13"
+          }
+        ]
+      }
+    }
+  ],
+  "resultados": [],
+  "pedido_exemplo": {}
+}
