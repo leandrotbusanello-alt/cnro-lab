@@ -2,6 +2,7 @@ import { format, formatDistanceToNowStrict } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { TIPOS_AMOSTRA, SUBCATEGORIAS } from '../campo/constants'
 import { ehIdTemp } from '../../lib/syncQueue'
+import { fmtSeq } from '../../lib/numeracao'
 
 // ── Números de documento ─────────────────────────────────────────────────────
 
@@ -10,7 +11,7 @@ export function numeroPE(p) {
   if (!p) return '—'
   if (ehIdTemp(p.id) || (!p.numero_pe && !p.sequencial)) return 'PE provisório'
   const n = p.numero_pe ?? p.sequencial
-  const num = /^\d+$/.test(String(n)) ? String(n).padStart(4, '0') : String(n)
+  const num = fmtSeq(n)
   if (num.startsWith('PE-')) return num
   return `PE-${p.ano ?? new Date(p.created_at).getFullYear()}-${num}`
 }
@@ -37,7 +38,7 @@ export function previaNumeroOS({ data, lote, sequencial }) {
   const loteNum = String(lote || '').replace(/\D/g, '')
   if (!loteNum || !sequencial || !data) return null
   const d = typeof data === 'string' ? new Date(`${data}T12:00:00`) : data
-  return `${format(d, 'yyyy.MM.dd')}.${loteNum.padStart(2, '0')}.${String(sequencial).padStart(4, '0')}`
+  return `${format(d, 'yyyy.MM.dd')}.${loteNum.padStart(2, '0')}.${fmtSeq(sequencial)}`
 }
 
 // ── Datas ────────────────────────────────────────────────────────────────────
@@ -93,7 +94,8 @@ const ROTULOS_CAMPOS = {
   qtd_cps: 'Qtd. de CPs', fck: 'fck (MPa)', gc_minimo: 'GC mínimo', temp_usina: 'Temp. usina (°C)',
   temp_pista: 'Temp. pista (°C)', temp_coleta: 'Temp. coleta (°C)', cap: 'CAP', data_aplicacao: 'Data de aplicação',
   diametro_cps: 'Diâmetro dos CPs (mm)', responsavel_coleta: 'Responsável pela coleta',
-  local_aplicacao: 'Local de aplicação', idade_ruptura: 'Idade de ruptura',
+  local_aplicacao: 'Local de aplicação', numeracao_cps: 'Numeração dos CPs',
+  faixa_granulometrica: 'Faixa granulométrica', tipo_mistura: 'Tipo de mistura', idade_ruptura: 'Idade de ruptura',
 }
 
 export function rotuloCampo(chave) {

@@ -23,7 +23,7 @@ function registroAmostra(p) {
 // Campos da amostra que descrevem o material (entram em "Material")
 const CAMPOS_MATERIAL = ['tipo_mistura', 'tipo_ligante', 'tipo_agregado', 'granulometria', 'traco', 'cap', 'teor_cimento', 'fck']
 // Campos que não entram no texto complementar
-const IGNORAR = new Set(['id', 'fotos', 'foto', 'arquivos', 'responsavel_coleta'])
+const IGNORAR = new Set(['id', 'fotos', 'foto', 'arquivos', 'responsavel_coleta', 'info_geral', 'certificado'])
 
 function descricaoMaterial(p, amostras) {
   const partes = []

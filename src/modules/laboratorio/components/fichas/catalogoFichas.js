@@ -1,3 +1,4 @@
+import { fmtSeq } from '../../../../lib/numeracao'
 // ─────────────────────────────────────────────────────────────────────────────
 // Conteúdo fixo das fichas FR-IMOB-04 e FR-IMOB-05 (textos das planilhas Rev00)
 // e regras de preenchimento automático.
@@ -135,7 +136,7 @@ export function observacaoPadrao(pedido, amostras, empresaNome) {
   const emp = empresaNome || pedido.empresa || '---'
   const lote = pedido.lote || '---'
   const ano = pedido.ano || new Date(pedido.created_at || Date.now()).getFullYear()
-  const reg = `. REGISTRADOS COM N° ${String(pedido.sequencial || 0).padStart(4, '0')}/${ano}.`
+  const reg = `. REGISTRADOS COM N° ${fmtSeq(pedido.sequencial || 0)}/${ano}.`
   switch (pedido.sub_tipo) {
     case 'cps_extraidos_pista':
     case 'cp_pista':

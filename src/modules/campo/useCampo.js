@@ -78,17 +78,20 @@ export function useCampo() {
 
   // ── Enviar novo pedido ─────────────────────────────────────────────────────
   const enviarPedido = useCallback(async (dados) => {
-    // Bug 2 fix: payload alinhado com schema da tabela pedidos_ensaio
-    // solicitante_id vem do perfil; dados_amostra é o nome correto no banco
+    // Payload alinhado com o banco (Referência Técnica, seção 6):
+    // material (não tipo_amostra), ensaios_ids = ids do catálogo `ensaios`,
+    // especificacoes = colunas espec_* da FR-IMOB-04 (migração 15)
     const payload = {
-      empresa_id:    dados.empresa_id,
-      lote:          dados.lote,
-      observacoes:   dados.observacoes,
-      material:      dados.material,
-      sub_tipo:      dados.sub_tipo,
-      ensaios_ids:   dados.ensaios_ids,
-      dados_amostra: dados.dados_amostra,
-      solicitante_id: perfil?.id,
+      empresa_id:       dados.empresa_id,
+      lote:             dados.lote,
+      tipo_solicitacao: dados.tipo_solicitacao || 'rotina',
+      observacoes:      dados.observacoes,
+      material:         dados.material,
+      sub_tipo:         dados.sub_tipo,
+      ensaios_ids:      dados.ensaios_ids,
+      especificacoes:   dados.especificacoes || [],
+      dados_amostra:    dados.dados_amostra,
+      solicitante_id:   perfil?.id,
       status: 'aguardando_lab',   // (item 3) nome oficial do status
       created_at: new Date().toISOString(),
     }
@@ -118,6 +121,19 @@ export function useCampo() {
     if (error) throw error
     setPedidos(prev => [data, ...prev])
     return { data }
+  }, [perfil?.id])
+
+  // ── Certificado do ligante (bucket privado `certificados` — migração 15) ────
+  // Caminho: certificados/<usuarios.id>/<data>_<arquivo>. Guardado na amostra como
+  // "certificados/…" (o Laboratório abre com link temporário). Precisa de internet.
+  const uploadCertificado = useCallback(async (file) => {
+    if (!file) return null
+    if (!navigator.onLine) throw new Error('Para anexar o certificado é preciso internet. Envie sem o anexo ou tente de novo com conexão.')
+    const limpo = file.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w.-]+/g, '_').slice(-80)
+    const caminho = `${perfil?.id}/${Date.now()}_${limpo}`
+    const { error } = await supabase.storage.from('certificados').upload(caminho, file, { upsert: false })
+    if (error) throw new Error(`Não foi possível anexar o certificado: ${error.message}`)
+    return `certificados/${caminho}`
   }, [perfil?.id])
 
   // ── Bug 4 fix: Corrigir pedido devolvido via UPDATE (não INSERT) ───────────
@@ -158,7 +174,7 @@ export function useCampo() {
 
   return {
     empresas, ensaios, pedidos, usuarios, loading, error,
-    enviarPedido, corrigirPedido, reenviarPedido,
+    enviarPedido, corrigirPedido, reenviarPedido, uploadCertificado,
     recarregar: carregar,
   }
 }

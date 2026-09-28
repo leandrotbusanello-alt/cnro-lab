@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Modal from '../../../components/ui/Modal'
 import { numeroPE, numeroOS, ehOSProvisoria } from '../utils'
 import ui from './ui.module.css'
+import { fmtSeq, formatarPE, MAX_SEQUENCIAL } from '../../../lib/numeracao'
 
 /**
  * Corrigir o número do PE (somente DEV — migração 14).
@@ -10,11 +11,11 @@ import ui from './ui.module.css'
 export default function ModalAlterarNumero({ pedido, ocupado, onFechar, onConfirmar }) {
   const [numero, setNumero] = useState(String(pedido.sequencial || ''))
   const n = Number(numero)
-  const valido = /^\d{1,4}$/.test(numero) && n >= 1 && n !== pedido.sequencial
-  const novoPE = `PE-${pedido.ano}-${String(numero || '').padStart(4, '0')}`
+  const valido = /^\d{1,5}$/.test(numero) && n >= 1 && n <= MAX_SEQUENCIAL && n !== pedido.sequencial
+  const novoPE = formatarPE(pedido.ano, numero)
   const temOS = pedido.numero_os && !ehOSProvisoria(pedido)
-  const novaOS = temOS && /^\d{1,4}$/.test(numero)
-    ? String(pedido.numero_os).replace(/\d{4}$/, numero.padStart(4, '0')) : null
+  const novaOS = temOS && /^\d{1,5}$/.test(numero)
+    ? String(pedido.numero_os).replace(/[^.]+$/, fmtSeq(numero)) : null
 
   return (
     <Modal
@@ -32,9 +33,9 @@ export default function ModalAlterarNumero({ pedido, ocupado, onFechar, onConfir
     >
       <div className={ui.pilha}>
         <label className={ui.campo}>
-          <span className={ui.rotulo}>Novo número (1 a 9999)</span>
+          <span className={ui.rotulo}>Novo número</span>
           <input className={ui.input} inputMode="numeric" value={numero} autoFocus
-            onChange={e => setNumero(e.target.value.replace(/\D/g, '').slice(0, 4))} />
+            onChange={e => setNumero(e.target.value.replace(/\D/g, '').slice(0, 5))} />
         </label>
         {valido && (
           <div className={`${ui.aviso} ${ui.avisoInfo}`}>
