@@ -1,0 +1,191 @@
+{
+  "codigo": "FR-IMOB-31",
+  "versao": "Rev00",
+  "nome": "Índice de forma com crivos",
+  "arquivo": "FR-IMOB-31_Rev00.xlsx",
+  "aba": "FR-IMOB-31 _Rev.00",
+  "titulo_aba": "Frente",
+  "_nota": "Planilha-mestre Rev00 sem alterações (sem exemplo preenchido; modelada por Claude em 28/09). Duas graduações (C Brita 1: 3 frações; D Pedrisco: 2 frações). Por fração: peso e retidos nos crivos I e II; % retida, somas e índice de forma f = (ΣP1 + 0,5·ΣP2)/(100·n) calculados como na planilha. Verso: equipamentos (balança, crivos, peneiras) e 5 pontos de verificação. Resultado: 1 linha por graduação em resultado_indice_forma (método Crivos). A coluna indice_forma_pct recebe o índice f como calculado na ficha (0 a 1, não em %).",
+  "pedido": {
+    "B7": {
+      "campo": "os",
+      "manter_texto": true
+    },
+    "B8": {
+      "campo": "material",
+      "manter_texto": true
+    },
+    "G8": {
+      "campo": "registro",
+      "manter_texto": true
+    },
+    "B9": {
+      "campo": "procedencia",
+      "manter_texto": true
+    },
+    "B10": {
+      "campo": "complemento",
+      "manter_texto": true
+    }
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "G7"
+      ],
+      "tipo": "data",
+      "manter_texto": true
+    },
+    {
+      "celulas": [
+        "E18",
+        "E19",
+        "E20",
+        "G18",
+        "G19",
+        "G20",
+        "J18",
+        "J19",
+        "J20",
+        "E28",
+        "E29",
+        "G28",
+        "G29",
+        "J28",
+        "J29"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "assinaturas": {
+    "executor": "B35",
+    "calculista": "G35"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "G7"
+        ]
+      },
+      {
+        "titulo": "Faixa C — Brita 1",
+        "celulas": [
+          "E18",
+          "G18",
+          "J18",
+          "E19",
+          "G19",
+          "J19",
+          "E20",
+          "G20",
+          "J20"
+        ]
+      },
+      {
+        "titulo": "Faixa D — Pedrisco",
+        "celulas": [
+          "E28",
+          "G28",
+          "J28",
+          "E29",
+          "G29",
+          "J29"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "G7": "Data do ensaio",
+    "E18": "Faixa C (Brita 1) — peso da fração 1 (g)",
+    "G18": "Faixa C (Brita 1) — retido no crivo I, fração 1 (g)",
+    "J18": "Faixa C (Brita 1) — retido no crivo II, fração 1 (g)",
+    "E19": "Faixa C (Brita 1) — peso da fração 2 (g)",
+    "G19": "Faixa C (Brita 1) — retido no crivo I, fração 2 (g)",
+    "J19": "Faixa C (Brita 1) — retido no crivo II, fração 2 (g)",
+    "E20": "Faixa C (Brita 1) — peso da fração 3 (g)",
+    "G20": "Faixa C (Brita 1) — retido no crivo I, fração 3 (g)",
+    "J20": "Faixa C (Brita 1) — retido no crivo II, fração 3 (g)",
+    "E28": "Faixa D (Pedrisco) — peso da fração 1 (g)",
+    "G28": "Faixa D (Pedrisco) — retido no crivo I, fração 1 (g)",
+    "J28": "Faixa D (Pedrisco) — retido no crivo II, fração 1 (g)",
+    "E29": "Faixa D (Pedrisco) — peso da fração 2 (g)",
+    "G29": "Faixa D (Pedrisco) — retido no crivo I, fração 2 (g)",
+    "J29": "Faixa D (Pedrisco) — retido no crivo II, fração 2 (g)"
+  },
+  "abas_extras": [
+    {
+      "id": "VERSO",
+      "aba": "VERSO",
+      "titulo": "Verso",
+      "entradas": [
+        {
+          "celulas": [
+            "E6",
+            "E7",
+            "E8",
+            "E9",
+            "E10",
+            "E11",
+            "E12"
+          ],
+          "tipo": "texto"
+        }
+      ],
+      "rotulos": {
+        "E6": "Balança — identificação",
+        "E7": "Conjunto de crivos circulares — identificação",
+        "E8": "Conjunto de crivos retangulares — identificação",
+        "E9": "Peneira 3/4\" — identificação",
+        "E10": "Peneira 1/2\" — identificação",
+        "E11": "Peneira 3/8\" — identificação",
+        "E12": "Peneira 1/4\" — identificação"
+      },
+      "lista": {
+        "grupos": [
+          {
+            "titulo": "Equipamentos utilizados",
+            "celulas": [
+              "E6",
+              "E7",
+              "E8",
+              "E9",
+              "E10",
+              "E11",
+              "E12"
+            ]
+          },
+          {
+            "titulo": "Pontos de verificação",
+            "linhas": "14-18"
+          }
+        ]
+      }
+    }
+  ],
+  "resultados": [
+    {
+      "tabela": "resultado_indice_forma",
+      "linhas": [
+        {
+          "quando": "=ISNUMBER(K22)",
+          "campos": {
+            "metodo": "Crivos",
+            "massa_total_g": "=SUM(E18:E20)",
+            "indice_forma_pct": "=K22"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(K31)",
+          "campos": {
+            "metodo": "Crivos",
+            "massa_total_g": "=SUM(E28:E29)",
+            "indice_forma_pct": "=K31"
+          }
+        }
+      ]
+    }
+  ],
+  "pedido_exemplo": {}
+}

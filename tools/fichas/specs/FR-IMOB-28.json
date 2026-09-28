@@ -1,0 +1,197 @@
+{
+  "codigo": "FR-IMOB-28",
+  "versao": "Rev00",
+  "nome": "Curva viscosidade × temperatura",
+  "arquivo": "FR-IMOB-28_Rev00.xlsx",
+  "area_impressao": "A1:H63",
+  "_nota": "Planilha Rev00 sem área de impressão e sem campo de assinatura (modelada por Claude em 28/09; decisões do usuário em 28/09): área A1:H63; linhas 59–60 viraram as assinaturas (executor/calculista). Viscosidade Brookfield em Poise, 3 medições por temperatura (135/150/177 °C, 20/20/50 rpm — fixos como na planilha). Cálculos acrescentados (na planilha estavam digitados): viscosidade média = média das 3 medições; temperaturas pela reta ajustada aos 3 pontos (mínimos quadrados — a mesma linha de tendência linear do gráfico): usinagem do ligante = T(1,9 P) a T(1,5 P); compactação da mistura = T(3,1 P) a T(2,5 P); tabela da faixa (colunas 'Tem.') também pela reta (a planilha usava uma reta fixa, (11,795 − y)/0,0637). Temperatura de usinagem dos agregados: campo digitado. As setas desenhadas à mão sobre o gráfico (posições fixas) não entram. Resultado: resultado_viscosidade (Poise × 100 = cP; temperatura = meio da faixa).",
+  "pedido": {
+    "B7": {
+      "campo": "os",
+      "manter_texto": true
+    },
+    "B8": {
+      "campo": "material",
+      "manter_texto": true
+    },
+    "E8": {
+      "campo": "registro",
+      "manter_texto": true
+    },
+    "B9": {
+      "campo": "procedencia",
+      "manter_texto": true
+    },
+    "B10": {
+      "campo": "complemento",
+      "manter_texto": true
+    }
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "E7"
+      ],
+      "tipo": "data",
+      "manter_texto": true
+    },
+    {
+      "colunas": [
+        "D",
+        "E",
+        "F"
+      ],
+      "linhas": [
+        "16-18"
+      ],
+      "tipo": "numero"
+    },
+    {
+      "celulas": [
+        "F30"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "formulas": {
+    "D24": "=IF(COUNT(D16:F16)=0,\"\",AVERAGE(D16:F16))",
+    "D25": "=IF(COUNT(D17:F17)=0,\"\",AVERAGE(D17:F17))",
+    "D26": "=IF(COUNT(D18:F18)=0,\"\",AVERAGE(D18:F18))",
+    "F29": "=IF(COUNT($D$24:$D$26)>=2,ROUND((1.9-INTERCEPT($D$24:$D$26,$C$24:$C$26))/SLOPE($D$24:$D$26,$C$24:$C$26),0)&\" a \"&ROUND((1.5-INTERCEPT($D$24:$D$26,$C$24:$C$26))/SLOPE($D$24:$D$26,$C$24:$C$26),0),\"\")",
+    "F31": "=IF(COUNT($D$24:$D$26)>=2,ROUND((3.1-INTERCEPT($D$24:$D$26,$C$24:$C$26))/SLOPE($D$24:$D$26,$C$24:$C$26),0)&\" a \"&ROUND((2.5-INTERCEPT($D$24:$D$26,$C$24:$C$26))/SLOPE($D$24:$D$26,$C$24:$C$26),0),\"\")",
+    "D55": "=IF(COUNT($D$24:$D$26)>=2,(C55-INTERCEPT($D$24:$D$26,$C$24:$C$26))/SLOPE($D$24:$D$26,$C$24:$C$26),\"\")",
+    "G55": "=IF(COUNT($D$24:$D$26)>=2,(F55-INTERCEPT($D$24:$D$26,$C$24:$C$26))/SLOPE($D$24:$D$26,$C$24:$C$26),\"\")",
+    "D56": "=IF(COUNT($D$24:$D$26)>=2,(C56-INTERCEPT($D$24:$D$26,$C$24:$C$26))/SLOPE($D$24:$D$26,$C$24:$C$26),\"\")",
+    "G56": "=IF(COUNT($D$24:$D$26)>=2,(F56-INTERCEPT($D$24:$D$26,$C$24:$C$26))/SLOPE($D$24:$D$26,$C$24:$C$26),\"\")",
+    "D57": "=IF(COUNT($D$24:$D$26)>=2,(C57-INTERCEPT($D$24:$D$26,$C$24:$C$26))/SLOPE($D$24:$D$26,$C$24:$C$26),\"\")",
+    "G57": "=IF(COUNT($D$24:$D$26)>=2,(F57-INTERCEPT($D$24:$D$26,$C$24:$C$26))/SLOPE($D$24:$D$26,$C$24:$C$26),\"\")",
+    "D58": "=IF(COUNT($D$24:$D$26)>=2,(C58-INTERCEPT($D$24:$D$26,$C$24:$C$26))/SLOPE($D$24:$D$26,$C$24:$C$26),\"\")",
+    "G58": "=IF(COUNT($D$24:$D$26)>=2,(F58-INTERCEPT($D$24:$D$26,$C$24:$C$26))/SLOPE($D$24:$D$26,$C$24:$C$26),\"\")"
+  },
+  "formatos": {
+    "D24:D26": "0.00",
+    "D55:D58": "0",
+    "G55:G58": "0",
+    "F30": "0"
+  },
+  "alturas": {
+    "59": 42,
+    "60": 18
+  },
+  "mesclas_extras": [
+    "B60:C60",
+    "E60:G60"
+  ],
+  "celulas_extras": {
+    "B60": {
+      "v": "Responsável executor:",
+      "estilo_de": "B20",
+      "negrito": true,
+      "h": "center",
+      "v_al": "bottom",
+      "borda": [
+        "top"
+      ]
+    },
+    "C60": {
+      "borda": [
+        "top"
+      ]
+    },
+    "E60": {
+      "v": "Responsável calculista:",
+      "estilo_de": "B20",
+      "negrito": true,
+      "h": "center",
+      "v_al": "bottom",
+      "borda": [
+        "top"
+      ]
+    },
+    "F60": {
+      "borda": [
+        "top"
+      ]
+    },
+    "G60": {
+      "borda": [
+        "top"
+      ]
+    }
+  },
+  "assinaturas": {
+    "executor": "B60",
+    "calculista": "E60"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "E7"
+        ]
+      },
+      {
+        "titulo": "135 °C — viscosidade (P)",
+        "celulas": [
+          "D16",
+          "E16",
+          "F16"
+        ]
+      },
+      {
+        "titulo": "150 °C — viscosidade (P)",
+        "celulas": [
+          "D17",
+          "E17",
+          "F17"
+        ]
+      },
+      {
+        "titulo": "177 °C — viscosidade (P)",
+        "celulas": [
+          "D18",
+          "E18",
+          "F18"
+        ]
+      },
+      {
+        "titulo": "Temperaturas",
+        "celulas": [
+          "F30"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "E7": "Data do ensaio",
+    "D16": "1ª medição",
+    "E16": "2ª medição",
+    "F16": "3ª medição",
+    "D17": "1ª medição",
+    "E17": "2ª medição",
+    "F17": "3ª medição",
+    "D18": "1ª medição",
+    "E18": "2ª medição",
+    "F18": "3ª medição",
+    "F30": "Temperatura de usinagem dos agregados (°C)"
+  },
+  "resultados": [
+    {
+      "tabela": "resultado_viscosidade",
+      "linhas": [
+        {
+          "quando": "=COUNT(D24:D26)>0",
+          "campos": {
+            "viscosidade_135c_cp": "=IF(ISNUMBER(D24),D24*100,\"\")",
+            "viscosidade_150c_cp": "=IF(ISNUMBER(D25),D25*100,\"\")",
+            "viscosidade_177c_cp": "=IF(ISNUMBER(D26),D26*100,\"\")",
+            "temp_usinagem_c": "=IF(COUNT($D$24:$D$26)>=2,ROUND(((1.9-INTERCEPT($D$24:$D$26,$C$24:$C$26))/SLOPE($D$24:$D$26,$C$24:$C$26)+(1.5-INTERCEPT($D$24:$D$26,$C$24:$C$26))/SLOPE($D$24:$D$26,$C$24:$C$26))/2,1),\"\")",
+            "temp_compactacao_c": "=IF(COUNT($D$24:$D$26)>=2,ROUND(((3.1-INTERCEPT($D$24:$D$26,$C$24:$C$26))/SLOPE($D$24:$D$26,$C$24:$C$26)+(2.5-INTERCEPT($D$24:$D$26,$C$24:$C$26))/SLOPE($D$24:$D$26,$C$24:$C$26))/2,1),\"\")"
+          }
+        }
+      ]
+    }
+  ],
+  "pedido_exemplo": {}
+}

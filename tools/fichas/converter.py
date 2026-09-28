@@ -200,6 +200,9 @@ def papeis_da_spec(spec):
                 p[a]['ml'] = 1
             if g.get('manter_texto'):
                 p[a]['_manter'] = True
+            if g.get('opcoes'):         # lista suspensa definida na spec (quando a planilha não tem validação)
+                p[a]['opcoes'] = list(g['opcoes'])
+                p[a]['dado'] = 'texto'
     for g in spec.get('revisao', []):
         for a in celulas_do_grupo(g):
             p[a] = {'tipo': 'revisao', 'dado': g.get('tipo', 'texto')}
@@ -260,9 +263,51 @@ def caixas_de_selecao(caminho, ws):
 
 # ── conversão ────────────────────────────────────────────────────────────────
 
+def ajustar_layout(ws, spec):
+    """Ajustes de layout feitos pela spec quando a planilha não tem o que a ficha online precisa
+    (p.ex. campos de assinatura ou a linha do resultado médio):
+      "remover_mesclas": ["B31:N31"]
+      "alturas": {"59": 40}                       (pt)
+      "celulas_extras": {"B60": {"v": "Responsável executor:", "estilo_de": "B31",
+                                  "negrito": true, "h": "center", "v_al": "bottom",
+                                  "borda": ["top"], "fundo": "#002060", "cor": "#FFFFFF"}}
+    A planilha-mestre não é alterada: o ajuste vale só para a conversão."""
+    from copy import copy
+    from openpyxl.styles import Border, Side, Alignment, PatternFill
+    for rng in spec.get('remover_mesclas', []):
+        if rng in [str(m) for m in ws.merged_cells.ranges]:
+            ws.unmerge_cells(rng)
+    for r, h in spec.get('alturas', {}).items():
+        ws.row_dimensions[int(r)].height = h
+    for a, cfg in spec.get('celulas_extras', {}).items():
+        cel = ws[a]
+        if cfg.get('estilo_de'):
+            ref = ws[cfg['estilo_de']]
+            cel.font, cel.border, cel.alignment = copy(ref.font), copy(ref.border), copy(ref.alignment)
+            cel.fill, cel.number_format = copy(ref.fill), ref.number_format
+        if 'v' in cfg:
+            cel.value = cfg['v']
+        if cfg.get('negrito') is not None:
+            f = copy(cel.font); f.b = bool(cfg['negrito']); cel.font = f
+        if cfg.get('cor'):
+            f = copy(cel.font); f.color = cfg['cor'].lstrip('#').rjust(8, 'F'); cel.font = f
+        if cfg.get('h') or cfg.get('v_al'):
+            al = copy(cel.alignment)
+            cel.alignment = Alignment(horizontal=cfg.get('h', al.horizontal), vertical=cfg.get('v_al', al.vertical), wrap_text=al.wrap_text)
+        if cfg.get('fundo'):
+            cel.fill = PatternFill('solid', fgColor=cfg['fundo'].lstrip('#').rjust(8, 'F'))
+        if 'borda' in cfg:
+            fina = Side(style='thin', color='FF000000')
+            lados = cfg['borda'] if isinstance(cfg['borda'], list) else (['top', 'bottom', 'left', 'right'] if cfg['borda'] else [])
+            cel.border = Border(**{l: fina for l in lados})
+        if 'nf' in cfg:
+            cel.number_format = cfg['nf']
+
+
 def converter_folha(caminho, wb, wbv, ws, spec, cores):
     """Converte uma aba da planilha (frente, verso…). spec = papéis das células desta aba."""
     wsv = wbv[ws.title]
+    ajustar_layout(ws, spec)
 
     # área da ficha: a área de impressão do Excel, ou "area_impressao" da spec quando a do Excel
     # inclui colunas de rascunho (p.ex. células com #REF! à direita da ficha)
@@ -317,6 +362,13 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
     papeis = papeis_da_spec(spec)
     limpar = set(spec.get('limpar', []))
     formulas_spec = spec.get('formulas', {})   # {"N20": "=IF(W20=\"\",\"\",W20/0.07854*0.09807)"}
+    # "formatos": {"H43": "0.00", "B20:B40": "0.000"} — formato numérico das células (intervalos aceitos)
+    formatos_spec = {}
+    for chave, nf in spec.get('formatos', {}).items():
+        ca, ra, cb, rb = range_boundaries(chave if ':' in chave else f'{chave}:{chave}')
+        for rr in range(ra, rb + 1):
+            for cc in range(ca, cb + 1):
+                formatos_spec[endereco(cc, rr)] = nf
     cells, exemplo, excel, alertas = {}, {}, {}, []
 
     for r in range(r1, r2 + 1):
@@ -351,6 +403,8 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
                 if al.indent: d['ind'] = al.indent
             if cel.number_format and cel.number_format != 'General':
                 d['nf'] = cel.number_format
+            if a in formatos_spec:          # formato numérico definido na spec (célula "Geral" no Excel)
+                d['nf'] = formatos_spec[a]
 
             v = cel.value
             papel = papeis.get(a)
@@ -403,6 +457,8 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
             elif v is not None and 'fx' not in d:
                 # erro digitado como valor (#N/A em tabela de faixas): continua erro, como no Excel
                 d['v'] = {'err': v} if ws.cell(r, c).data_type == 'e' else serial_excel(v)
+            if 'v' in spec.get('celulas_extras', {}).get(a, {}) and 'v' in d:
+                d['vx'] = 1          # valor posto pela spec (o teste com LibreOffice grava na cópia da planilha)
             if papel:
                 d['role'] = {k: x for k, x in papel.items() if not k.startswith('_')}
             if d or mr:
@@ -509,6 +565,18 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
     for chave, troca in (spec.get('graficos_series') or {}).items():
         gi, si = (int(k) for k in chave.split('.'))
         graficos[gi]['series'][si].update(troca)
+    # spec 'graficos_eixos': {'0.x': 'auto'} — eixo com escala automática (a planilha fixava mínimo/máximo)
+    for chave, cfg in (spec.get('graficos_eixos') or {}).items():
+        gi, eixo = chave.split('.')
+        ex = graficos[int(gi)]['eixos'].get(eixo, {})
+        if cfg == 'auto':
+            for k in ('min', 'max', 'unidade', 'unidadeMenor'):
+                ex.pop(k, None)
+        elif isinstance(cfg, dict):
+            ex.update(cfg)
+    # spec 'graficos_escala': {'0': [0]} — séries que definem a escala automática do gráfico
+    for gi, idx in (spec.get('graficos_escala') or {}).items():
+        graficos[int(gi)]['escalaSeries'] = idx
     refs_graficos = [ref for g in graficos for ref in refs_do_grafico(g)]
 
     aux = celulas_auxiliares(ws, wsv, cells, (c1, r1, c2, r2), formulas_spec, alertas, refs_graficos)
@@ -648,7 +716,7 @@ def celulas_auxiliares(ws, wsv, cells, area, formulas_spec, alertas, refs_extras
             if any(x in v.upper() for x in FUNCOES_BLOQUEADAS):
                 alertas.append(f'{a} (auxiliar): fórmula bloqueada: {v}')
                 continue
-            aux[a] = {'fx': v[1:]}
+            aux[a] = {'fx': v[1:], **({'fxi': 1} if a in formulas_spec else {})}
             pendentes += refs_locais(v[1:])
         elif v is not None:
             aux[a] = {'v': {'err': v} if ws.cell(rr, cc).data_type == 'e' else serial_excel(v)}
@@ -1009,7 +1077,7 @@ def ler_grafico(cx, tema, ws_titulo, alertas, nome_arq):
     return g
 
 
-CHAVES_DA_FOLHA = ('graficos_series', 'fotos', 'pedido', 'entradas', 'revisao', 'escolhas', 'assinaturas', 'linhas_assinatura', 'formulas',
+CHAVES_DA_FOLHA = ('graficos_series', 'graficos_eixos', 'graficos_escala', 'fotos', 'formatos', 'remover_mesclas', 'alturas', 'celulas_extras', 'pedido', 'entradas', 'revisao', 'escolhas', 'assinaturas', 'linhas_assinatura', 'formulas',
                    'colunas_tela', 'limpar', 'mesclas_extras', 'lista', 'rotulos', 'verificacoes', 'area_impressao', 'graficos')
 RE_ABA_FORMULA = re.compile(r"(?:'((?:[^']|'')+)'|([A-Za-z_][A-Za-z0-9_.]*))!\$?[A-Z]{1,3}\$?\d")
 

@@ -132,17 +132,20 @@ export default function Grafico({ g, motor, prefixo = '', cells, responsivo = fa
   })), [g, motor, cells, prefixo, ex.log, ey.log])
 
   // eixo X pelos valores de X da tabela (peneiras), mesmo sem Y ainda: o gráfico não "pula" enquanto se digita
-  const todosX = useMemo(() => g.series.flatMap(s => (s.x ? expandirIntervalo(s.x) : [])
-    .map(a => motor?.valores?.get(prefixo + a)).filter(v => typeof v === 'number')), [g, motor, prefixo])
-    .concat(series.flatMap(s => s.trechos.flat().map(p => p.x)))
-  const todosY = series.flatMap(s => s.trechos.flat().map(p => p.y))
-  const sx = escalaDoEixo(ex, todosX, Math.max(2, Math.round(P.w / 90)))
-  const sy = escalaDoEixo(ey, todosY, Math.max(2, Math.round(P.h / 40)))
-  const X = v => P.x + sx.para(v) * P.w
-  const Y = v => P.y + (1 - sy.para(v)) * P.h
+  // g.escalaSeries: só essas séries definem a escala automática (p.ex. os pontos do ensaio, não as linhas de apoio)
+  const naEscala = (_, i) => !g.escalaSeries || g.escalaSeries.includes(i)
+  const todosX = useMemo(() => g.series.filter(naEscala).flatMap(s => (s.x ? expandirIntervalo(s.x) : [])
+    .map(a => motor?.valores?.get(prefixo + a)).filter(v => typeof v === 'number')), [g, motor, prefixo]) // eslint-disable-line react-hooks/exhaustive-deps
+    .concat(series.filter(naEscala).flatMap(s => s.trechos.flat().map(p => p.x)))
+  const todosY = series.filter(naEscala).flatMap(s => s.trechos.flat().map(p => p.y))
 
   const fBase = g.fonte || {}
   const fX = fonteSvg(ex.fonte, fBase), fY = fonteSvg(ey.fonte, fBase)
+  // nº de divisões automáticas: como o Excel, pelo espaço disponível para os rótulos
+  const sx = escalaDoEixo(ex, todosX, Math.max(2, Math.round(P.w / 90)))
+  const sy = escalaDoEixo(ey, todosY, Math.max(2, Math.round(P.h / (fY.fontSize * 1.4))))
+  const X = v => P.x + sx.para(v) * P.w
+  const Y = v => P.y + (1 - sy.para(v)) * P.h
   const tamMarca = 5
   const linhaX = traco(ex.linha, { cor: '#000000', larg: 0.75 })
   const linhaY = traco(ey.linha, { cor: '#000000', larg: 0.75 })

@@ -21,13 +21,36 @@ def main():
         origem = Path(tmp) / 'entrada.xlsx'
         wb = openpyxl.load_workbook(xlsx)
         ws = wb[aba] if aba else wb.worksheets[0]
+        def gravar(folha, cel, v):
+            # célula coberta por mescla (a ficha online desfez a mescla, p.ex. a linha do resultado médio)
+            for m in list(folha.merged_cells.ranges):
+                if cel in m and cel != m.start_cell.coordinate:
+                    folha.unmerge_cells(str(m))
+            folha[cel].value = v
         for a, v in entradas.items():
             if '!' in a:
                 nome, cel = a.rsplit('!', 1)
-                wb[nome][cel].value = v
+                gravar(wb[nome], cel, v)
             else:
-                ws[a].value = v
-        wb.save(origem)
+                gravar(ws, a, v)
+        # mesclas de linha inteira (A6:XFD6) voltam do LibreOffice com referência inválida: desfaz (só formatação)
+        for f in wb.worksheets:
+            for m in list(f.merged_cells.ranges):
+                if m.max_col > 1000:
+                    f.unmerge_cells(str(m))
+        try:
+            wb.save(origem)
+        except (TypeError, ValueError):
+            # planilhas-banco antigas (nomes definidos quebrados, títulos de impressão inválidos) que o
+            # openpyxl não regrava: tira o que não afeta as fórmulas da ficha e tenta de novo
+            for n in list(wb.defined_names):
+                del wb.defined_names[n]
+            for f in wb.worksheets:
+                for n in list(getattr(f, 'defined_names', {})):
+                    del f.defined_names[n]
+                f.print_title_rows = None
+                f.print_title_cols = None
+            wb.save(origem)
         saida_dir = Path(tmp) / 'out'
         saida_dir.mkdir()
         subprocess.run(['soffice', '--headless', '--calc', '--convert-to', 'xlsx', '--outdir', str(saida_dir), str(origem)],
@@ -42,6 +65,10 @@ def main():
                 for c in row:
                     if isinstance(c.value, str) and c.value.startswith('='):
                         v = wsv[c.coordinate].value
+                        if isinstance(v, datetime.time):
+                            v = (v.hour * 3600 + v.minute * 60 + v.second) / 86400
+                        elif isinstance(v, datetime.timedelta):
+                            v = v.total_seconds() / 86400
                         if hasattr(v, 'year'):
                             base = datetime.datetime(1899, 12, 30)
                             dt = v if isinstance(v, datetime.datetime) else datetime.datetime(v.year, v.month, v.day)

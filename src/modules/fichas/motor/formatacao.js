@@ -85,7 +85,7 @@ export function formatar(v, nf) {
  *   numero: "65,13" · "1.198,01" · "65.13"   data: "13/03/2026"   hora: "13:44"   texto: livre
  * Retorna o valor, null (vazio) ou { invalido: texto }.
  */
-export function interpretarEntrada(texto, tipo) {
+export function interpretarEntrada(texto, tipo, { percentual = false } = {}) {
   const s = String(texto ?? '').trim()
   if (s === '') return null
   if (tipo === 'texto') return s
@@ -107,17 +107,20 @@ export function interpretarEntrada(texto, tipo) {
     return Math.round((d.getTime() - EPOCA) / 864e5)
   }
   let t = s.replace(/\s/g, '')
+  // campo com formato de porcentagem (como no Excel): "3,93" ou "3,93%" → 0,0393
+  if (percentual) t = t.replace(/%$/, '')
   if (t.includes(',')) t = t.replace(/\./g, '').replace(',', '.')
   const n = Number(t)
-  return Number.isFinite(n) && t !== '' ? n : { invalido: s }
+  if (!Number.isFinite(n) || t === '') return { invalido: s }
+  return percentual ? +(n / 100).toPrecision(15) : n
 }
 
 /** Texto para edição (o que aparece no campo ao focar). */
-export function textoParaEdicao(v, tipo) {
+export function textoParaEdicao(v, tipo, { percentual = false } = {}) {
   if (v === null || v === undefined) return ''
   if (typeof v === 'object' && 'invalido' in v) return v.invalido
   if (tipo === 'data' && typeof v === 'number') return formatarData(v)
   if (tipo === 'hora' && typeof v === 'number') return formatarHora(v)
-  if (typeof v === 'number') return String(+v.toPrecision(15)).replace('.', ',')
+  if (typeof v === 'number') return String(+(percentual ? v * 100 : v).toPrecision(15)).replace('.', ',')
   return String(v)
 }

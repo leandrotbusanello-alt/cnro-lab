@@ -25,7 +25,7 @@ function igual(a, b) {
   const vazioB = b === null || b === undefined || b === ''
   if (vazioA && (vazioB || b === 0)) return true
   if (ehErro(a)) return typeof b === 'string' && (b === a.err || (a.err === '#N/A' && b === '#N/A'))
-  if (typeof a === 'number' && typeof b === 'number') return Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(b))
+  if (typeof a === 'number' && typeof b === 'number') return Math.abs(a - b) <= 1e-8 * Math.max(1, Math.abs(b))   // 1e-8: arredondamento em contas com cancelamento (parábola da compactação)
   if (typeof a === 'boolean') return a === b
   return String(a) === String(b)
 }
@@ -106,7 +106,13 @@ for (const arq of readdirSync(SAIDA).filter(f => f.endsWith('.modelo.json')).sor
         if (r.marca) planilha[a] = escolhas[r.grupo] === r.opcao ? r.marca : null
       }
       // fórmulas acrescentadas pela spec (não existem na planilha original): grava na cópia
-      for (const [a, d] of Object.entries(indice.cells)) if (d.fxi) planilha[a] = `=${d.fx}`
+      for (const [a, d] of Object.entries(indice.cells)) {
+        if (d.fxi) planilha[a] = `=${d.fx}`
+        if (d.vx) planilha[a] = d.v                     // valor posto pela spec (celulas_extras)
+      }
+      for (const f of indice.folhas) {                    // auxiliares com fórmula da spec
+        for (const [a, d] of Object.entries(f.modelo.aux || {})) if (d.fxi) planilha[f.prefixo + a] = `=${d.fx}`
+      }
       // frente e verso: 'VERSO!F7' → '<nome da aba no Excel>!F7' (e de volta na saída)
       const abasExcel = verif.abas_excel || {}
       const paraExcel = a => { const m = /^([A-Z][A-Z0-9_]*)!(.+)$/.exec(a); return m && abasExcel[m[1]] ? `${abasExcel[m[1]]}!${m[2]}` : a }
@@ -124,7 +130,7 @@ for (const arq of readdirSync(SAIDA).filter(f => f.endsWith('.modelo.json')).sor
         res.forEach(r => console.log(`   → ${r.tabela}: ${r.linhas.length} linha(s)`, JSON.stringify(r.linhas[0] || {})))
       }
       console.log(`${nome}: rodada ${rodada} (LibreOffice, ${Object.keys(entradas).length} entradas) → ${nFormulas - dif.length}/${nFormulas} iguais`)
-      dif.slice(0, 8).forEach(d => console.log(`   ✗ ${d.a}: sistema ${JSON.stringify(d.sistema)} · LibreOffice ${JSON.stringify(d.excel)}`))
+      dif.slice(0, +(process.env.MAXDIF || 8)).forEach(d => console.log(`   ✗ ${d.a}: sistema ${JSON.stringify(d.sistema)} · LibreOffice ${JSON.stringify(d.excel)}`))
       falhas += dif.length
     }
   }

@@ -1,0 +1,752 @@
+{
+  "codigo": "FR-IMOB-29",
+  "versao": "Rev00",
+  "nome": "Deflexões — Viga Benkelman",
+  "arquivo": "FR-IMOB-29_Rev00.xlsx",
+  "aba": "FR-IMOB-29_Rev00",
+  "titulo_aba": "Frente",
+  "_nota": "Planilha-mestre Rev00 (21 estações). Fórmulas CORRIGIDAS por decisão do usuário em 28/09 (a mestre dava deflexão negativa; os exemplos preenchidos de campo já usavam ×(−1)): D0 = (L0 − LF)·k, D25 = (L0 − L25)·k, R = 6250/(2·(D0 − D25)) só com D0 e D25; nº de amostras, média, desvio padrão (amostral), média ± desvio e coeficiente de variação (desvio/média) — na mestre essas linhas não tinham fórmula. Formalizar na Rev01 da Qualidade. k e Rz são campos (a mestre traz k = 4; os exemplos usam 2). Trilha de roda: X em T.R.I ou T.R.E (escolha por estação). Deflexão de projeto e raio de projeto: campos na própria célula do rótulo. As áreas 'DEFLEXÃO' e 'RAIO DE CURVATURA' da mestre estão em branco (sem gráfico no Excel) e ficam assim. Verso copiado de outra ficha (areia/frasco) — observação para a Qualidade. Resultado: 1 linha por estação em resultado_viga_benkelman.",
+  "pedido": {
+    "B7": {
+      "campo": "os",
+      "manter_texto": true
+    },
+    "B8": {
+      "campo": "material",
+      "manter_texto": true
+    },
+    "E8": {
+      "campo": "registro",
+      "manter_texto": true
+    },
+    "B9": {
+      "campo": "procedencia",
+      "manter_texto": true
+    },
+    "B10": {
+      "campo": "complemento",
+      "manter_texto": true
+    }
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "E7"
+      ],
+      "tipo": "data",
+      "manter_texto": true
+    },
+    {
+      "celulas": [
+        "C15",
+        "C16"
+      ],
+      "tipo": "numero"
+    },
+    {
+      "celulas": [
+        "E15",
+        "E16"
+      ],
+      "tipo": "numero",
+      "manter_texto": true
+    },
+    {
+      "colunas": [
+        "B",
+        "E",
+        "F",
+        "G"
+      ],
+      "linhas": [
+        "20-40"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "escolhas": [
+    {
+      "grupo": "trilha_20",
+      "marca": "X",
+      "rotulo": "Trilha de roda",
+      "celulas": {
+        "C20": "T.R.I",
+        "D20": "T.R.E"
+      }
+    },
+    {
+      "grupo": "trilha_21",
+      "marca": "X",
+      "rotulo": "Trilha de roda",
+      "celulas": {
+        "C21": "T.R.I",
+        "D21": "T.R.E"
+      }
+    },
+    {
+      "grupo": "trilha_22",
+      "marca": "X",
+      "rotulo": "Trilha de roda",
+      "celulas": {
+        "C22": "T.R.I",
+        "D22": "T.R.E"
+      }
+    },
+    {
+      "grupo": "trilha_23",
+      "marca": "X",
+      "rotulo": "Trilha de roda",
+      "celulas": {
+        "C23": "T.R.I",
+        "D23": "T.R.E"
+      }
+    },
+    {
+      "grupo": "trilha_24",
+      "marca": "X",
+      "rotulo": "Trilha de roda",
+      "celulas": {
+        "C24": "T.R.I",
+        "D24": "T.R.E"
+      }
+    },
+    {
+      "grupo": "trilha_25",
+      "marca": "X",
+      "rotulo": "Trilha de roda",
+      "celulas": {
+        "C25": "T.R.I",
+        "D25": "T.R.E"
+      }
+    },
+    {
+      "grupo": "trilha_26",
+      "marca": "X",
+      "rotulo": "Trilha de roda",
+      "celulas": {
+        "C26": "T.R.I",
+        "D26": "T.R.E"
+      }
+    },
+    {
+      "grupo": "trilha_27",
+      "marca": "X",
+      "rotulo": "Trilha de roda",
+      "celulas": {
+        "C27": "T.R.I",
+        "D27": "T.R.E"
+      }
+    },
+    {
+      "grupo": "trilha_28",
+      "marca": "X",
+      "rotulo": "Trilha de roda",
+      "celulas": {
+        "C28": "T.R.I",
+        "D28": "T.R.E"
+      }
+    },
+    {
+      "grupo": "trilha_29",
+      "marca": "X",
+      "rotulo": "Trilha de roda",
+      "celulas": {
+        "C29": "T.R.I",
+        "D29": "T.R.E"
+      }
+    },
+    {
+      "grupo": "trilha_30",
+      "marca": "X",
+      "rotulo": "Trilha de roda",
+      "celulas": {
+        "C30": "T.R.I",
+        "D30": "T.R.E"
+      }
+    },
+    {
+      "grupo": "trilha_31",
+      "marca": "X",
+      "rotulo": "Trilha de roda",
+      "celulas": {
+        "C31": "T.R.I",
+        "D31": "T.R.E"
+      }
+    },
+    {
+      "grupo": "trilha_32",
+      "marca": "X",
+      "rotulo": "Trilha de roda",
+      "celulas": {
+        "C32": "T.R.I",
+        "D32": "T.R.E"
+      }
+    },
+    {
+      "grupo": "trilha_33",
+      "marca": "X",
+      "rotulo": "Trilha de roda",
+      "celulas": {
+        "C33": "T.R.I",
+        "D33": "T.R.E"
+      }
+    },
+    {
+      "grupo": "trilha_34",
+      "marca": "X",
+      "rotulo": "Trilha de roda",
+      "celulas": {
+        "C34": "T.R.I",
+        "D34": "T.R.E"
+      }
+    },
+    {
+      "grupo": "trilha_35",
+      "marca": "X",
+      "rotulo": "Trilha de roda",
+      "celulas": {
+        "C35": "T.R.I",
+        "D35": "T.R.E"
+      }
+    },
+    {
+      "grupo": "trilha_36",
+      "marca": "X",
+      "rotulo": "Trilha de roda",
+      "celulas": {
+        "C36": "T.R.I",
+        "D36": "T.R.E"
+      }
+    },
+    {
+      "grupo": "trilha_37",
+      "marca": "X",
+      "rotulo": "Trilha de roda",
+      "celulas": {
+        "C37": "T.R.I",
+        "D37": "T.R.E"
+      }
+    },
+    {
+      "grupo": "trilha_38",
+      "marca": "X",
+      "rotulo": "Trilha de roda",
+      "celulas": {
+        "C38": "T.R.I",
+        "D38": "T.R.E"
+      }
+    },
+    {
+      "grupo": "trilha_39",
+      "marca": "X",
+      "rotulo": "Trilha de roda",
+      "celulas": {
+        "C39": "T.R.I",
+        "D39": "T.R.E"
+      }
+    },
+    {
+      "grupo": "trilha_40",
+      "marca": "X",
+      "rotulo": "Trilha de roda",
+      "celulas": {
+        "C40": "T.R.I",
+        "D40": "T.R.E"
+      }
+    }
+  ],
+  "formulas": {
+    "H20": "=IF(OR(E20=\"\",G20=\"\"),\"\",(E20-G20)*$C$15)",
+    "I20": "=IF(OR(E20=\"\",F20=\"\"),\"\",(E20-F20)*$C$15)",
+    "J20": "=IF(OR(H20=\"\",I20=\"\"),\"\",IF(H20=I20,\"\",6250/(2*(H20-I20))))",
+    "H21": "=IF(OR(E21=\"\",G21=\"\"),\"\",(E21-G21)*$C$15)",
+    "I21": "=IF(OR(E21=\"\",F21=\"\"),\"\",(E21-F21)*$C$15)",
+    "J21": "=IF(OR(H21=\"\",I21=\"\"),\"\",IF(H21=I21,\"\",6250/(2*(H21-I21))))",
+    "H22": "=IF(OR(E22=\"\",G22=\"\"),\"\",(E22-G22)*$C$15)",
+    "I22": "=IF(OR(E22=\"\",F22=\"\"),\"\",(E22-F22)*$C$15)",
+    "J22": "=IF(OR(H22=\"\",I22=\"\"),\"\",IF(H22=I22,\"\",6250/(2*(H22-I22))))",
+    "H23": "=IF(OR(E23=\"\",G23=\"\"),\"\",(E23-G23)*$C$15)",
+    "I23": "=IF(OR(E23=\"\",F23=\"\"),\"\",(E23-F23)*$C$15)",
+    "J23": "=IF(OR(H23=\"\",I23=\"\"),\"\",IF(H23=I23,\"\",6250/(2*(H23-I23))))",
+    "H24": "=IF(OR(E24=\"\",G24=\"\"),\"\",(E24-G24)*$C$15)",
+    "I24": "=IF(OR(E24=\"\",F24=\"\"),\"\",(E24-F24)*$C$15)",
+    "J24": "=IF(OR(H24=\"\",I24=\"\"),\"\",IF(H24=I24,\"\",6250/(2*(H24-I24))))",
+    "H25": "=IF(OR(E25=\"\",G25=\"\"),\"\",(E25-G25)*$C$15)",
+    "I25": "=IF(OR(E25=\"\",F25=\"\"),\"\",(E25-F25)*$C$15)",
+    "J25": "=IF(OR(H25=\"\",I25=\"\"),\"\",IF(H25=I25,\"\",6250/(2*(H25-I25))))",
+    "H26": "=IF(OR(E26=\"\",G26=\"\"),\"\",(E26-G26)*$C$15)",
+    "I26": "=IF(OR(E26=\"\",F26=\"\"),\"\",(E26-F26)*$C$15)",
+    "J26": "=IF(OR(H26=\"\",I26=\"\"),\"\",IF(H26=I26,\"\",6250/(2*(H26-I26))))",
+    "H27": "=IF(OR(E27=\"\",G27=\"\"),\"\",(E27-G27)*$C$15)",
+    "I27": "=IF(OR(E27=\"\",F27=\"\"),\"\",(E27-F27)*$C$15)",
+    "J27": "=IF(OR(H27=\"\",I27=\"\"),\"\",IF(H27=I27,\"\",6250/(2*(H27-I27))))",
+    "H28": "=IF(OR(E28=\"\",G28=\"\"),\"\",(E28-G28)*$C$15)",
+    "I28": "=IF(OR(E28=\"\",F28=\"\"),\"\",(E28-F28)*$C$15)",
+    "J28": "=IF(OR(H28=\"\",I28=\"\"),\"\",IF(H28=I28,\"\",6250/(2*(H28-I28))))",
+    "H29": "=IF(OR(E29=\"\",G29=\"\"),\"\",(E29-G29)*$C$15)",
+    "I29": "=IF(OR(E29=\"\",F29=\"\"),\"\",(E29-F29)*$C$15)",
+    "J29": "=IF(OR(H29=\"\",I29=\"\"),\"\",IF(H29=I29,\"\",6250/(2*(H29-I29))))",
+    "H30": "=IF(OR(E30=\"\",G30=\"\"),\"\",(E30-G30)*$C$15)",
+    "I30": "=IF(OR(E30=\"\",F30=\"\"),\"\",(E30-F30)*$C$15)",
+    "J30": "=IF(OR(H30=\"\",I30=\"\"),\"\",IF(H30=I30,\"\",6250/(2*(H30-I30))))",
+    "H31": "=IF(OR(E31=\"\",G31=\"\"),\"\",(E31-G31)*$C$15)",
+    "I31": "=IF(OR(E31=\"\",F31=\"\"),\"\",(E31-F31)*$C$15)",
+    "J31": "=IF(OR(H31=\"\",I31=\"\"),\"\",IF(H31=I31,\"\",6250/(2*(H31-I31))))",
+    "H32": "=IF(OR(E32=\"\",G32=\"\"),\"\",(E32-G32)*$C$15)",
+    "I32": "=IF(OR(E32=\"\",F32=\"\"),\"\",(E32-F32)*$C$15)",
+    "J32": "=IF(OR(H32=\"\",I32=\"\"),\"\",IF(H32=I32,\"\",6250/(2*(H32-I32))))",
+    "H33": "=IF(OR(E33=\"\",G33=\"\"),\"\",(E33-G33)*$C$15)",
+    "I33": "=IF(OR(E33=\"\",F33=\"\"),\"\",(E33-F33)*$C$15)",
+    "J33": "=IF(OR(H33=\"\",I33=\"\"),\"\",IF(H33=I33,\"\",6250/(2*(H33-I33))))",
+    "H34": "=IF(OR(E34=\"\",G34=\"\"),\"\",(E34-G34)*$C$15)",
+    "I34": "=IF(OR(E34=\"\",F34=\"\"),\"\",(E34-F34)*$C$15)",
+    "J34": "=IF(OR(H34=\"\",I34=\"\"),\"\",IF(H34=I34,\"\",6250/(2*(H34-I34))))",
+    "H35": "=IF(OR(E35=\"\",G35=\"\"),\"\",(E35-G35)*$C$15)",
+    "I35": "=IF(OR(E35=\"\",F35=\"\"),\"\",(E35-F35)*$C$15)",
+    "J35": "=IF(OR(H35=\"\",I35=\"\"),\"\",IF(H35=I35,\"\",6250/(2*(H35-I35))))",
+    "H36": "=IF(OR(E36=\"\",G36=\"\"),\"\",(E36-G36)*$C$15)",
+    "I36": "=IF(OR(E36=\"\",F36=\"\"),\"\",(E36-F36)*$C$15)",
+    "J36": "=IF(OR(H36=\"\",I36=\"\"),\"\",IF(H36=I36,\"\",6250/(2*(H36-I36))))",
+    "H37": "=IF(OR(E37=\"\",G37=\"\"),\"\",(E37-G37)*$C$15)",
+    "I37": "=IF(OR(E37=\"\",F37=\"\"),\"\",(E37-F37)*$C$15)",
+    "J37": "=IF(OR(H37=\"\",I37=\"\"),\"\",IF(H37=I37,\"\",6250/(2*(H37-I37))))",
+    "H38": "=IF(OR(E38=\"\",G38=\"\"),\"\",(E38-G38)*$C$15)",
+    "I38": "=IF(OR(E38=\"\",F38=\"\"),\"\",(E38-F38)*$C$15)",
+    "J38": "=IF(OR(H38=\"\",I38=\"\"),\"\",IF(H38=I38,\"\",6250/(2*(H38-I38))))",
+    "H39": "=IF(OR(E39=\"\",G39=\"\"),\"\",(E39-G39)*$C$15)",
+    "I39": "=IF(OR(E39=\"\",F39=\"\"),\"\",(E39-F39)*$C$15)",
+    "J39": "=IF(OR(H39=\"\",I39=\"\"),\"\",IF(H39=I39,\"\",6250/(2*(H39-I39))))",
+    "H40": "=IF(OR(E40=\"\",G40=\"\"),\"\",(E40-G40)*$C$15)",
+    "I40": "=IF(OR(E40=\"\",F40=\"\"),\"\",(E40-F40)*$C$15)",
+    "J40": "=IF(OR(H40=\"\",I40=\"\"),\"\",IF(H40=I40,\"\",6250/(2*(H40-I40))))",
+    "H42": "=IF(COUNT(H20:H40)=0,\"\",COUNT(H20:H40))",
+    "H43": "=IF(COUNT(H20:H40)=0,\"\",AVERAGE(H20:H40))",
+    "H44": "=IF(COUNT(H20:H40)<2,\"\",STDEV(H20:H40))",
+    "H45": "=IF(H44=\"\",\"\",H43-H44)",
+    "H46": "=IF(H44=\"\",\"\",H43+H44)",
+    "H47": "=IF(OR(H44=\"\",H43=0),\"\",H44/H43)"
+  },
+  "formatos": {
+    "B20:B40": "0.000",
+    "H42": "0",
+    "H43:H46": "0.00",
+    "H47": "0.0%"
+  },
+  "assinaturas": {
+    "executor": "B70",
+    "calculista": "G70"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "E7",
+          "C15",
+          "C16",
+          "E15",
+          "E16"
+        ]
+      },
+      {
+        "titulo": "Estação 1",
+        "celulas": [
+          "B20",
+          "C20",
+          "E20",
+          "F20",
+          "G20"
+        ]
+      },
+      {
+        "titulo": "Estação 2",
+        "celulas": [
+          "B21",
+          "C21",
+          "E21",
+          "F21",
+          "G21"
+        ]
+      },
+      {
+        "titulo": "Estação 3",
+        "celulas": [
+          "B22",
+          "C22",
+          "E22",
+          "F22",
+          "G22"
+        ]
+      },
+      {
+        "titulo": "Estação 4",
+        "celulas": [
+          "B23",
+          "C23",
+          "E23",
+          "F23",
+          "G23"
+        ]
+      },
+      {
+        "titulo": "Estação 5",
+        "celulas": [
+          "B24",
+          "C24",
+          "E24",
+          "F24",
+          "G24"
+        ]
+      },
+      {
+        "titulo": "Estação 6",
+        "celulas": [
+          "B25",
+          "C25",
+          "E25",
+          "F25",
+          "G25"
+        ]
+      },
+      {
+        "titulo": "Estação 7",
+        "celulas": [
+          "B26",
+          "C26",
+          "E26",
+          "F26",
+          "G26"
+        ]
+      },
+      {
+        "titulo": "Estação 8",
+        "celulas": [
+          "B27",
+          "C27",
+          "E27",
+          "F27",
+          "G27"
+        ]
+      },
+      {
+        "titulo": "Estação 9",
+        "celulas": [
+          "B28",
+          "C28",
+          "E28",
+          "F28",
+          "G28"
+        ]
+      },
+      {
+        "titulo": "Estação 10",
+        "celulas": [
+          "B29",
+          "C29",
+          "E29",
+          "F29",
+          "G29"
+        ]
+      },
+      {
+        "titulo": "Estação 11",
+        "celulas": [
+          "B30",
+          "C30",
+          "E30",
+          "F30",
+          "G30"
+        ]
+      },
+      {
+        "titulo": "Estação 12",
+        "celulas": [
+          "B31",
+          "C31",
+          "E31",
+          "F31",
+          "G31"
+        ]
+      },
+      {
+        "titulo": "Estação 13",
+        "celulas": [
+          "B32",
+          "C32",
+          "E32",
+          "F32",
+          "G32"
+        ]
+      },
+      {
+        "titulo": "Estação 14",
+        "celulas": [
+          "B33",
+          "C33",
+          "E33",
+          "F33",
+          "G33"
+        ]
+      },
+      {
+        "titulo": "Estação 15",
+        "celulas": [
+          "B34",
+          "C34",
+          "E34",
+          "F34",
+          "G34"
+        ]
+      },
+      {
+        "titulo": "Estação 16",
+        "celulas": [
+          "B35",
+          "C35",
+          "E35",
+          "F35",
+          "G35"
+        ]
+      },
+      {
+        "titulo": "Estação 17",
+        "celulas": [
+          "B36",
+          "C36",
+          "E36",
+          "F36",
+          "G36"
+        ]
+      },
+      {
+        "titulo": "Estação 18",
+        "celulas": [
+          "B37",
+          "C37",
+          "E37",
+          "F37",
+          "G37"
+        ]
+      },
+      {
+        "titulo": "Estação 19",
+        "celulas": [
+          "B38",
+          "C38",
+          "E38",
+          "F38",
+          "G38"
+        ]
+      },
+      {
+        "titulo": "Estação 20",
+        "celulas": [
+          "B39",
+          "C39",
+          "E39",
+          "F39",
+          "G39"
+        ]
+      },
+      {
+        "titulo": "Estação 21",
+        "celulas": [
+          "B40",
+          "C40",
+          "E40",
+          "F40",
+          "G40"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "E7": "Data do ensaio",
+    "C15": "Constante da viga Benkelman (k)",
+    "C16": "Raio de curvatura (Rz)",
+    "E15": "Deflexão de projeto",
+    "E16": "Raio de curvatura do projeto",
+    "B20": "Km",
+    "E20": "Leitura inicial L0 (0,01 mm)",
+    "F20": "Leitura intermediária L25 (0,01 mm)",
+    "G20": "Leitura final LF (0,01 mm)",
+    "B21": "Km",
+    "E21": "Leitura inicial L0 (0,01 mm)",
+    "F21": "Leitura intermediária L25 (0,01 mm)",
+    "G21": "Leitura final LF (0,01 mm)",
+    "B22": "Km",
+    "E22": "Leitura inicial L0 (0,01 mm)",
+    "F22": "Leitura intermediária L25 (0,01 mm)",
+    "G22": "Leitura final LF (0,01 mm)",
+    "B23": "Km",
+    "E23": "Leitura inicial L0 (0,01 mm)",
+    "F23": "Leitura intermediária L25 (0,01 mm)",
+    "G23": "Leitura final LF (0,01 mm)",
+    "B24": "Km",
+    "E24": "Leitura inicial L0 (0,01 mm)",
+    "F24": "Leitura intermediária L25 (0,01 mm)",
+    "G24": "Leitura final LF (0,01 mm)",
+    "B25": "Km",
+    "E25": "Leitura inicial L0 (0,01 mm)",
+    "F25": "Leitura intermediária L25 (0,01 mm)",
+    "G25": "Leitura final LF (0,01 mm)",
+    "B26": "Km",
+    "E26": "Leitura inicial L0 (0,01 mm)",
+    "F26": "Leitura intermediária L25 (0,01 mm)",
+    "G26": "Leitura final LF (0,01 mm)",
+    "B27": "Km",
+    "E27": "Leitura inicial L0 (0,01 mm)",
+    "F27": "Leitura intermediária L25 (0,01 mm)",
+    "G27": "Leitura final LF (0,01 mm)",
+    "B28": "Km",
+    "E28": "Leitura inicial L0 (0,01 mm)",
+    "F28": "Leitura intermediária L25 (0,01 mm)",
+    "G28": "Leitura final LF (0,01 mm)",
+    "B29": "Km",
+    "E29": "Leitura inicial L0 (0,01 mm)",
+    "F29": "Leitura intermediária L25 (0,01 mm)",
+    "G29": "Leitura final LF (0,01 mm)",
+    "B30": "Km",
+    "E30": "Leitura inicial L0 (0,01 mm)",
+    "F30": "Leitura intermediária L25 (0,01 mm)",
+    "G30": "Leitura final LF (0,01 mm)",
+    "B31": "Km",
+    "E31": "Leitura inicial L0 (0,01 mm)",
+    "F31": "Leitura intermediária L25 (0,01 mm)",
+    "G31": "Leitura final LF (0,01 mm)",
+    "B32": "Km",
+    "E32": "Leitura inicial L0 (0,01 mm)",
+    "F32": "Leitura intermediária L25 (0,01 mm)",
+    "G32": "Leitura final LF (0,01 mm)",
+    "B33": "Km",
+    "E33": "Leitura inicial L0 (0,01 mm)",
+    "F33": "Leitura intermediária L25 (0,01 mm)",
+    "G33": "Leitura final LF (0,01 mm)",
+    "B34": "Km",
+    "E34": "Leitura inicial L0 (0,01 mm)",
+    "F34": "Leitura intermediária L25 (0,01 mm)",
+    "G34": "Leitura final LF (0,01 mm)",
+    "B35": "Km",
+    "E35": "Leitura inicial L0 (0,01 mm)",
+    "F35": "Leitura intermediária L25 (0,01 mm)",
+    "G35": "Leitura final LF (0,01 mm)",
+    "B36": "Km",
+    "E36": "Leitura inicial L0 (0,01 mm)",
+    "F36": "Leitura intermediária L25 (0,01 mm)",
+    "G36": "Leitura final LF (0,01 mm)",
+    "B37": "Km",
+    "E37": "Leitura inicial L0 (0,01 mm)",
+    "F37": "Leitura intermediária L25 (0,01 mm)",
+    "G37": "Leitura final LF (0,01 mm)",
+    "B38": "Km",
+    "E38": "Leitura inicial L0 (0,01 mm)",
+    "F38": "Leitura intermediária L25 (0,01 mm)",
+    "G38": "Leitura final LF (0,01 mm)",
+    "B39": "Km",
+    "E39": "Leitura inicial L0 (0,01 mm)",
+    "F39": "Leitura intermediária L25 (0,01 mm)",
+    "G39": "Leitura final LF (0,01 mm)",
+    "B40": "Km",
+    "E40": "Leitura inicial L0 (0,01 mm)",
+    "F40": "Leitura intermediária L25 (0,01 mm)",
+    "G40": "Leitura final LF (0,01 mm)"
+  },
+  "abas_extras": [
+    {
+      "id": "VERSO",
+      "aba": "Deflexõe-Viga Benkelman VERSO",
+      "titulo": "Verso",
+      "entradas": [
+        {
+          "celulas": [
+            "C6",
+            "C7"
+          ],
+          "tipo": "texto"
+        }
+      ],
+      "rotulos": {
+        "C6": "Balança — identificação",
+        "C7": "Estufa — identificação"
+      },
+      "lista": {
+        "grupos": [
+          {
+            "titulo": "Equipamentos utilizados",
+            "celulas": [
+              "C6",
+              "C7"
+            ]
+          },
+          {
+            "titulo": "Pontos de verificação",
+            "linhas": "9-11"
+          }
+        ]
+      }
+    }
+  ],
+  "resultados": [
+    {
+      "tabela": "resultado_viga_benkelman",
+      "repetir": {
+        "var": "r",
+        "valores": [
+          "20",
+          "21",
+          "22",
+          "23",
+          "24",
+          "25",
+          "26",
+          "27",
+          "28",
+          "29",
+          "30",
+          "31",
+          "32",
+          "33",
+          "34",
+          "35",
+          "36",
+          "37",
+          "38",
+          "39",
+          "40"
+        ],
+        "quando": "=ISNUMBER(H{r})"
+      },
+      "campos": {
+        "km": {
+          "expr": "=B{r}",
+          "tipo": "texto"
+        },
+        "leitura_inicial_mm": "=E{r}",
+        "leitura_final_mm": "=G{r}",
+        "deflexao_obtida_001mm": "=H{r}",
+        "deflexao_admissivel_001mm": "=IF(ISNUMBER(E15),E15,\"\")"
+      }
+    }
+  ],
+  "pedido_exemplo": {},
+  "celulas_extras": {
+    "H42": {
+      "h": "center"
+    },
+    "H43": {
+      "h": "center"
+    },
+    "H44": {
+      "h": "center"
+    },
+    "H45": {
+      "h": "center"
+    },
+    "H46": {
+      "h": "center"
+    },
+    "H47": {
+      "h": "center"
+    }
+  }
+}

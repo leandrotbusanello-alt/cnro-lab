@@ -16,11 +16,12 @@ export default function CampoCelula({
   const invalido = !!valor && typeof valor === 'object' && 'invalido' in valor
   const formato = dado === 'data' && (!nf || !/[dmy]/i.test(nf)) ? 'dd/mm/yyyy'
     : dado === 'hora' && (!nf || !/h/i.test(nf)) ? 'h:mm' : nf
+  const percentual = dado === 'numero' && /%/.test(nf || '')
   const exibido = editando ?? (invalido ? valor.invalido : formatar(valor ?? null, dado === 'texto' ? '@' : formato))
 
   function confirmar() {
     if (editando === null) return
-    const novo = interpretarEntrada(editando, dado)
+    const novo = interpretarEntrada(editando, dado, { percentual })
     setEditando(null)
     const antes = JSON.stringify(valor ?? null)
     if (JSON.stringify(novo ?? null) !== antes) onConfirmar(novo)
@@ -49,7 +50,7 @@ export default function CampoCelula({
     spellCheck: false,
     onFocus: e => {
       if (!editavel) return
-      setEditando(textoParaEdicao(valor, dado))
+      setEditando(textoParaEdicao(valor, dado, { percentual }))
       requestAnimationFrame(() => { try { e.target.select() } catch { /* campo já saiu */ } })
     },
     onChange: e => setEditando(e.target.value),

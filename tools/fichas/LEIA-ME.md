@@ -104,6 +104,21 @@ Requisitos: Python 3.10+ (`openpyxl`, `lxml`), Node 18+ e LibreOffice (só para 
 - Como no Excel: ponto com erro (`#N/D`) é pulado e a linha liga os vizinhos; célula vazia ou com texto
   interrompe a linha; em eixo log, valores ≤ 0 também interrompem.
 
+### Ajustes de layout e formatos (quando a planilha não tem o que a ficha online precisa)
+```jsonc
+"formatos": { "H43:H46": "0.00", "H47": "0.0%" },          // formato numérico (célula "Geral" no Excel)
+"remover_mesclas": ["B31:N31"],                           // desfaz uma mescla da planilha
+"alturas": { "59": 42 },                                  // altura da linha (pt)
+"celulas_extras": { "B60": { "v": "Responsável executor:", "estilo_de": "B20", "negrito": true,
+                             "h": "center", "v_al": "bottom", "borda": ["top"], "cor": "#002060", "nf": "0.00" } },
+"entradas": [ { "celulas": ["B15"], "tipo": "texto", "opcoes": ["Normal", "Intermediário", "Modificado"] } ],  // lista na spec
+"graficos_eixos": { "0.x": "auto" },                      // escala automática (ou { "max": 110 })
+"graficos_escala": { "0": [0] }                           // só a série 0 define a escala automática
+```
+- A planilha-mestre não é alterada: os ajustes valem só para a conversão (e o teste com LibreOffice grava
+  as mesmas fórmulas/valores na cópia da planilha).
+- Campo numérico com formato de porcentagem: digita-se "3,93" (ou "3,93%") e grava 0,0393, como no Excel.
+
 ### Quadros de foto
 - `"fotos": ["B15", "E15"]` na spec: a célula vira um quadro de foto (o texto do Excel, p.ex. "Inserir Foto 01",
   aparece enquanto não há foto). Rótulo da visão em lista: `rotulos`.

@@ -1,0 +1,390 @@
+{
+  "codigo": "FR-IMOB-32",
+  "versao": "Rev00",
+  "nome": "Solos — Ensaio de compactação (simples)",
+  "arquivo": "FR-IMOB-32_Rev00.xlsx",
+  "aba": "FR-IMOB-32_Rev00",
+  "_nota": "Planilha-banco (abas ocultas 'Digitar Dados dos Ensaios' e 'Tara', ficha puxando por INDIRECT). Decisão do usuário em 28/09: dados digitados direto na ficha. Peso da cápsula, peso e volume do cilindro: digitados (a tabela de taras sai; quando existir o cadastro de equipamentos, esses campos passam a ser preenchidos pela escolha do nº). Água adicionada: digitada em cada ponto (g) e a % sobre o peso do material é calculada (a planilha usava água inicial + % por ponto, em células ocultas). Umidade dos pontos pela umidade higroscópica (configuração da planilha); a curva usa todos os pontos com densidade calculada (a planilha fixava 5). Umidade ótima e densidade máxima pela parábola de mínimos quadrados da planilha (colunas auxiliares) e gráfico da curva. Próctor: lista Normal / Intermediário / Modificado. Sem O.S. no cabeçalho (como a planilha). Resultado: resultado_proctor (umidade ótima em %). Gráfico: escalas automáticas (a planilha fixava umidade 1–10% e densidade 1.750–2.400, o que corta solos mais úmidos). A ficha mostra a densidade em kg/m³ (rótulo 'g/m³' da planilha); em resultado_proctor vai em g/cm³ (÷1000). A coluna do 6º ponto só é numerada (e calculada) quando tem dados, como na planilha.",
+  "pedido": {
+    "L8": "registro",
+    "H14": "rodovia",
+    "H17": "material"
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "K10"
+      ],
+      "tipo": "data"
+    },
+    {
+      "celulas": [
+        "C14",
+        "E14",
+        "H15",
+        "B16"
+      ],
+      "tipo": "texto"
+    },
+    {
+      "celulas": [
+        "B15"
+      ],
+      "tipo": "texto",
+      "opcoes": [
+        "Normal",
+        "Intermediário",
+        "Modificado"
+      ]
+    },
+    {
+      "celulas": [
+        "E15"
+      ],
+      "tipo": "numero"
+    },
+    {
+      "celulas": [
+        "B17",
+        "D17"
+      ],
+      "tipo": "numero"
+    },
+    {
+      "colunas": [
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I"
+      ],
+      "linhas": [
+        20,
+        31
+      ],
+      "tipo": "texto"
+    },
+    {
+      "colunas": [
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I"
+      ],
+      "linhas": [
+        21,
+        22,
+        24,
+        29,
+        32,
+        33,
+        34
+      ],
+      "tipo": "numero"
+    },
+    {
+      "celulas": [
+        "K20",
+        "L20"
+      ],
+      "tipo": "texto"
+    },
+    {
+      "celulas": [
+        "K21",
+        "L21",
+        "K22",
+        "L22",
+        "K24",
+        "L24",
+        "K29"
+      ],
+      "tipo": "numero"
+    },
+    {
+      "celulas": [
+        "E39"
+      ],
+      "tipo": "texto",
+      "multilinha": true
+    }
+  ],
+  "mesclas_extras": [
+    "K10:L10",
+    "E39:L41"
+  ],
+  "remover_mesclas": [
+    "I39:J39",
+    "K39:L39",
+    "I40:J40",
+    "K40:L40"
+  ],
+  "celulas_extras": {
+    "D19": {
+      "v": 1
+    },
+    "E19": {
+      "v": 2
+    },
+    "F19": {
+      "v": 3
+    },
+    "G19": {
+      "v": 4
+    },
+    "H19": {
+      "v": 5
+    }
+  },
+  "limpar": [
+    "G16",
+    "L8",
+    "H14",
+    "H17"
+  ],
+  "formulas": {
+    "D30": "=IF(AND(ISNUMBER(D29),ISNUMBER($K$29)),D29/$K$29,\"\")",
+    "E30": "=IF(AND(ISNUMBER(E29),ISNUMBER($K$29)),E29/$K$29,\"\")",
+    "F30": "=IF(AND(ISNUMBER(F29),ISNUMBER($K$29)),F29/$K$29,\"\")",
+    "G30": "=IF(AND(ISNUMBER(G29),ISNUMBER($K$29)),G29/$K$29,\"\")",
+    "H30": "=IF(AND(ISNUMBER(H29),ISNUMBER($K$29)),H29/$K$29,\"\")",
+    "I30": "=IF(AND(ISNUMBER(I29),ISNUMBER($K$29)),I29/$K$29,\"\")",
+    "AL7": "=ISNUMBER(D37)",
+    "AM7": "=ISNUMBER(E37)",
+    "AN7": "=ISNUMBER(F37)",
+    "AO7": "=ISNUMBER(G37)",
+    "AP7": "=ISNUMBER(H37)",
+    "AQ7": "=ISNUMBER(I37)",
+    "I19": "=IF(COUNT(I21:I22,I24,I29,I32:I34)>0,6,\"\")"
+  },
+  "assinaturas": {
+    "executor": "C72",
+    "calculista": "G72"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "K10",
+          "C14",
+          "E14",
+          "H15",
+          "B15",
+          "E15",
+          "B16",
+          "B17",
+          "D17"
+        ]
+      },
+      {
+        "titulo": "Umidade higroscópica",
+        "celulas": [
+          "K20",
+          "K21",
+          "K22",
+          "K24",
+          "L20",
+          "L21",
+          "L22",
+          "L24",
+          "K29"
+        ]
+      },
+      {
+        "titulo": "Ponto 1",
+        "celulas": [
+          "D20",
+          "D21",
+          "D22",
+          "D24",
+          "D29",
+          "D31",
+          "D32",
+          "D33",
+          "D34"
+        ]
+      },
+      {
+        "titulo": "Ponto 2",
+        "celulas": [
+          "E20",
+          "E21",
+          "E22",
+          "E24",
+          "E29",
+          "E31",
+          "E32",
+          "E33",
+          "E34"
+        ]
+      },
+      {
+        "titulo": "Ponto 3",
+        "celulas": [
+          "F20",
+          "F21",
+          "F22",
+          "F24",
+          "F29",
+          "F31",
+          "F32",
+          "F33",
+          "F34"
+        ]
+      },
+      {
+        "titulo": "Ponto 4",
+        "celulas": [
+          "G20",
+          "G21",
+          "G22",
+          "G24",
+          "G29",
+          "G31",
+          "G32",
+          "G33",
+          "G34"
+        ]
+      },
+      {
+        "titulo": "Ponto 5",
+        "celulas": [
+          "H20",
+          "H21",
+          "H22",
+          "H24",
+          "H29",
+          "H31",
+          "H32",
+          "H33",
+          "H34"
+        ]
+      },
+      {
+        "titulo": "Ponto 6",
+        "celulas": [
+          "I20",
+          "I21",
+          "I22",
+          "I24",
+          "I29",
+          "I31",
+          "I32",
+          "I33",
+          "I34"
+        ]
+      },
+      {
+        "titulo": "Observações",
+        "celulas": [
+          "E39"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "K10": "Data",
+    "C14": "Estaca/Jazida",
+    "E14": "Posição",
+    "H15": "Trecho",
+    "B15": "Próctor (energia)",
+    "E15": "Golpes",
+    "B16": "Camada",
+    "B17": "% retida na # 3/4\"",
+    "D17": "% retida na # 4",
+    "K20": "Umidade higroscópica — cápsula nº (1)",
+    "L20": "Umidade higroscópica — cápsula nº (2)",
+    "K21": "Umidade higroscópica — peso bruto úmido (1) (g)",
+    "L21": "Umidade higroscópica — peso bruto úmido (2) (g)",
+    "K22": "Umidade higroscópica — peso bruto seco (1) (g)",
+    "L22": "Umidade higroscópica — peso bruto seco (2) (g)",
+    "K24": "Umidade higroscópica — peso da cápsula (1) (g)",
+    "L24": "Umidade higroscópica — peso da cápsula (2) (g)",
+    "K29": "Peso do material (g)",
+    "E39": "Observações",
+    "D20": "Ponto 1 — Cápsula nº",
+    "D21": "Ponto 1 — Peso bruto úmido (g)",
+    "D22": "Ponto 1 — Peso bruto seco (g)",
+    "D24": "Ponto 1 — Peso da cápsula (g)",
+    "D29": "Ponto 1 — Água adicionada (g)",
+    "D31": "Ponto 1 — Cilindro nº",
+    "D32": "Ponto 1 — Peso bruto úmido — cilindro + solo (g)",
+    "D33": "Ponto 1 — Peso do cilindro (g)",
+    "D34": "Ponto 1 — Volume do cilindro (cm³)",
+    "E20": "Ponto 2 — Cápsula nº",
+    "E21": "Ponto 2 — Peso bruto úmido (g)",
+    "E22": "Ponto 2 — Peso bruto seco (g)",
+    "E24": "Ponto 2 — Peso da cápsula (g)",
+    "E29": "Ponto 2 — Água adicionada (g)",
+    "E31": "Ponto 2 — Cilindro nº",
+    "E32": "Ponto 2 — Peso bruto úmido — cilindro + solo (g)",
+    "E33": "Ponto 2 — Peso do cilindro (g)",
+    "E34": "Ponto 2 — Volume do cilindro (cm³)",
+    "F20": "Ponto 3 — Cápsula nº",
+    "F21": "Ponto 3 — Peso bruto úmido (g)",
+    "F22": "Ponto 3 — Peso bruto seco (g)",
+    "F24": "Ponto 3 — Peso da cápsula (g)",
+    "F29": "Ponto 3 — Água adicionada (g)",
+    "F31": "Ponto 3 — Cilindro nº",
+    "F32": "Ponto 3 — Peso bruto úmido — cilindro + solo (g)",
+    "F33": "Ponto 3 — Peso do cilindro (g)",
+    "F34": "Ponto 3 — Volume do cilindro (cm³)",
+    "G20": "Ponto 4 — Cápsula nº",
+    "G21": "Ponto 4 — Peso bruto úmido (g)",
+    "G22": "Ponto 4 — Peso bruto seco (g)",
+    "G24": "Ponto 4 — Peso da cápsula (g)",
+    "G29": "Ponto 4 — Água adicionada (g)",
+    "G31": "Ponto 4 — Cilindro nº",
+    "G32": "Ponto 4 — Peso bruto úmido — cilindro + solo (g)",
+    "G33": "Ponto 4 — Peso do cilindro (g)",
+    "G34": "Ponto 4 — Volume do cilindro (cm³)",
+    "H20": "Ponto 5 — Cápsula nº",
+    "H21": "Ponto 5 — Peso bruto úmido (g)",
+    "H22": "Ponto 5 — Peso bruto seco (g)",
+    "H24": "Ponto 5 — Peso da cápsula (g)",
+    "H29": "Ponto 5 — Água adicionada (g)",
+    "H31": "Ponto 5 — Cilindro nº",
+    "H32": "Ponto 5 — Peso bruto úmido — cilindro + solo (g)",
+    "H33": "Ponto 5 — Peso do cilindro (g)",
+    "H34": "Ponto 5 — Volume do cilindro (cm³)",
+    "I20": "Ponto 6 — Cápsula nº",
+    "I21": "Ponto 6 — Peso bruto úmido (g)",
+    "I22": "Ponto 6 — Peso bruto seco (g)",
+    "I24": "Ponto 6 — Peso da cápsula (g)",
+    "I29": "Ponto 6 — Água adicionada (g)",
+    "I31": "Ponto 6 — Cilindro nº",
+    "I32": "Ponto 6 — Peso bruto úmido — cilindro + solo (g)",
+    "I33": "Ponto 6 — Peso do cilindro (g)",
+    "I34": "Ponto 6 — Volume do cilindro (cm³)"
+  },
+  "resultados": [
+    {
+      "tabela": "resultado_proctor",
+      "linhas": [
+        {
+          "quando": "=AND(ISNUMBER(A41),ISNUMBER(B41))",
+          "campos": {
+            "energia": "=IF(OR(B15=\"Normal\",B15=\"Intermediário\",B15=\"Modificado\"),B15,\"\")",
+            "umidade_otima_pct": "=A41*100",
+            "massa_esp_seca_max": "=B41/1000"
+          }
+        }
+      ]
+    }
+  ],
+  "pedido_exemplo": {},
+  "verificacoes": false,
+  "graficos_eixos": {
+    "0.x": "auto",
+    "0.y": "auto"
+  },
+  "graficos_escala": {
+    "0": [
+      0
+    ]
+  }
+}
