@@ -107,7 +107,7 @@ export default function FichaEnsaio({
           </div>
         </>
       ) : (
-        <FichaLista {...props} podeAssinar={podeAssinar} idBase={`${idBase}-l`} />
+        <FichaLista {...props} motor={motor} podeAssinar={podeAssinar} idBase={`${idBase}-l`} />
       )}
 
       {confirmacao && createPortal(

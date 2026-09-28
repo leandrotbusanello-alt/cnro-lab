@@ -3,7 +3,7 @@
   "versao": "Rev00",
   "nome": "Análise granulométrica de agregados",
   "arquivo": "FR-IMOB-11_Rev00.xlsx",
-  "_nota": "PROVISÓRIO até a Rev01 da Qualidade (decisão do usuário em 25/09 15:12: fórmula errada sai da ficha e a célula passa a ser digitada). Alterações em relação à planilha: O40 (fundo da Amostra 02, era =P39) e F41/O41 (diâmetro máximo, fixo em 9,5) viram campos digitados; K46 (#REF!) limpa. Os zeros pré-preenchidos de F29:F33/O29:O33 não entram (são exemplo). As duas assinaturas dizem 'Responsável calculista' na planilha: a da esquerda (E61) foi tratada como executor. Sem gráfico: a tabela auxiliar do gráfico (F45:K57, que no Excel fica escondida atrás do gráfico e mostrava #DIV/0! com a ficha vazia) foi limpa; a coluna '% MÉDIA PASSANTE' (P47:P57), que lia essa tabela, passou a calcular a média direto de H29:H39 e Q29:Q39 (mesmo resultado, sem #DIV/0!). Sem resultado_* (tabela de granulometria de agregado ainda não definida): os dados ficam em dados_resultado.",
+  "_nota": "PROVISÓRIO até a Rev01 da Qualidade (decisão do usuário em 25/09 15:12: fórmula errada sai da ficha e a célula passa a ser digitada). Alterações em relação à planilha: O40 (fundo da Amostra 02, era =P39) e F41/O41 (diâmetro máximo, fixo em 9,5) viram campos digitados; K46 (#REF!) limpa. Os zeros pré-preenchidos de F29:F33/O29:O33 não entram (são exemplo). As duas assinaturas dizem 'Responsável calculista' na planilha: a da esquerda (E61) foi tratada como executor. A tabela auxiliar do gráfico (F45:K57, que no Excel fica escondida atrás do gráfico e mostrava #DIV/0! com a ficha vazia) foi limpa; a coluna '% MÉDIA PASSANTE' (P47:P57), que lia essa tabela, passou a calcular a média direto de H29:H39 e Q29:Q39 (mesmo resultado, sem #DIV/0!). Sem resultado_* (tabela de granulometria de agregado ainda não definida): os dados ficam em dados_resultado. Curva granulométrica: aparece na ficha; como a tabela auxiliar saiu, o gráfico lê direto peneira (E29:E39) × % média passante (P47:P57) — mesma curva.",
   "pedido": {
     "C7": {
       "campo": "os",
@@ -212,5 +212,11 @@
     "P55": "=IF(H39=\"\",\"\",IFERROR(AVERAGE(H37,Q37),\"\"))",
     "P56": "=IF(H39=\"\",\"\",IFERROR(AVERAGE(H38,Q38),\"\"))",
     "P57": "=IF(H39=\"\",\"\",IFERROR(AVERAGE(H39,Q39),\"\"))"
+  },
+  "graficos_series": {
+    "0.0": {
+      "x": "E29:E39",
+      "y": "P47:P57"
+    }
   }
 }

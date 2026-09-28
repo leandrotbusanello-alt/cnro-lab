@@ -5,7 +5,7 @@
   "arquivo": "FR-IMOB-12_Rev00.xlsx",
   "aba": "FR-IMOB-12_Rev00",
   "titulo_aba": "Frente",
-  "_nota": "PROVISÓRIO até a Rev01 da Qualidade (decisão do usuário em 25/09 15:12: fórmula errada sai da ficha e a célula passa a ser digitada). J20:J23 (% retida acumulada da 2ª determinação nas peneiras 1\", 3/4\", 1/2\" e 3/8\") dividiam pela massa da 1ª determinação: viram campos digitados; as colunas % passa (K) e média (L) continuam calculando a partir deles. Sem gráfico (área em branco). Sem resultado_* (tabela de granulometria de agregado ainda não definida).",
+  "_nota": "PROVISÓRIO até a Rev01 da Qualidade (decisão do usuário em 25/09 15:12: fórmula errada sai da ficha e a célula passa a ser digitada). J20:J23 (% retida acumulada da 2ª determinação nas peneiras 1\", 3/4\", 1/2\" e 3/8\") dividiam pela massa da 1ª determinação: viram campos digitados; as colunas % passa (K) e média (L) continuam calculando a partir deles. Gráfico: aparece na ficha (desenhado pelo sistema a partir dos valores calculados, com a formatação do Excel). Sem resultado_* (tabela de granulometria de agregado ainda não definida).",
   "pedido": {
     "B7": {
       "campo": "os",

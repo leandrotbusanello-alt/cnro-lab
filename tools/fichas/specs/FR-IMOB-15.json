@@ -5,7 +5,7 @@
   "arquivo": "FR-IMOB-15_Rev00.xlsx",
   "aba": "FR-IMOB-15_Rev00",
   "area_impressao": "A1:R73",
-  "_nota": "PROVISÓRIO até a Rev01 da Qualidade (decisão do usuário em 25/09 15:12: fórmula errada sai da ficha e a célula passa a ser digitada). G59:G62 (variação de massa, % penetração original, variação do PA, % recuperação elástica original) apontavam para rótulos: viram campos digitados. As temperaturas de mistura/compactação (L62, M62, P62, Q62) dependiam de células fora da área de impressão: viram campos digitados. Área da ficha limitada a A1:R73 (à direita havia células com #REF!). Os cálculos de regressão da viscosidade (K53:M55) ficavam atrás do gráfico e não alimentam mais nada: limpos. Variação de massa por recipiente (O43/45/47) não tinha fórmula: digitada. Sem gráfico (área em branco).",
+  "_nota": "PROVISÓRIO até a Rev01 da Qualidade (decisão do usuário em 25/09 15:12: fórmula errada sai da ficha e a célula passa a ser digitada). G59:G62 (variação de massa, % penetração original, variação do PA, % recuperação elástica original) apontavam para rótulos: viram campos digitados. As temperaturas de mistura/compactação (L62, M62, P62, Q62) dependiam de células fora da área de impressão: viram campos digitados. Área da ficha limitada a A1:R73 (à direita havia células com #REF!). Os cálculos de regressão da viscosidade (K53:M55) ficavam atrás do gráfico e não alimentam mais nada: limpos. Variação de massa por recipiente (O43/45/47) não tinha fórmula: digitada. Gráfico: aparece na ficha (desenhado pelo sistema a partir dos valores calculados, com a formatação do Excel).",
   "pedido": {
     "B7": {
       "campo": "os",

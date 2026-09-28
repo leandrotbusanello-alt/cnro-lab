@@ -77,10 +77,31 @@ Requisitos: Python 3.10+ (`openpyxl`, `lxml`), Node 18+ e LibreOffice (só para 
 }
 ```
 
+### Listas suspensas e células auxiliares
+- **Listas suspensas** (validação de dados do Excel do tipo lista) em células de `entradas`/`revisao` viram
+  automaticamente um campo de escolha (`role.opcoes`, valor salvo como texto). As opções vêm do intervalo
+  da própria aba (valores calculados pelo Excel) ou da lista escrita (`"a,b,c"`).
+- **Células auxiliares:** células **fora da área da ficha** de que as fórmulas dependem (tabelas de faixas
+  granulométricas, tolerâncias, listas) entram em `modelo.aux` — o motor calcula, a ficha não mostra.
+  Não é preciso declarar nada na spec; o conversor segue as referências das fórmulas.
+
 ### Frente e verso
 - Cada aba é uma **folha** do modelo (`modelo.abas`); a impressão sai com **uma página A4 por aba**.
 - Dados salvos: `entradas` com endereço completo (`"VERSO!F7": "BAL-01"`) e `verificacoes` (`{"VERSO!B10": true}`).
 - O teste com LibreOffice grava e lê em todas as abas.
+
+### Gráficos
+- Os gráficos de **dispersão XY / linha** que ficam **dentro da área de impressão** entram no modelo
+  (`folha.graficos`) e o sistema os desenha em SVG, na mesma posição e com a formatação do Excel: título,
+  eixos (linear ou log, mínimo/máximo, unidades, formato dos números), grades, séries (cor, espessura,
+  tracejado, marcadores, linha suavizada), legenda (com as entradas ocultas) e **linha de tendência**
+  (potência, exponencial, linear, log, polinomial, com equação e R²).
+- O gráfico acompanha a digitação em tempo real, sai na impressão e aparece no fim da visão em lista (celular).
+- Gráficos **fora da área da ficha** são ignorados (aviso ⚠). `"graficos": false` na spec desliga os de uma aba.
+- As células que o gráfico lê fora da área entram como auxiliares (como as das fórmulas).
+- Se a tabela que o gráfico lia foi limpa da ficha, aponte a série para outro lugar:
+  `"graficos_series": { "0.0": { "x": "E29:E39", "y": "P47:P57" } }` (gráfico.série, a partir de 0).
+- Células vazias ou com texto interrompem a linha (como `#N/D` no Excel); em eixo log, valores ≤ 0 também.
 
 ## Regras do conversor
 - **Fórmulas bloqueadas:** as aleatórias ou voláteis (`RANDBETWEEN`, `RAND`, `NOW`, `TODAY`, `INDIRECT`, `OFFSET`) nunca entram no sistema.

@@ -51,6 +51,7 @@ function valoresAleatorios(indice, exemplo) {
     if (aleatorio() < 0.15) continue                                // alguns vazios, como na vida real
     if (role.dado === 'data') out[a] = 46000 + Math.floor(aleatorio() * 400)
     else if (role.dado === 'hora') out[a] = Math.floor(aleatorio() * 1440) / 1440
+    else if (role.opcoes?.length) out[a] = role.opcoes[Math.floor(aleatorio() * role.opcoes.length)]
     else if (role.dado === 'texto') out[a] = `T${Math.floor(aleatorio() * 100)}`
     else {
       const base = typeof exemplo[a] === 'number' ? exemplo[a] : 10 + aleatorio() * 1000

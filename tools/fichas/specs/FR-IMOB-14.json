@@ -5,7 +5,7 @@
   "arquivo": "FR-IMOB-14_Rev00.xlsx",
   "aba": "FR-IMOB-14 _Rev00",
   "area_impressao": "A1:S72",
-  "_nota": "PROVISÓRIO até a Rev01 da Qualidade (decisão do usuário em 25/09 15:12: fórmula errada sai da ficha e a célula passa a ser digitada). G59:G62 (variação de massa, % penetração original, variação do PA, % recuperação elástica original) apontavam para rótulos: viram campos digitados. As temperaturas de mistura/compactação (M62, N62, Q62, R62) dependiam de células fora da área de impressão: viram campos digitados. Área da ficha limitada a A1:S72 (à direita havia células com #REF!). Os cálculos de regressão da viscosidade (L53:N55) ficavam atrás do gráfico e não alimentam mais nada: limpos. Variação de massa por recipiente (P43/45/47) não tinha fórmula: digitada. Sem gráfico (área em branco). VERSO: A2 ligado a arquivo externo ([12]FR-LAB-09) foi limpo.",
+  "_nota": "PROVISÓRIO até a Rev01 da Qualidade (decisão do usuário em 25/09 15:12: fórmula errada sai da ficha e a célula passa a ser digitada). G59:G62 (variação de massa, % penetração original, variação do PA, % recuperação elástica original) apontavam para rótulos: viram campos digitados. As temperaturas de mistura/compactação (M62, N62, Q62, R62) dependiam de células fora da área de impressão: viram campos digitados. Área da ficha limitada a A1:S72 (à direita havia células com #REF!). Os cálculos de regressão da viscosidade (L53:N55) ficavam atrás do gráfico e não alimentam mais nada: limpos. Variação de massa por recipiente (P43/45/47) não tinha fórmula: digitada. Gráfico: aparece na ficha (desenhado pelo sistema a partir dos valores calculados, com a formatação do Excel). VERSO: A2 ligado a arquivo externo ([12]FR-LAB-09) foi limpo.",
   "pedido": {
     "B7": {
       "campo": "os",

@@ -1,0 +1,176 @@
+{
+  "codigo": "FR-IMOB-20",
+  "versao": "Rev00",
+  "nome": "Estudo de dosagem",
+  "arquivo": "FR-IMOB-20_Rev00.xlsx",
+  "_nota": "Planilha-mestre Rev00 sem alterações. Listas suspensas no material de cada coluna (G13…Q13). O tipo de CAP (D13) e os teores de cada ponto (D17:D24) são digitados. Estudo: sem resultado_* (fica em dados_resultado).",
+  "pedido": {
+    "D7": "os",
+    "D8": "complemento"
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "N7"
+      ],
+      "tipo": "data"
+    },
+    {
+      "celulas": [
+        "D13",
+        "G13",
+        "I13",
+        "K13",
+        "M13",
+        "O13",
+        "Q13"
+      ],
+      "tipo": "texto"
+    },
+    {
+      "celulas": [
+        "D14",
+        "D15",
+        "G14",
+        "I14",
+        "K14",
+        "M14",
+        "O14",
+        "Q14",
+        "G15",
+        "I15",
+        "K15",
+        "M15",
+        "O15",
+        "Q15"
+      ],
+      "tipo": "texto"
+    },
+    {
+      "celulas": [
+        "G16",
+        "I16",
+        "K16",
+        "M16",
+        "O16",
+        "Q16",
+        "D17",
+        "D18",
+        "D19",
+        "D20",
+        "D21",
+        "D22",
+        "D23",
+        "D24",
+        "I26"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "assinaturas": {
+    "executor": "C29",
+    "calculista": "M29"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "N7",
+          "I26"
+        ]
+      },
+      {
+        "titulo": "Asfalto",
+        "celulas": [
+          "D13",
+          "D14",
+          "D15"
+        ]
+      },
+      {
+        "titulo": "Agregados",
+        "celulas": [
+          "G13",
+          "G14",
+          "G15",
+          "G16",
+          "I13",
+          "I14",
+          "I15",
+          "I16",
+          "K13",
+          "K14",
+          "K15",
+          "K16",
+          "M13",
+          "M14",
+          "M15",
+          "M16",
+          "O13",
+          "O14",
+          "O15",
+          "O16",
+          "Q13",
+          "Q14",
+          "Q15",
+          "Q16"
+        ]
+      },
+      {
+        "titulo": "Teores de asfalto por ponto (%)",
+        "celulas": [
+          "D17",
+          "D18",
+          "D19",
+          "D20",
+          "D21",
+          "D22",
+          "D23",
+          "D24"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "N7": "Data do estudo",
+    "I26": "Quantidade de mistura a produzir (kg)",
+    "D13": "Asfalto — tipo",
+    "D14": "Asfalto — registro",
+    "D15": "Asfalto — procedência",
+    "G13": "Agregado — material",
+    "I13": "Agregado — material",
+    "K13": "Agregado — material",
+    "M13": "Agregado — material",
+    "O13": "Agregado — material",
+    "Q13": "Agregado — material",
+    "G14": "Agregado — registro",
+    "I14": "Agregado — registro",
+    "K14": "Agregado — registro",
+    "M14": "Agregado — registro",
+    "O14": "Agregado — registro",
+    "Q14": "Agregado — registro",
+    "G15": "Agregado — procedência",
+    "I15": "Agregado — procedência",
+    "K15": "Agregado — procedência",
+    "M15": "Agregado — procedência",
+    "O15": "Agregado — procedência",
+    "Q15": "Agregado — procedência",
+    "G16": "Agregado — composição (%)",
+    "I16": "Agregado — composição (%)",
+    "K16": "Agregado — composição (%)",
+    "M16": "Agregado — composição (%)",
+    "O16": "Agregado — composição (%)",
+    "Q16": "Agregado — composição (%)",
+    "D17": "Ponto 1 — teor de asfalto (%)",
+    "D18": "Ponto 2 — teor de asfalto (%)",
+    "D19": "Ponto 3 — teor de asfalto (%)",
+    "D20": "Ponto 4 — teor de asfalto (%)",
+    "D21": "Ponto 5 — teor de asfalto (%)",
+    "D22": "Ponto 6 — teor de asfalto (%)",
+    "D23": "Ponto 7 — teor de asfalto (%)",
+    "D24": "Ponto ótimo — teor de asfalto (%)"
+  },
+  "resultados": [],
+  "pedido_exemplo": {}
+}

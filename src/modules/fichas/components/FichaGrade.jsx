@@ -2,6 +2,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { colStr } from '../motor/formulas.js'
 import { formatar } from '../motor/formatacao.js'
 import CampoCelula from './CampoCelula'
+import Grafico from './Grafico'
 import s from './Ficha.module.css'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -47,7 +48,7 @@ function alinhamento(d) {
  * Estrutura da tabela (calculada uma vez por folha).
  * soImpressao: só as colunas da área de impressão do Excel (sem as colunas "só de tela").
  */
-function montarEstrutura(folha, soImpressao) {
+function montarEstrutura(folha, soImpressao, folga = 1) {
   const { modelo, c1, r1, cobertas } = folha
   const nCols = soImpressao ? folha.colsImpressao : modelo.cols.length
   const linhas = []
@@ -65,7 +66,7 @@ function montarEstrutura(folha, soImpressao) {
       const vizinha = modelo.cells[colStr(c + cs) + r]
       const recortar = !d.w && vizinha && (vizinha.v !== undefined || vizinha.fx || vizinha.rt || vizinha.role)
       celulas.push({
-        a, d, rs, cs, h: Math.max(0, h - 1), oculta: largura === 0, soTela: ci >= folha.colsImpressao,
+        a, d, rs, cs, h: Math.max(0, h - folga), oculta: largura === 0, soTela: ci >= folha.colsImpressao,
         estilo: estiloTd(d), alinhamento: alinhamento(d), recortar,
         papel: d.role?.tipo || null,
       })
@@ -118,7 +119,11 @@ export default function FichaGrade({
 }) {
   const folha = folhaProp || indice.folhas?.[0] || indice
   const pre = folha.prefixo || ''
-  const estrutura = useMemo(() => montarEstrutura(folha, soImpressao), [folha, soImpressao])
+  // Conteúdo da célula = altura da linha − borda. Na impressão (zoom < 1) a borda fina não encolhe
+  // (vira 1 pixel do dispositivo = 1/zoom px da folha); descontar isso mantém cada linha na altura do
+  // Excel — senão a tabela cresce e o que é posicionado por cima (logo, gráficos) sai do lugar.
+  const folga = escalaFixa && escalaFixa < 1 ? Math.min(4, 1.05 / escalaFixa + 0.3) : 1
+  const estrutura = useMemo(() => montarEstrutura(folha, soImpressao, folga), [folha, soImpressao, folga])
   const largura = soImpressao ? folha.larguraImpressao : folha.largura
   const caixa = useRef(null)
   const [escalaAuto, setEscalaAuto] = useState(1)
@@ -163,6 +168,7 @@ export default function FichaGrade({
           dado={d.role.dado}
           nf={d.nf}
           multilinha={!!d.role.ml}
+          opcoes={d.role.opcoes}
           editavel={editavel}
           rotulo={d.role.rot || d.role.rl || a}
           onConfirmar={v => onEntrada?.(a, v)}
@@ -301,6 +307,11 @@ export default function FichaGrade({
           </table>
           {folha.modelo.imgs.map((im, i) => (
             <img key={i} className={s.imagem} alt="" src={im.src} style={{ left: im.x, top: im.y, width: im.w, height: im.h }} />
+          ))}
+          {folha.modelo.graficos?.map((g, i) => (
+            <div key={`g${i}`} className={s.grafico} style={{ left: g.x, top: g.y, width: g.w, height: g.h }}>
+              <Grafico g={g} motor={motor} prefixo={pre} cells={indice.cells} />
+            </div>
           ))}
         </div>
       </div>

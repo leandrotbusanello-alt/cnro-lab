@@ -471,6 +471,36 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
         imgs.append({'x': round(x, 1), 'y': round(y, 1), 'w': round(w, 1), 'h': round(h, 1),
                      'src': f'data:{mime};base64,' + base64.b64encode(dados).decode()})
 
+    # listas suspensas (validação de dados do Excel) nas células de entrada/revisão → opções do campo
+    for dv in ws.data_validations.dataValidation:
+        if (dv.type or '') != 'list' or not dv.formula1:
+            continue
+        opcoes = opcoes_da_lista(dv.formula1, wsv)
+        if not opcoes:
+            continue
+        for rng in str(dv.sqref).split():
+            ca, ra, cb, rb = range_boundaries(rng)
+            for rr in range(ra, rb + 1):
+                for cc in range(ca, cb + 1):
+                    d = cells.get(endereco(cc, rr))
+                    if d and d.get('role', {}).get('tipo') in ('entrada', 'revisao'):
+                        d['role']['opcoes'] = opcoes
+                        d['role']['dado'] = 'texto'
+
+    # células fora da área usadas pelas fórmulas (tabelas de faixas, listas…): vão como auxiliares,
+    # que o motor calcula mas a ficha não mostra
+    # gráficos do Excel dentro da área da ficha (fora dela são ignorados)
+    graficos = graficos_da_aba(caminho, ws, cores, x_off, y_off, (c1, r1, c2_impressao, r2), alertas) \
+        if spec.get('graficos', True) else []
+    # spec 'graficos_series': {'0.0': {'x': 'E29:E39', 'y': 'P47:P57'}} troca a origem de uma série
+    # (gráfico.série), p.ex. quando a tabela auxiliar que o gráfico lia foi limpa da ficha
+    for chave, troca in (spec.get('graficos_series') or {}).items():
+        gi, si = (int(k) for k in chave.split('.'))
+        graficos[gi]['series'][si].update(troca)
+    refs_graficos = [ref for g in graficos for ref in refs_do_grafico(g)]
+
+    aux = celulas_auxiliares(ws, wsv, cells, (c1, r1, c2, r2), formulas_spec, alertas, refs_graficos)
+
     pm = ws.page_margins
     ps = ws.page_setup
     folha = {
@@ -483,6 +513,8 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
             'ajuste': [1 if ps.fitToWidth is None else ps.fitToWidth, 1 if ps.fitToHeight is None else ps.fitToHeight],
         },
         'lista': spec.get('lista', {}),
+        **({'aux': aux} if aux else {}),
+        **({'graficos': graficos} if graficos else {}),
     }
     for a in spec.get('pedido', {}):
         if a not in cells:
@@ -495,8 +527,408 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
     return folha, exemplo, excel, alertas
 
 
-CHAVES_DA_FOLHA = ('pedido', 'entradas', 'revisao', 'escolhas', 'assinaturas', 'linhas_assinatura', 'formulas',
-                   'colunas_tela', 'limpar', 'mesclas_extras', 'lista', 'rotulos', 'verificacoes', 'area_impressao')
+RE_REF_LOCAL = re.compile(r"(?<![A-Za-z0-9_!'.$])\$?([A-Z]{1,3})\$?(\d+)(?::\$?([A-Z]{1,3})\$?(\d+))?(?![A-Za-z0-9_(!])")
+
+
+def refs_locais(formula):
+    """Endereços (da própria aba) usados por uma fórmula, com os intervalos expandidos."""
+    sem_texto = re.sub(r'"[^"]*"', '""', formula)
+    sem_outras_abas = re.sub(r"(?:'(?:[^']|'')+'|[A-Za-z_][A-Za-z0-9_.]*)!\$?[A-Z]{1,3}\$?\d+(?::\$?[A-Z]{1,3}\$?\d+)?", '0', sem_texto)
+    out = []
+    for m in RE_REF_LOCAL.finditer(sem_outras_abas):
+        ca, ra = column_index_from_string(m.group(1)), int(m.group(2))
+        cb, rb = (column_index_from_string(m.group(3)), int(m.group(4))) if m.group(3) else (ca, ra)
+        for rr in range(min(ra, rb), max(ra, rb) + 1):
+            for cc in range(min(ca, cb), max(ca, cb) + 1):
+                out.append((cc, rr))
+    return out
+
+
+def celulas_auxiliares(ws, wsv, cells, area, formulas_spec, alertas, refs_extras=()):
+    """Células fora da área da ficha de que as fórmulas (e os gráficos) dependem, direta ou indiretamente."""
+    c1, r1, c2, r2 = area
+    dentro = lambda cc, rr: c1 <= cc <= c2 and r1 <= rr <= r2
+    pendentes = []
+    for ref in refs_extras:
+        pendentes += refs_locais(ref)
+    for d in cells.values():
+        if 'fx' in d:
+            pendentes += refs_locais(d['fx'])
+    aux, vistos = {}, set()
+    while pendentes:
+        cc, rr = pendentes.pop()
+        if (cc, rr) in vistos or dentro(cc, rr):
+            continue
+        vistos.add((cc, rr))
+        a = endereco(cc, rr)
+        v = formulas_spec.get(a, ws.cell(rr, cc).value)
+        if isinstance(v, str) and v.startswith('='):
+            if any(x in v.upper() for x in FUNCOES_BLOQUEADAS):
+                alertas.append(f'{a} (auxiliar): fórmula bloqueada: {v}')
+                continue
+            aux[a] = {'fx': v[1:]}
+            pendentes += refs_locais(v[1:])
+        elif v is not None:
+            aux[a] = {'v': serial_excel(v)}
+    if len(aux) > 3000:
+        alertas.append(f'{len(aux)} células auxiliares — confira se a área de impressão está certa.')
+    return aux
+
+
+def opcoes_da_lista(formula1, wsv):
+    """Opções de uma lista suspensa: '"a,b,c"' ou um intervalo da própria aba ($AQ$19:$AQ$26)."""
+    f = formula1.strip()
+    if f.startswith('"'):
+        return [x for x in f.strip('"').split(',') if x != '']
+    if '!' in f:
+        return []
+    try:
+        ca, ra, cb, rb = range_boundaries(f.replace('$', ''))
+    except Exception:
+        return []
+    out = []
+    for rr in range(ra, rb + 1):
+        for cc in range(ca, cb + 1):
+            v = wsv.cell(rr, cc).value
+            if v is None or v == '' or (isinstance(v, str) and v.startswith('#')):
+                continue
+            t = str(v) if not isinstance(v, float) or not v.is_integer() else str(int(v))
+            if t not in out:
+                out.append(t)
+    return out
+
+
+# ── gráficos (DrawingML) ─────────────────────────────────────────────────────
+NS_C = {'c': 'http://schemas.openxmlformats.org/drawingml/2006/chart',
+        'a': 'http://schemas.openxmlformats.org/drawingml/2006/main',
+        'xdr': 'http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing',
+        'r': 'http://schemas.openxmlformats.org/officeDocument/2006/relationships'}
+MAPA_TEMA = {'lt1': 0, 'dk1': 1, 'lt2': 2, 'dk2': 3, 'accent1': 4, 'accent2': 5, 'accent3': 6, 'accent4': 7,
+             'accent5': 8, 'accent6': 9, 'hlink': 10, 'folHlink': 11, 'bg1': 0, 'tx1': 1, 'bg2': 2, 'tx2': 3}
+
+
+def _hsl(hexc):
+    import colorsys
+    r, g, b = (int(hexc[i:i + 2], 16) / 255 for i in (0, 2, 4))
+    return colorsys.rgb_to_hls(r, g, b)
+
+
+def _hex(h, l, s):
+    import colorsys
+    r, g, b = colorsys.hls_to_rgb(h, max(0, min(1, l)), s)
+    return '%02X%02X%02X' % tuple(round(x * 255) for x in (r, g, b))
+
+
+def cor_drawingml(fill, tema):
+    """<a:solidFill> (ou elemento com a cor) → ('#RRGGBB', opacidade) ou None."""
+    if fill is None:
+        return None
+    el = next((e for e in fill if etree.QName(e).localname in ('srgbClr', 'schemeClr', 'sysClr', 'prstClr')), None)
+    if el is None:
+        return None
+    nome = etree.QName(el).localname
+    if nome == 'srgbClr':
+        hexc = el.get('val')
+    elif nome == 'sysClr':
+        hexc = el.get('lastClr') or ('000000' if el.get('val') == 'windowText' else 'FFFFFF')
+    elif nome == 'prstClr':
+        hexc = {'black': '000000', 'white': 'FFFFFF', 'red': 'FF0000', 'blue': '0000FF', 'green': '008000'}.get(el.get('val'), '000000')
+    else:
+        hexc = tema[MAPA_TEMA.get(el.get('val'), 1)]
+    opac = 1.0
+    h, l, s = _hsl(hexc)
+    for m in el:
+        k, v = etree.QName(m).localname, int(m.get('val', '0')) / 100000
+        if k == 'lumMod': l *= v
+        elif k == 'lumOff': l += v
+        elif k == 'shade': l *= v
+        elif k == 'tint': l = l + (1 - l) * (1 - v)
+        elif k == 'alpha': opac = v
+    return ['#' + _hex(h, l, s), round(opac, 3)]
+
+
+def _texto_rich(tx):
+    if tx is None:
+        return None
+    partes = [t.text or '' for t in tx.iterfind('.//a:t', NS_C)]
+    return ''.join(partes).strip() or None
+
+
+def _fonte(el):
+    """Tamanho (pt) e negrito de <a:defRPr>/<a:rPr> mais próximos."""
+    if el is None:
+        return {}
+    r = el.find('.//a:defRPr', NS_C)
+    if r is None:
+        r = el.find('.//a:rPr', NS_C)
+    if r is None:
+        return {}
+    out = {}
+    if r.get('sz'): out['s'] = int(r.get('sz')) / 100
+    if r.get('b') == '1': out['b'] = 1
+    lat = r.find('a:latin', NS_C)
+    if lat is not None and lat.get('typeface') and not lat.get('typeface').startswith('+'):
+        out['n'] = lat.get('typeface')
+    return out
+
+
+def _linha(sppr, tema):
+    """<c:spPr> → {'cor', 'op', 'larg' (pt), 'tracejado'} · None se sem linha · {} se não definido."""
+    if sppr is None:
+        return {}
+    ln = sppr.find('a:ln', NS_C)
+    if ln is None:
+        return {}
+    if ln.find('a:noFill', NS_C) is not None:
+        return None
+    out = {}
+    cor = cor_drawingml(ln.find('a:solidFill', NS_C), tema)
+    if cor: out['cor'], out['op'] = cor
+    if ln.get('w'): out['larg'] = round(int(ln.get('w')) / 12700, 2)
+    d = ln.find('a:prstDash', NS_C)
+    if d is not None and d.get('val') not in (None, 'solid'): out['tracejado'] = d.get('val')
+    return out
+
+
+def _ref_local(f, ws_titulo, alertas, onde):
+    """"'Aba'!$C$21:$C$29" → 'C21:C29' (só a própria aba)."""
+    if not f:
+        return None
+    m = re.match(r"^(?:'((?:[^']|'')+)'|([^!]+))!(.+)$", f.strip())
+    aba, ref = ((m.group(1) or '').replace("''", "'") or m.group(2), m.group(3)) if m else (None, f)
+    if aba is not None and aba != ws_titulo:
+        alertas.append(f'{onde}: série aponta para outra aba ({f}) — ignorada.')
+        return None
+    return ref.replace('$', '')
+
+
+def refs_do_grafico(g):
+    out = []
+    for s in g['series']:
+        for k in ('x', 'y'):
+            if s.get(k): out.append(s[k])
+        if s.get('nome', {}).get('ref'): out.append(s['nome']['ref'])
+    return out
+
+
+def graficos_da_aba(caminho, ws, cores, x_off, y_off, area, alertas):
+    """Gráficos XY (dispersão/linha) desenhados sobre a área da ficha."""
+    import zipfile, posixpath
+    c1, r1, c2, r2 = area
+    tema = cores.tema
+    rel_ns = '{http://schemas.openxmlformats.org/package/2006/relationships}Relationship'
+    with zipfile.ZipFile(caminho) as z:
+        nomes = set(z.namelist())
+        wbx = etree.fromstring(z.read('xl/workbook.xml'))
+        rels = {r.get('Id'): r.get('Target') for r in etree.fromstring(z.read('xl/_rels/workbook.xml.rels')).iter(rel_ns)}
+        folha = None
+        for sh in wbx.iter('{http://schemas.openxmlformats.org/spreadsheetml/2006/main}sheet'):
+            if sh.get('name') == ws.title:
+                alvo = rels[sh.get('{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id')]
+                folha = posixpath.normpath(posixpath.join('xl', alvo.lstrip('/').replace('xl/', '', 1)))
+        if not folha:
+            return []
+        arq_rels = posixpath.join(posixpath.dirname(folha), '_rels', posixpath.basename(folha) + '.rels')
+        if arq_rels not in nomes:
+            return []
+        desenhos = [posixpath.normpath(posixpath.join(posixpath.dirname(folha), r.get('Target')))
+                    for r in etree.fromstring(z.read(arq_rels)).iter(rel_ns) if r.get('Type', '').endswith('/drawing')]
+        saida = []
+        for dz in desenhos:
+            drel = posixpath.join(posixpath.dirname(dz), '_rels', posixpath.basename(dz) + '.rels')
+            if drel not in nomes:
+                continue
+            alvos = {r.get('Id'): posixpath.normpath(posixpath.join(posixpath.dirname(dz), r.get('Target')))
+                     for r in etree.fromstring(z.read(drel)).iter(rel_ns)}
+            dx = etree.fromstring(z.read(dz))
+            for anc in dx:
+                if etree.QName(anc).localname not in ('twoCellAnchor', 'oneCellAnchor'):
+                    continue
+                ch = anc.find('.//c:chart', NS_C)
+                if ch is None:
+                    continue
+                fr, to = anc.find('xdr:from', NS_C), anc.find('xdr:to', NS_C)
+                pos = lambda e, k: int(e.find(f'xdr:{k}', NS_C).text)
+                col0, row0 = pos(fr, 'col'), pos(fr, 'row')
+                if not (c1 - 1 <= col0 < c2 and r1 - 1 <= row0 < r2):
+                    alertas.append(f'gráfico fora da área da ficha (célula {endereco(col0 + 1, row0 + 1)}) — ignorado.')
+                    continue
+                clamp_c = lambda i: max(0, min(i, len(x_off) - 1))
+                clamp_r = lambda i: max(0, min(i, len(y_off) - 1))
+                x = x_off[clamp_c(col0 - (c1 - 1))] + pos(fr, 'colOff') / EMU_PX
+                y = y_off[clamp_r(row0 - (r1 - 1))] + pos(fr, 'rowOff') / EMU_PX
+                if to is not None:
+                    w = x_off[clamp_c(pos(to, 'col') - (c1 - 1))] + pos(to, 'colOff') / EMU_PX - x
+                    h = y_off[clamp_r(pos(to, 'row') - (r1 - 1))] + pos(to, 'rowOff') / EMU_PX - y
+                else:
+                    ext = anc.find('xdr:ext', NS_C)
+                    w, h = int(ext.get('cx')) / EMU_PX, int(ext.get('cy')) / EMU_PX
+                arq = alvos.get(ch.get('{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id'))
+                if not arq or arq not in nomes:
+                    continue
+                g = ler_grafico(etree.fromstring(z.read(arq)), tema, ws.title, alertas, arq.split('/')[-1])
+                if g:
+                    g.update({'x': round(x, 1), 'y': round(y, 1), 'w': round(w, 1), 'h': round(h, 1)})
+                    saida.append(g)
+        return saida
+
+
+def ler_grafico(cx, tema, ws_titulo, alertas, nome_arq):
+    ch = cx.find('c:chart', NS_C)
+    pa = ch.find('c:plotArea', NS_C)
+    tipos = [e for e in pa if etree.QName(e).localname in ('scatterChart', 'lineChart')]
+    if not tipos:
+        outros = [etree.QName(e).localname for e in pa if etree.QName(e).localname.endswith('Chart')]
+        alertas.append(f'{nome_arq}: tipo de gráfico não suportado ({", ".join(outros)}) — ignorado.')
+        return None
+    num = lambda e, k, conv=float: (conv(e.find(k, NS_C).get('val')) if e is not None and e.find(k, NS_C) is not None else None)
+    g = {'fonte': _fonte(cx.find('c:txPr', NS_C)) or {'s': 10}}
+    sp = cx.find('c:spPr', NS_C)
+    if sp is not None:
+        fundo = cor_drawingml(sp.find('a:solidFill', NS_C), tema)
+        if fundo: g['fundo'] = fundo[0]
+        bd = _linha(sp, tema)
+        if bd: g['borda'] = bd
+    # título
+    tt = ch.find('c:title', NS_C)
+    deletado = ch.find('c:autoTitleDeleted', NS_C)
+    if tt is not None and (deletado is None or deletado.get('val') != '1'):
+        txt = _texto_rich(tt.find('c:tx', NS_C))
+        if txt:
+            g['titulo'] = {'texto': txt, **_fonte(tt.find('c:tx', NS_C))}
+            ml = tt.find('.//c:manualLayout', NS_C)
+            if ml is not None and ml.find('c:y', NS_C) is not None:
+                g['titulo']['y'] = float(ml.find('c:y', NS_C).get('val'))
+    # área de plotagem
+    ml = pa.find('c:layout/c:manualLayout', NS_C)
+    if ml is not None and all(ml.find(f'c:{k}', NS_C) is not None for k in 'xywh'):
+        g['area'] = {k: round(float(ml.find(f'c:{k}', NS_C).get('val')), 4) for k in 'xywh'}
+    psp = pa.find('c:spPr', NS_C)
+    if psp is not None:
+        f = cor_drawingml(psp.find('a:solidFill', NS_C), tema)
+        if f: g['areaFundo'] = f[0]
+        b = _linha(psp, tema)
+        if b: g['areaBorda'] = b
+    # eixos
+    eixos = {}
+    for ax in pa:
+        if etree.QName(ax).localname not in ('valAx', 'catAx'):
+            continue
+        axpos = ax.find('c:axPos', NS_C).get('val')
+        sc = ax.find('c:scaling', NS_C)
+        e = {}
+        if sc.find('c:logBase', NS_C) is not None: e['log'] = float(sc.find('c:logBase', NS_C).get('val'))
+        if sc.find('c:min', NS_C) is not None: e['min'] = float(sc.find('c:min', NS_C).get('val'))
+        if sc.find('c:max', NS_C) is not None: e['max'] = float(sc.find('c:max', NS_C).get('val'))
+        if (sc.find('c:orientation', NS_C) is not None and sc.find('c:orientation', NS_C).get('val') == 'maxMin'): e['inverso'] = 1
+        if num(ax, 'c:delete', int): e['oculto'] = 1
+        if num(ax, 'c:majorUnit') is not None: e['unidade'] = num(ax, 'c:majorUnit')
+        if num(ax, 'c:minorUnit') is not None: e['unidadeMenor'] = num(ax, 'c:minorUnit')
+        nf = ax.find('c:numFmt', NS_C)
+        if nf is not None and nf.get('formatCode') not in (None, 'General'): e['nf'] = nf.get('formatCode')
+        for k, tag in (('grade', 'c:majorGridlines'), ('gradeMenor', 'c:minorGridlines')):
+            gl = ax.find(tag, NS_C)
+            if gl is not None:
+                ln = _linha(gl.find('c:spPr', NS_C), tema)
+                e[k] = ln if ln else {'cor': '#D9D9D9', 'larg': 0.75}
+        ln = _linha(ax.find('c:spPr', NS_C), tema)
+        e['linha'] = ln if ln is not None else None
+        tl = ax.find('c:tickLblPos', NS_C)
+        if tl is not None and tl.get('val') == 'none': e['semRotulos'] = 1
+        mt = ax.find('c:majorTickMark', NS_C)
+        if mt is not None: e['marcas'] = mt.get('val')
+        at = ax.find('c:title', NS_C)
+        if at is not None:
+            txt = _texto_rich(at.find('c:tx', NS_C))
+            if txt: e['titulo'] = {'texto': txt, **_fonte(at.find('c:tx', NS_C))}
+        fx = _fonte(ax.find('c:txPr', NS_C))
+        if fx: e['fonte'] = fx
+        eixos['x' if axpos in ('b', 't') else 'y'] = e
+    g['eixos'] = eixos
+    # séries
+    series = []
+    estilo_suave = tipos[0].find('c:scatterStyle', NS_C)
+    for ser in cx.iterfind('.//c:ser', NS_C):
+        idx = int(ser.find('c:idx', NS_C).get('val'))
+        s = {'idx': idx}
+        tx = ser.find('c:tx', NS_C)
+        if tx is not None:
+            f = tx.find('.//c:f', NS_C)
+            v = tx.find('.//c:v', NS_C)
+            if f is not None:
+                ref = _ref_local(f.text, ws_titulo, alertas, nome_arq)
+                if ref: s['nome'] = {'ref': ref}
+            elif v is not None:
+                s['nome'] = {'txt': v.text}
+        xv = ser.find('c:xVal', NS_C) if ser.find('c:xVal', NS_C) is not None else ser.find('c:cat', NS_C)
+        yv = ser.find('c:yVal', NS_C) if ser.find('c:yVal', NS_C) is not None else ser.find('c:val', NS_C)
+        if yv is None:
+            continue
+        fy = yv.find('.//c:f', NS_C)
+        s['y'] = _ref_local(fy.text if fy is not None else None, ws_titulo, alertas, nome_arq)
+        if xv is not None:
+            fx = xv.find('.//c:f', NS_C)
+            s['x'] = _ref_local(fx.text if fx is not None else None, ws_titulo, alertas, nome_arq)
+        if not s.get('y'):
+            continue
+        cor_padrao = '#' + tema[4 + idx % 6]
+        ln = _linha(ser.find('c:spPr', NS_C), tema)
+        if ln is not None:
+            ln = {'cor': cor_padrao, 'larg': 2.25, **ln}
+        s['linha'] = ln
+        mk = ser.find('c:marker', NS_C)
+        simb = mk.find('c:symbol', NS_C).get('val') if mk is not None and mk.find('c:symbol', NS_C) is not None else 'auto'
+        if simb != 'none':
+            tam = int(mk.find('c:size', NS_C).get('val')) if mk is not None and mk.find('c:size', NS_C) is not None else 5
+            msp = mk.find('c:spPr', NS_C) if mk is not None else None
+            cor = cor_drawingml(msp.find('a:solidFill', NS_C), tema) if msp is not None else None
+            borda = _linha(msp, tema) if msp is not None else {}
+            s['marcador'] = {'tipo': 'circle' if simb == 'auto' else simb, 'tam': tam,
+                             'cor': cor[0] if cor else (ln or {}).get('cor', cor_padrao),
+                             **({'borda': borda.get('cor', (ln or {}).get('cor', cor_padrao))} if borda is not None else {})}
+        # linha de tendência (regressão: potência, exponencial, linear, log, polinomial) com equação e R²
+        tls = []
+        for tl in ser.iterfind('c:trendline', NS_C):
+            tipo = tl.find('c:trendlineType', NS_C).get('val')
+            t = {'tipo': tipo, 'linha': _linha(tl.find('c:spPr', NS_C), tema)}
+            if tipo == 'poly' and num(tl, 'c:order', int): t['ordem'] = num(tl, 'c:order', int)
+            if tipo == 'movingAvg' and num(tl, 'c:period', int): t['periodo'] = num(tl, 'c:period', int)
+            for k, tag in (('frente', 'c:forward'), ('tras', 'c:backward'), ('intercepto', 'c:intercept')):
+                if num(tl, tag) is not None: t[k] = num(tl, tag)
+            if num(tl, 'c:dispEq', int): t['eq'] = 1
+            if num(tl, 'c:dispRSqr', int): t['r2'] = 1
+            lbl = tl.find('c:trendlineLbl', NS_C)
+            if lbl is not None:
+                ml = lbl.find('.//c:manualLayout', NS_C)
+                if ml is not None:
+                    t['rotulo'] = {k: round(float(ml.find(f'c:{k}', NS_C).get('val')), 4) for k in 'xy' if ml.find(f'c:{k}', NS_C) is not None}
+                fl = _fonte(lbl.find('c:txPr', NS_C))
+                if fl: t['fonte'] = fl
+            tls.append(t)
+        if tls:
+            s['tendencias'] = tls
+        sm = ser.find('c:smooth', NS_C)
+        if (sm is not None and sm.get('val') == '1') or (sm is None and estilo_suave is not None and 'smooth' in estilo_suave.get('val', '')):
+            s['suave'] = 1
+        series.append(s)
+    g['series'] = series
+    lg = ch.find('c:legend', NS_C)
+    if lg is not None:
+        g['legenda'] = {'pos': lg.find('c:legendPos', NS_C).get('val') if lg.find('c:legendPos', NS_C) is not None else 'r',
+                        'ocultos': [int(e.find('c:idx', NS_C).get('val')) for e in lg.iterfind('c:legendEntry', NS_C)
+                                    if e.find('c:delete', NS_C) is not None and e.find('c:delete', NS_C).get('val') == '1']}
+        ll = lg.find('.//c:manualLayout', NS_C)
+        if ll is not None and ll.find('c:y', NS_C) is not None:
+            g['legenda']['area'] = {k: round(float(ll.find(f'c:{k}', NS_C).get('val')), 4) for k in 'xywh' if ll.find(f'c:{k}', NS_C) is not None}
+        fl = _fonte(lg.find('c:txPr', NS_C))
+        if fl: g['legenda']['fonte'] = fl
+    vazios = ch.find('c:dispBlanksAs', NS_C)
+    g['vazios'] = vazios.get('val') if vazios is not None else 'gap'
+    return g
+
+
+CHAVES_DA_FOLHA = ('graficos_series', 'pedido', 'entradas', 'revisao', 'escolhas', 'assinaturas', 'linhas_assinatura', 'formulas',
+                   'colunas_tela', 'limpar', 'mesclas_extras', 'lista', 'rotulos', 'verificacoes', 'area_impressao', 'graficos')
 RE_ABA_FORMULA = re.compile(r"(?:'((?:[^']|'')+)'|([A-Za-z_][A-Za-z0-9_.]*))!\$?[A-Z]{1,3}\$?\d")
 
 
@@ -618,10 +1050,12 @@ def main():
             n_in += sum(1 for c in ab['cells'].values() if c.get('role', {}).get('tipo') == 'entrada')
         n_ver = sum(1 for f in [modelo] + modelo.get('abas', []) for c in f['cells'].values()
                     if c.get('role', {}).get('tipo') == 'verificacao')
+        n_graf = sum(len(f.get('graficos', [])) for f in [modelo] + modelo.get('abas', []))
         abas = f' · abas: {modelo.get("titulo_aba", "Frente")} + ' + ', '.join(a['titulo'] for a in modelo['abas']) if modelo.get('abas') else ''
         print(f'{nome}: {len(modelo["cells"]) + sum(len(a["cells"]) for a in modelo.get("abas", []))} células · {n_fx} fórmulas · '
               f'{n_in} entradas{f" · {n_ver} verificações" if n_ver else ""} · '
-              f'{len(modelo["imgs"])} imagem(ns) · {len(mapa)} mapa(s) de resultado{abas}')
+              f'{len(modelo["imgs"])} imagem(ns) · {len(mapa)} mapa(s) de resultado{abas}'
+              f'{f" · {n_graf} gráfico(s)" if n_graf else ""}')
         for a in alertas:
             print('   ⚠', a)
         problemas += len(alertas)

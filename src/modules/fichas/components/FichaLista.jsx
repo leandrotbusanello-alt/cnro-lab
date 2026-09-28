@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { gruposDaLista } from '../motor/ficha.js'
 import CampoCelula from './CampoCelula'
+import Grafico from './Grafico'
 import s from './Ficha.module.css'
 
 /**
@@ -8,11 +9,15 @@ import s from './Ficha.module.css'
  * (p.ex. por CP), com campos grandes para digitar no campo/bancada.
  */
 export default function FichaLista({
-  indice, estado, modo = 'preencher', bloqueado = false, idBase = 'lista',
+  indice, motor, estado, modo = 'preencher', bloqueado = false, idBase = 'lista',
   assinaturas = {}, podeAssinar = {}, onEntrada, onEscolha, onVerificacao, onCliqueAssinatura,
 }) {
   const grupos = useMemo(() => gruposDaLista(indice, { incluirRevisao: modo === 'revisao' }), [indice, modo])
   const ordem = useMemo(() => grupos.flatMap(g => g.itens.filter(i => i.endereco).map(i => i.endereco)), [grupos])
+  const graficos = useMemo(
+    () => (indice.folhas || [indice]).flatMap(folha => (folha.modelo.graficos || []).map(g => ({ g, folha }))),
+    [indice],
+  )
   const podeEntrada = !bloqueado && (modo === 'preencher' || modo === 'revisao')
   const podeRevisao = !bloqueado && modo === 'revisao'
 
@@ -79,6 +84,7 @@ export default function FichaLista({
                     dado={item.dado}
                     nf={d?.nf}
                     multilinha={item.multilinha}
+                    opcoes={d?.role?.opcoes}
                     editavel={editavel}
                     rotulo={item.rotulo}
                     onConfirmar={v => onEntrada?.(item.endereco, v)}
@@ -90,6 +96,17 @@ export default function FichaLista({
           </div>
         </section>
       ))}
+
+      {motor && graficos.length > 0 && (
+        <section className={s.grupo}>
+          <h3 className={s.grupoTitulo}>Gráficos</h3>
+          {graficos.map(({ g, folha }, i) => (
+            <div key={i} className={s.graficoLista}>
+              <Grafico g={g} motor={motor} prefixo={folha.prefixo || ''} cells={indice.cells} responsivo />
+            </div>
+          ))}
+        </section>
+      )}
 
       <section className={s.grupo}>
         <h3 className={s.grupoTitulo}>Assinaturas</h3>

@@ -10,6 +10,9 @@
 //            'escolha' (Sim/Não) · 'assinatura' (executor | calculista)
 //            'verificacao' (caixa de seleção independente, ☐/☒ — pontos de verificação do verso)
 //
+// Listas suspensas: role.opcoes (entrada de texto escolhida numa lista, como a validação de dados do Excel).
+// Auxiliares: modelo.aux (e abas[i].aux) = { 'W17': {v} | {fx} } — células fora da área usadas pelas fórmulas.
+//
 // Frente e verso: modelo.abas = [{ id:'VERSO', titulo:'Verso', origem, cols, rows, cells, imgs, pagina, lista }]
 //   (mesmo formato da aba principal). Fora da folha, o endereço leva o id da aba: 'VERSO!F7'.
 //   modelo.apelidos: nome da aba no Excel → id ('' = principal), para as fórmulas entre abas.
@@ -79,6 +82,11 @@ export function indexarModelo(modelo) {
   const estaticos = {}
   const papeis = { entrada: [], revisao: [], pedido: [], escolha: [], verificacao: [], assinatura: {} }
   for (const f of folhas) {
+    // células auxiliares (fora da área da ficha: tabelas de faixas, listas…): calculadas, não desenhadas
+    for (const [local, d] of Object.entries(f.modelo.aux || {})) {
+      if (d.fx) formulas[f.prefixo + local] = d.fx
+      else if (d.v !== undefined) estaticos[f.prefixo + local] = d.v
+    }
     for (const [local, d] of Object.entries(f.modelo.cells)) {
       const a = f.prefixo + local
       cells[a] = d

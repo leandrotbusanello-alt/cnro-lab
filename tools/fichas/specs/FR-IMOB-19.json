@@ -1,0 +1,185 @@
+{
+  "codigo": "FR-IMOB-19",
+  "versao": "Rev00",
+  "nome": "Estudo de composição granulométrica",
+  "arquivo": "FR-IMOB-19_Rev00.xlsx",
+  "_nota": "Planilha-mestre Rev00 sem alterações. Listas suspensas: material de cada coluna (D12…N12) e faixa de projeto (Q15). A tabela de faixas normativas e as tolerâncias (colunas V…AQ, fora da área) entram como células auxiliares. Os 'xxxxxx' do cabeçalho são campos (O.S. e complemento vêm do pedido). Gráfico: aparece na ficha (desenhado pelo sistema a partir dos valores calculados, com a formatação do Excel). Estudo: sem resultado_* (fica em dados_resultado).",
+  "pedido": {
+    "F7": "os",
+    "F8": "complemento"
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "Q7"
+      ],
+      "tipo": "data"
+    },
+    {
+      "celulas": [
+        "D12",
+        "F12",
+        "H12",
+        "J12",
+        "L12",
+        "N12",
+        "Q15"
+      ],
+      "tipo": "texto"
+    },
+    {
+      "celulas": [
+        "D13",
+        "F13",
+        "H13",
+        "J13",
+        "L13",
+        "N13",
+        "D14",
+        "F14",
+        "H14",
+        "J14",
+        "L14",
+        "N14"
+      ],
+      "tipo": "texto"
+    },
+    {
+      "colunas": [
+        "D",
+        "F",
+        "H",
+        "J",
+        "L",
+        "N"
+      ],
+      "linhas": [
+        15,
+        "18-28"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "assinaturas": {
+    "executor": "B54",
+    "calculista": "N54"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "Q7",
+          "Q15"
+        ]
+      },
+      {
+        "titulo": "Material {n}",
+        "colunas": [
+          "D",
+          "F",
+          "H",
+          "J",
+          "L",
+          "N"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "Q7": "Data do estudo",
+    "Q15": "Faixa granulométrica de projeto",
+    "D12": "Material",
+    "F12": "Material",
+    "H12": "Material",
+    "J12": "Material",
+    "L12": "Material",
+    "N12": "Material",
+    "D13": "Registro da amostra",
+    "F13": "Registro da amostra",
+    "H13": "Registro da amostra",
+    "J13": "Registro da amostra",
+    "L13": "Registro da amostra",
+    "N13": "Registro da amostra",
+    "D14": "Procedência",
+    "F14": "Procedência",
+    "H14": "Procedência",
+    "J14": "Procedência",
+    "L14": "Procedência",
+    "N14": "Procedência",
+    "D15": "Composição (%)",
+    "F15": "Composição (%)",
+    "H15": "Composição (%)",
+    "J15": "Composição (%)",
+    "L15": "Composição (%)",
+    "N15": "Composição (%)",
+    "D18": "% passa — peneira 2\"",
+    "D19": "% passa — peneira 1 1/2\"",
+    "D20": "% passa — peneira 1\"",
+    "D21": "% passa — peneira 3/4\"",
+    "D22": "% passa — peneira 1/2\"",
+    "D23": "% passa — peneira 3/8\"",
+    "D24": "% passa — peneira nº 4",
+    "D25": "% passa — peneira nº 10",
+    "D26": "% passa — peneira nº 40",
+    "D27": "% passa — peneira nº 80",
+    "D28": "% passa — peneira nº 200",
+    "F18": "% passa — peneira 2\"",
+    "F19": "% passa — peneira 1 1/2\"",
+    "F20": "% passa — peneira 1\"",
+    "F21": "% passa — peneira 3/4\"",
+    "F22": "% passa — peneira 1/2\"",
+    "F23": "% passa — peneira 3/8\"",
+    "F24": "% passa — peneira nº 4",
+    "F25": "% passa — peneira nº 10",
+    "F26": "% passa — peneira nº 40",
+    "F27": "% passa — peneira nº 80",
+    "F28": "% passa — peneira nº 200",
+    "H18": "% passa — peneira 2\"",
+    "H19": "% passa — peneira 1 1/2\"",
+    "H20": "% passa — peneira 1\"",
+    "H21": "% passa — peneira 3/4\"",
+    "H22": "% passa — peneira 1/2\"",
+    "H23": "% passa — peneira 3/8\"",
+    "H24": "% passa — peneira nº 4",
+    "H25": "% passa — peneira nº 10",
+    "H26": "% passa — peneira nº 40",
+    "H27": "% passa — peneira nº 80",
+    "H28": "% passa — peneira nº 200",
+    "J18": "% passa — peneira 2\"",
+    "J19": "% passa — peneira 1 1/2\"",
+    "J20": "% passa — peneira 1\"",
+    "J21": "% passa — peneira 3/4\"",
+    "J22": "% passa — peneira 1/2\"",
+    "J23": "% passa — peneira 3/8\"",
+    "J24": "% passa — peneira nº 4",
+    "J25": "% passa — peneira nº 10",
+    "J26": "% passa — peneira nº 40",
+    "J27": "% passa — peneira nº 80",
+    "J28": "% passa — peneira nº 200",
+    "L18": "% passa — peneira 2\"",
+    "L19": "% passa — peneira 1 1/2\"",
+    "L20": "% passa — peneira 1\"",
+    "L21": "% passa — peneira 3/4\"",
+    "L22": "% passa — peneira 1/2\"",
+    "L23": "% passa — peneira 3/8\"",
+    "L24": "% passa — peneira nº 4",
+    "L25": "% passa — peneira nº 10",
+    "L26": "% passa — peneira nº 40",
+    "L27": "% passa — peneira nº 80",
+    "L28": "% passa — peneira nº 200",
+    "N18": "% passa — peneira 2\"",
+    "N19": "% passa — peneira 1 1/2\"",
+    "N20": "% passa — peneira 1\"",
+    "N21": "% passa — peneira 3/4\"",
+    "N22": "% passa — peneira 1/2\"",
+    "N23": "% passa — peneira 3/8\"",
+    "N24": "% passa — peneira nº 4",
+    "N25": "% passa — peneira nº 10",
+    "N26": "% passa — peneira nº 40",
+    "N27": "% passa — peneira nº 80",
+    "N28": "% passa — peneira nº 200"
+  },
+  "resultados": [],
+  "pedido_exemplo": {}
+}

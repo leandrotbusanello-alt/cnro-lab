@@ -1,0 +1,235 @@
+{
+  "codigo": "FR-IMOB-18",
+  "versao": "Rev00",
+  "nome": "Caracterização do ligante asfáltico — CAP 30/45 com TLA",
+  "arquivo": "FR-IMOB-18_Rev00.xlsx",
+  "aba": "FR-IMOB-18 _Rev.00",
+  "titulo_aba": "Frente",
+  "_nota": "Planilha-mestre Rev00 sem alterações; fórmulas corretas. Resultados: penetração, ponto de amolecimento e viscosidade a 135/150 °C. A viscosidade da ficha é a 175 °C e a coluna do banco é a 177 °C: não gravada. Ponto de fulgor não tem tabela. Verso: 7 equipamentos + 7 pontos de verificação.",
+  "pedido": {
+    "B7": {
+      "campo": "os",
+      "manter_texto": true
+    },
+    "B8": {
+      "campo": "material",
+      "manter_texto": true
+    },
+    "E8": {
+      "campo": "registro",
+      "manter_texto": true
+    },
+    "B9": {
+      "campo": "procedencia",
+      "manter_texto": true
+    },
+    "B10": {
+      "campo": "complemento",
+      "manter_texto": true
+    }
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "E7"
+      ],
+      "tipo": "data",
+      "manter_texto": true
+    },
+    {
+      "celulas": [
+        "E20",
+        "F20",
+        "G20",
+        "E22",
+        "F22",
+        "E24",
+        "F24",
+        "G24",
+        "E26",
+        "F26",
+        "E28",
+        "F28",
+        "E29",
+        "F29",
+        "E30",
+        "F30",
+        "F36",
+        "F37",
+        "F38",
+        "F39"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "assinaturas": {
+    "executor": "B45",
+    "calculista": "F45"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "E7"
+        ]
+      },
+      {
+        "titulo": "Antes do envelhecimento",
+        "celulas": [
+          "E20",
+          "F20",
+          "G20",
+          "E22",
+          "F22"
+        ]
+      },
+      {
+        "titulo": "Após o envelhecimento",
+        "celulas": [
+          "E24",
+          "F24",
+          "G24",
+          "E26",
+          "F26"
+        ]
+      },
+      {
+        "titulo": "Variação em massa (RTFOT)",
+        "celulas": [
+          "E28",
+          "F28",
+          "E29",
+          "F29",
+          "E30",
+          "F30"
+        ]
+      },
+      {
+        "titulo": "Viscosidade e ponto de fulgor",
+        "celulas": [
+          "F36",
+          "F37",
+          "F38",
+          "F39"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "E7": "Data do ensaio",
+    "E20": "Penetração — 1ª leitura",
+    "F20": "Penetração — 2ª leitura",
+    "G20": "Penetração — 3ª leitura",
+    "E22": "PA — 1ª esfera (°C)",
+    "F22": "PA — 2ª esfera (°C)",
+    "E24": "Penetração — 1ª leitura",
+    "F24": "Penetração — 2ª leitura",
+    "G24": "Penetração — 3ª leitura",
+    "E26": "PA — 1ª esfera (°C)",
+    "F26": "PA — 2ª esfera (°C)",
+    "E28": "Recipiente 1 — antes (g)",
+    "F28": "Recipiente 1 — após (g)",
+    "E29": "Recipiente 2 — antes (g)",
+    "F29": "Recipiente 2 — após (g)",
+    "E30": "Recipiente 3 — antes (g)",
+    "F30": "Recipiente 3 — após (g)",
+    "F36": "Viscosidade a 135 °C (cP)",
+    "F37": "Viscosidade a 150 °C (cP)",
+    "F38": "Viscosidade a 175 °C (cP)",
+    "F39": "Ponto de fulgor (°C)"
+  },
+  "abas_extras": [
+    {
+      "id": "VERSO",
+      "aba": "VERSO",
+      "titulo": "Verso",
+      "entradas": [
+        {
+          "celulas": [
+            "C6",
+            "C7",
+            "C8",
+            "C9",
+            "C10",
+            "C11",
+            "C12"
+          ],
+          "tipo": "texto"
+        }
+      ],
+      "rotulos": {
+        "C6": "Balança — identificação",
+        "C7": "Agulha + penetrômetro — identificação",
+        "C8": "Viscosímetro — identificação",
+        "C9": "Estufa RTFOT — identificação",
+        "C10": "Esferas — identificação",
+        "C11": "Béquer — identificação",
+        "C12": "Termômetro — identificação"
+      },
+      "lista": {
+        "grupos": [
+          {
+            "titulo": "Equipamentos utilizados",
+            "celulas": [
+              "C6",
+              "C7",
+              "C8",
+              "C9",
+              "C10",
+              "C11",
+              "C12"
+            ]
+          },
+          {
+            "titulo": "Pontos de verificação",
+            "linhas": "14-20"
+          }
+        ]
+      }
+    }
+  ],
+  "resultados": [
+    {
+      "tabela": "resultado_penetracao",
+      "linhas": [
+        {
+          "quando": "=ISNUMBER(F33)",
+          "campos": {
+            "temperatura_c": 25,
+            "leitura_1": "=E20",
+            "leitura_2": "=F20",
+            "leitura_3": "=G20",
+            "penetracao_media": "=F33"
+          }
+        }
+      ]
+    },
+    {
+      "tabela": "resultado_ponto_amolecimento",
+      "linhas": [
+        {
+          "quando": "=ISNUMBER(F34)",
+          "campos": {
+            "leitura_1_c": "=E22",
+            "leitura_2_c": "=F22",
+            "media_c": "=F34"
+          }
+        }
+      ]
+    },
+    {
+      "tabela": "resultado_viscosidade",
+      "linhas": [
+        {
+          "quando": "=COUNT(F36:F37)>0",
+          "campos": {
+            "viscosidade_135c_cp": "=F36",
+            "viscosidade_150c_cp": "=F37"
+          }
+        }
+      ]
+    }
+  ],
+  "pedido_exemplo": {}
+}

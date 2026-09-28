@@ -1,0 +1,99 @@
+{
+  "codigo": "FR-IMOB-21",
+  "versao": "Rev01",
+  "nome": "Concreto asfáltico — Análise granulométrica da mistura",
+  "arquivo": "FR-IMOB-21_Rev01.xlsx",
+  "_nota": "Planilha 'Rev01 - Dersa' enviada em 25/09 (o cabeçalho interno ainda diz Versão 00). Duas listas suspensas: M19 = faixa normativa (limites M/N) e M17 = traço de projeto (faixa de trabalho O/P). As tabelas de faixas e traços (colunas R…AY, fora da área) entram como células auxiliares. Massa inicial, retidos, fundo e massa total são digitados. Conferido com o exemplo real da Rev00 (O.S. 2026.03.31.02.140, PDF). Gráfico: aparece na ficha (desenhado pelo sistema a partir dos valores calculados, com a formatação do Excel). Sem resultado_* (granulometria de mistura ainda sem tabela).",
+  "pedido": {
+    "C7": "os",
+    "C8": "material",
+    "I8": "registro",
+    "E9": "procedencia",
+    "E10": "complemento"
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "I7"
+      ],
+      "tipo": "data"
+    },
+    {
+      "celulas": [
+        "M17",
+        "M19"
+      ],
+      "tipo": "texto"
+    },
+    {
+      "colunas": [
+        "D",
+        "H"
+      ],
+      "linhas": [
+        20,
+        "21-31"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "assinaturas": {
+    "executor": "B55",
+    "calculista": "J55"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "I7",
+          "M19",
+          "M17"
+        ]
+      },
+      {
+        "titulo": "Amostra 01",
+        "colunas": [
+          "D"
+        ]
+      },
+      {
+        "titulo": "Amostra 02",
+        "colunas": [
+          "H"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "I7": "Data do ensaio",
+    "M19": "Faixa granulométrica (norma)",
+    "M17": "Traço de projeto (faixa de trabalho)",
+    "D20": "Massa inicial (g)",
+    "H20": "Massa inicial (g)",
+    "D30": "Fundo (g)",
+    "H30": "Fundo (g)",
+    "D31": "Massa total (g)",
+    "H31": "Massa total (g)",
+    "D21": "Massa retida — peneira 1\" (g)",
+    "D22": "Massa retida — peneira 3/4\" (g)",
+    "D23": "Massa retida — peneira 1/2\" (g)",
+    "D24": "Massa retida — peneira 3/8\" (g)",
+    "D25": "Massa retida — peneira nº 4 (g)",
+    "D26": "Massa retida — peneira nº 10 (g)",
+    "D27": "Massa retida — peneira nº 40 (g)",
+    "D28": "Massa retida — peneira nº 80 (g)",
+    "D29": "Massa retida — peneira nº 200 (g)",
+    "H21": "Massa retida — peneira 1\" (g)",
+    "H22": "Massa retida — peneira 3/4\" (g)",
+    "H23": "Massa retida — peneira 1/2\" (g)",
+    "H24": "Massa retida — peneira 3/8\" (g)",
+    "H25": "Massa retida — peneira nº 4 (g)",
+    "H26": "Massa retida — peneira nº 10 (g)",
+    "H27": "Massa retida — peneira nº 40 (g)",
+    "H28": "Massa retida — peneira nº 80 (g)",
+    "H29": "Massa retida — peneira nº 200 (g)"
+  },
+  "resultados": [],
+  "pedido_exemplo": {}
+}
