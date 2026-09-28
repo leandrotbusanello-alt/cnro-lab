@@ -27,3 +27,6 @@ yarn-error.log*
 # Sistema operacional
 .DS_Store
 Thumbs.db
+
+# Python
+__pycache__/

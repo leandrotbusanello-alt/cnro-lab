@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useLab } from '../useLaboratorio'
-import { SUBVISOES_MINHAS, VISOES, STATUS_PEDIDO } from '../constants'
+import { SUBVISOES_MINHAS, VISOES, STATUS_PEDIDO, PERFIS_LABORATORISTAS } from '../constants'
 import { situacao, ordenar } from '../classificacao'
 import { numeroPE, nomeEmpresa, rotuloMaterial, rotuloSubtipo } from '../utils'
 import { TIPOS_AMOSTRA } from '../../campo/constants'
@@ -95,9 +95,14 @@ export default function FilaView() {
             {atualizadoEm ? `Atualizado às ${atualizadoEm.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : 'Carregando…'}
           </p>
         </div>
-        <button className={`${ui.btn} ${ui.btnSecundario} ${ui.btnPequeno}`} onClick={() => lab.recarregar()} disabled={loading}>
-          ↻ Atualizar
-        </button>
+        <div className={styles.acoesTopo}>
+          {PERFIS_LABORATORISTAS.includes(String(lab.perfil?.perfil || '').toUpperCase()) && (
+            <Link to="/laboratorio/quadros" className={`${ui.btn} ${ui.btnSecundario} ${ui.btnPequeno}`}>📊 Quadros de controle</Link>
+          )}
+          <button className={`${ui.btn} ${ui.btnSecundario} ${ui.btnPequeno}`} onClick={() => lab.recarregar()} disabled={loading}>
+            ↻ Atualizar
+          </button>
+        </div>
       </div>
 
       {/* Visões principais */}

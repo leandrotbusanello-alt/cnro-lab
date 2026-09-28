@@ -20,6 +20,7 @@ from pathlib import Path
 
 import openpyxl
 from openpyxl.cell.rich_text import CellRichText, TextBlock
+from openpyxl.worksheet.formula import ArrayFormula
 from openpyxl.utils import get_column_letter, column_index_from_string, range_boundaries
 from lxml import etree
 
@@ -407,6 +408,8 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
                 d['nf'] = formatos_spec[a]
 
             v = cel.value
+            if spec.get('so_layout') and (isinstance(v, ArrayFormula) or (isinstance(v, str) and v.startswith('='))):
+                v = None     # quadro de controle: só o desenho; os valores vêm do banco (src/modules/quadros)
             papel = papeis.get(a)
             if a in limpar:
                 v = None
@@ -579,7 +582,7 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
         graficos[int(gi)]['escalaSeries'] = idx
     refs_graficos = [ref for g in graficos for ref in refs_do_grafico(g)]
 
-    aux = celulas_auxiliares(ws, wsv, cells, (c1, r1, c2, r2), formulas_spec, alertas, refs_graficos)
+    aux = {} if spec.get('so_layout') else celulas_auxiliares(ws, wsv, cells, (c1, r1, c2, r2), formulas_spec, alertas, refs_graficos)
     formatacao_condicional(ws, cells, (c1, r1, c2, r2), cores, alertas)
 
     pm = ws.page_margins

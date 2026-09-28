@@ -1,0 +1,17 @@
+{
+ "_nota": "Dados simulados do teste dos quadros (tools/fichas/quadros/testar_quadros.mjs).",
+ "quadro": "FR-IMOB-41",
+ "n": 5,
+ "entradas": {
+  "A13": 46285,
+  "B13": 97,
+  "C13": 46285,
+  "N13": 5.2,
+  "V13": 5.1,
+  "Y13": "Construtora Alfa",
+  "N18": 5.2,
+  "N19": 5.2,
+  "N20": 5.2,
+  "N21": 5.2
+ }
+}

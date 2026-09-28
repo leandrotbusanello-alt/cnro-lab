@@ -24,7 +24,11 @@ function plano(nf) {
     const limpar = t => (t || '').replace(/\u0001/g, () => literais.shift() || '').replace(/[_*]./g, ' ')
     const temHora = /h|s/i.test(x)
     const soHora = ehData && temHora && !/[dy]/i.test(x)   // 'h:mm', 'hh:mm;@'
-    return { ehData, temHora, soHora, pct, minF, maxF, milhar, antes: limpar(antes), depois: limpar(depois), temNucleo: !!nucleo }
+    // mês por extenso sem dia ('[$-416]mmm\\-yy;@' → "set-26"; quadro FR-IMOB-39)
+    const mesAno = ehData && /mmm/i.test(x) && !/d/i.test(x) && !temHora
+      ? (() => { const lit = [...literais]; return x.replace(/\u0001/g, () => `\u0002${lit.shift() || ''}\u0002`) })()
+      : null
+    return { ehData, temHora, soHora, mesAno, pct, minF, maxF, milhar, antes: limpar(antes), depois: limpar(depois), temNucleo: !!nucleo }
   })
   CACHE.set(nf, secoes)
   return secoes
@@ -59,6 +63,18 @@ export function formatarData(v, comHora = false) {
   return comHora ? `${s} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}` : s
 }
 
+const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
+
+/** "mmm-yy" → "set-26"; "mmmm/yyyy" → "setembro/2026" (literais entre \u0002) */
+function formatarMesAno(v, padrao) {
+  const d = serialParaData(v)
+  const partes = padrao.split('\u0002')
+  return partes.map((t, i) => (i % 2 ? t : t
+    .replace(/m{4,}/gi, () => '\u0003F').replace(/m{3}/gi, () => '\u0003A')
+    .replace(/y{3,}/gi, () => String(d.getUTCFullYear())).replace(/y{1,2}/gi, () => String(d.getUTCFullYear()).slice(-2))
+    .replace(/\u0003F/g, MESES[d.getUTCMonth()]).replace(/\u0003A/g, MESES[d.getUTCMonth()].slice(0, 3)))).join('')
+}
+
 /** Texto exibido na célula para um valor com o formato numérico do Excel. */
 export function formatar(v, nf) {
   if (v === null || v === undefined) return ''
@@ -71,6 +87,7 @@ export function formatar(v, nf) {
   let x = v
   if (v < 0 && secoes[1]) { sec = secoes[1]; x = -v } else if (v === 0 && secoes[2]) sec = secoes[2]
   if (sec.soHora) return formatarHora(x)
+  if (sec.mesAno) return formatarMesAno(x, sec.mesAno)
   if (sec.ehData) return formatarData(x, sec.temHora && x % 1 !== 0)
   if (!sec.temNucleo) return (sec.antes + sec.depois) || formatarGeral(v)
   if (sec.pct) x *= 100

@@ -1,0 +1,622 @@
+{
+ "pedidos_ensaio": [
+  {
+   "status": "em_andamento",
+   "id": "p91",
+   "numero_pe": 91,
+   "ano": 2026,
+   "material": "solos",
+   "sub_tipo": "agregados",
+   "dados_amostra": [
+    {
+     "tipo_agregado": "Brita 1",
+     "origem": "Pedreira Serra",
+     "data_coleta": "2026-09-05",
+     "local_aplicacao": "Usina km 12"
+    }
+   ],
+   "empresa_id": "e1",
+   "lote": "Lote 3",
+   "created_at": "2026-09-01T12:00:00Z"
+  },
+  {
+   "status": "em_andamento",
+   "id": "p92",
+   "numero_pe": 92,
+   "ano": 2026,
+   "material": "solos",
+   "sub_tipo": "agregados",
+   "dados_amostra": [
+    {
+     "tipo_agregado": "Brita 1",
+     "origem": "Pedreira Serra",
+     "data_coleta": "2026-09-15"
+    }
+   ],
+   "empresa_id": "e1",
+   "lote": "Lote 3",
+   "created_at": "2026-09-01T12:00:00Z"
+  },
+  {
+   "status": "em_andamento",
+   "id": "p93",
+   "numero_pe": 93,
+   "ano": 2026,
+   "material": "solos",
+   "sub_tipo": "agregados",
+   "dados_amostra": [
+    {
+     "tipo_agregado": "Brita 1",
+     "origem": "Pedreira Serra",
+     "data_coleta": "2026-06-10"
+    }
+   ],
+   "empresa_id": "e1",
+   "lote": "Lote 3",
+   "created_at": "2026-09-01T12:00:00Z"
+  },
+  {
+   "status": "em_andamento",
+   "id": "p94",
+   "numero_pe": 94,
+   "ano": 2026,
+   "material": "solos",
+   "sub_tipo": "agregados",
+   "dados_amostra": [
+    {
+     "tipo_agregado": "Areia",
+     "origem": "Porto Rio",
+     "data_coleta": "2026-09-07"
+    }
+   ],
+   "empresa_id": "e1",
+   "lote": "Lote 3",
+   "created_at": "2026-09-01T12:00:00Z"
+  },
+  {
+   "status": "em_andamento",
+   "id": "p95",
+   "numero_pe": 95,
+   "ano": 2026,
+   "material": "asfalto",
+   "sub_tipo": "ligante_asfaltico",
+   "dados_amostra": [
+    {
+     "tipo_ligante": "CAP 50/70",
+     "fornecedor": "Distribuidora X",
+     "data_coleta": "2026-09-10"
+    }
+   ],
+   "empresa_id": "e1",
+   "lote": "Lote 3",
+   "created_at": "2026-09-01T12:00:00Z"
+  },
+  {
+   "status": "em_andamento",
+   "id": "p96",
+   "numero_pe": 96,
+   "ano": 2026,
+   "material": "asfalto",
+   "sub_tipo": "massa_asfaltica",
+   "dados_amostra": [
+    {
+     "tipo_mistura": "CBUQ Faixa C",
+     "data_aplicacao": "2026-09-12",
+     "pista": "Norte",
+     "estaca": "120"
+    }
+   ],
+   "empresa_id": "e2",
+   "lote": "Lote 3",
+   "created_at": "2026-09-01T12:00:00Z"
+  },
+  {
+   "status": "em_andamento",
+   "id": "p97",
+   "numero_pe": 97,
+   "ano": 2026,
+   "material": "asfalto",
+   "sub_tipo": "cps_extraidos_pista",
+   "dados_amostra": [
+    {
+     "tipo_mistura": "CBUQ Faixa C",
+     "data_extracao": "2026-09-20",
+     "espessura": 5.1
+    }
+   ],
+   "empresa_id": "e1",
+   "lote": "Lote 3",
+   "created_at": "2026-09-01T12:00:00Z"
+  },
+  {
+   "status": "em_andamento",
+   "id": "p98",
+   "numero_pe": 98,
+   "ano": 2026,
+   "material": "concreto",
+   "sub_tipo": "concreto",
+   "dados_amostra": [
+    {
+     "tipo_concreto": "Estrutural C30",
+     "resistencia_fck": "30",
+     "local": "Viaduto km 40"
+    }
+   ],
+   "empresa_id": "e1",
+   "lote": "Lote 3",
+   "created_at": "2026-09-01T12:00:00Z",
+   "ficha_os_id": "fo1"
+  },
+  {
+   "status": "em_andamento",
+   "id": "p99",
+   "numero_pe": 99,
+   "ano": 2026,
+   "material": "concreto",
+   "sub_tipo": "concreto",
+   "dados_amostra": [
+    {
+     "tipo_concreto": "Estrutural C40",
+     "resistencia_fck": "40"
+    }
+   ],
+   "empresa_id": "e1",
+   "lote": "Lote 3",
+   "created_at": "2026-09-01T12:00:00Z",
+   "ficha_os_id": "fo1"
+  }
+ ],
+ "ensaios_os": [
+  {
+   "id": "eo1",
+   "pedido_id": "p91",
+   "status": "aprovado",
+   "dados_resultado": {
+    "codigo": "FR-IMOB-11",
+    "versao": "Rev00",
+    "calculados": {
+     "H30": 1,
+     "H31": 0.98,
+     "H33": 0.6,
+     "H34": 0.3,
+     "H35": 0.05,
+     "H36": 0.03,
+     "H37": 0.02,
+     "H38": 0.015,
+     "H39": 0.01,
+     "Q30": 1,
+     "Q31": 0.96,
+     "Q33": 0.58,
+     "Q34": 0.28,
+     "Q35": 0.06,
+     "Q36": 0.035,
+     "Q37": 0.022,
+     "Q38": 0.016,
+     "Q39": 0.011
+    },
+    "entradas": {}
+   },
+   "resultado_id": "r1"
+  },
+  {
+   "id": "eo2",
+   "pedido_id": "p91",
+   "status": "aprovado",
+   "dados_resultado": {
+    "codigo": "FR-IMOB-37"
+   },
+   "resultado_id": "r2"
+  },
+  {
+   "id": "eo3",
+   "pedido_id": "p91",
+   "status": "aprovado",
+   "dados_resultado": {
+    "codigo": "FR-IMOB-06"
+   },
+   "resultado_id": "r3"
+  },
+  {
+   "id": "eo4",
+   "pedido_id": "p92",
+   "status": "aprovado",
+   "dados_resultado": {
+    "codigo": "FR-IMOB-11",
+    "versao": "Rev00",
+    "calculados": {
+     "H30": 1,
+     "H31": 0.96,
+     "H33": 0.58,
+     "H34": 0.28,
+     "H35": 0.06,
+     "H36": 0.035,
+     "H37": 0.022,
+     "H38": 0.016,
+     "H39": 0.011,
+     "Q30": 1,
+     "Q31": 0.97,
+     "Q33": 0.55,
+     "Q34": 0.25,
+     "Q35": 0.04,
+     "Q36": 0.02,
+     "Q37": 0.015,
+     "Q38": 0.012,
+     "Q39": 0.008
+    },
+    "entradas": {}
+   },
+   "resultado_id": "r4"
+  },
+  {
+   "id": "eo5",
+   "pedido_id": "p92",
+   "status": "aprovado",
+   "dados_resultado": {
+    "codigo": "FR-IMOB-31"
+   },
+   "resultado_id": "r5"
+  },
+  {
+   "id": "eo6",
+   "pedido_id": "p92",
+   "status": "aprovado",
+   "dados_resultado": {
+    "codigo": "FR-IMOB-06"
+   },
+   "resultado_id": "r6"
+  },
+  {
+   "id": "eo7",
+   "pedido_id": "p93",
+   "status": "aprovado",
+   "dados_resultado": {
+    "codigo": "FR-IMOB-11",
+    "versao": "Rev00",
+    "calculados": {
+     "H30": 1,
+     "H31": 0.97,
+     "H33": 0.55,
+     "H34": 0.25,
+     "H35": 0.04,
+     "H36": 0.02,
+     "H37": 0.015,
+     "H38": 0.012,
+     "H39": 0.008,
+     "Q30": 1,
+     "Q31": 0.97,
+     "Q33": 0.55,
+     "Q34": 0.25,
+     "Q35": 0.04,
+     "Q36": 0.02,
+     "Q37": 0.015,
+     "Q38": 0.012,
+     "Q39": 0.008
+    },
+    "entradas": {}
+   },
+   "resultado_id": "r7"
+  },
+  {
+   "id": "eo8",
+   "pedido_id": "p94",
+   "status": "aprovado",
+   "dados_resultado": {
+    "codigo": "FR-IMOB-11",
+    "versao": "Rev00",
+    "calculados": {
+     "H30": 1,
+     "H31": 0.98,
+     "H33": 0.6,
+     "H34": 0.3,
+     "H35": 0.05,
+     "H36": 0.03,
+     "H37": 0.02,
+     "H38": 0.015,
+     "H39": 0.01,
+     "Q30": 1,
+     "Q31": 0.98,
+     "Q33": 0.6,
+     "Q34": 0.3,
+     "Q35": 0.05,
+     "Q36": 0.03,
+     "Q37": 0.02,
+     "Q38": 0.015,
+     "Q39": 0.01
+    },
+    "entradas": {}
+   },
+   "resultado_id": "r8"
+  },
+  {
+   "id": "eo9",
+   "pedido_id": "p95",
+   "status": "aprovado",
+   "dados_resultado": {
+    "codigo": "FR-IMOB-14",
+    "versao": "Rev00",
+    "entradas": {
+     "G56": 2.1,
+     "G59": 0.3
+    }
+   },
+   "resultado_id": "r9"
+  },
+  {
+   "id": "eo10",
+   "pedido_id": "p96",
+   "status": "aprovado",
+   "dados_resultado": {
+    "codigo": "FR-IMOB-13",
+    "versao": "Rev00",
+    "calculados": {
+     "D34": 0.8,
+     "F34": 1
+    }
+   },
+   "resultado_id": "r10"
+  },
+  {
+   "id": "eo11",
+   "pedido_id": "p96",
+   "status": "aprovado",
+   "dados_resultado": {
+    "codigo": "FR-IMOB-10"
+   },
+   "resultado_id": "r11"
+  },
+  {
+   "id": "eo12",
+   "pedido_id": "p96",
+   "status": "aprovado",
+   "dados_resultado": {
+    "codigo": "FR-IMOB-22"
+   },
+   "resultado_id": "r12"
+  },
+  {
+   "id": "eo13",
+   "pedido_id": "p96",
+   "status": "aprovado",
+   "dados_resultado": {
+    "codigo": "FR-IMOB-21",
+    "versao": "Rev01",
+    "calculados": {
+     "L21": 100,
+     "L22": 99.1,
+     "L25": 55.3,
+     "L29": 5.9
+    }
+   },
+   "resultado_id": "r13"
+  },
+  {
+   "id": "eo14",
+   "pedido_id": "p97",
+   "status": "aprovado",
+   "dados_resultado": {
+    "codigo": "FR-IMOB-22"
+   },
+   "resultado_id": "r14"
+  },
+  {
+   "id": "eo15",
+   "pedido_id": "p98",
+   "status": "aprovado",
+   "dados_resultado": {
+    "codigo": "FR-IMOB-50",
+    "versao": "Rev00",
+    "entradas": {
+     "B17": 30,
+     "B20": 46244,
+     "E20": 100,
+     "I20": 0.375,
+     "S20": "Pilar P1",
+     "B22": 46245,
+     "E22": 105,
+     "I22": 0.375,
+     "S22": "Pilar P2",
+     "B24": 46246,
+     "E24": 110,
+     "I24": 0.375,
+     "S24": "Pilar P3",
+     "B26": 46247,
+     "E26": 115,
+     "I26": 0.375,
+     "S26": "Pilar P4",
+     "B28": 46248,
+     "E28": 120,
+     "I28": 0.375,
+     "S28": "Pilar P5",
+     "B30": 46249,
+     "E30": 125,
+     "I30": 0.375,
+     "S30": "Pilar P6",
+     "B32": 46250,
+     "E32": 130,
+     "I32": 0.375,
+     "S32": "Pilar P7"
+    },
+    "calculados": {
+     "P20": 33.1,
+     "P21": 32.5,
+     "N20": 23.2,
+     "N21": 22.8,
+     "P22": 31,
+     "P23": 31.8,
+     "N22": 21.7,
+     "N23": 22.3,
+     "P24": 29.4,
+     "P25": 30.2,
+     "N24": 20.6,
+     "N25": 21.1,
+     "P26": 34,
+     "P27": 33.2,
+     "N26": 23.8,
+     "N27": 23.2,
+     "P28": 32.2,
+     "P29": 31.6,
+     "N28": 22.5,
+     "N29": 22.1,
+     "P30": 30.5,
+     "P31": 31.1,
+     "N30": 21.3,
+     "N31": 21.8,
+     "P32": 35,
+     "P33": 34.2,
+     "N32": 24.5,
+     "N33": 23.9
+    },
+    "escolhas": {
+     "lancamento_1": "Bombeado",
+     "lancamento_2": "Bombeado",
+     "lancamento_3": "Bombeado",
+     "lancamento_4": "Bombeado",
+     "lancamento_5": "Bombeado",
+     "lancamento_6": "Bombeado",
+     "lancamento_7": "Bombeado"
+    }
+   },
+   "resultado_id": "r15"
+  },
+  {
+   "id": "eo16",
+   "pedido_id": "p99",
+   "status": "aprovado",
+   "dados_resultado": {
+    "codigo": "FR-IMOB-50",
+    "versao": "Rev00",
+    "entradas": {
+     "B17": 40,
+     "B20": 46246
+    },
+    "calculados": {
+     "P20": 45,
+     "P21": 44
+    }
+   },
+   "resultado_id": "r16"
+  }
+ ],
+ "fichas_os": [
+  {
+   "id": "fo1",
+   "obra": "Duplicação BR-163"
+  }
+ ],
+ "empresas": [
+  {
+   "id": "e1",
+   "nome": "Construtora Alfa",
+   "lote": "Lote 3"
+  },
+  {
+   "id": "e2",
+   "nome": "Usina Beta",
+   "lote": "Lote 5"
+  }
+ ],
+ "resultado_indice_forma": [
+  {
+   "metodo": "Paquímetro",
+   "indice_forma_pct": 2.36,
+   "resultado_id": "r2"
+  },
+  {
+   "metodo": "Crivos",
+   "indice_forma_pct": 0.8,
+   "resultado_id": "r5"
+  }
+ ],
+ "resultado_densidade_agregado_graudo": [
+  {
+   "densidade_real": 2.705,
+   "absorcao_pct": 0.6,
+   "resultado_id": "r3"
+  },
+  {
+   "densidade_real": 2.709,
+   "absorcao_pct": 0.7,
+   "resultado_id": "r3"
+  },
+  {
+   "densidade_real": 2.712,
+   "absorcao_pct": 0.5,
+   "resultado_id": "r6"
+  },
+  {
+   "densidade_real": 2.716,
+   "absorcao_pct": 0.6,
+   "resultado_id": "r6"
+  }
+ ],
+ "resultado_penetracao": [
+  {
+   "penetracao_media": 55,
+   "resultado_id": "r9"
+  }
+ ],
+ "resultado_ponto_amolecimento": [
+  {
+   "media_c": 60.5,
+   "resultado_id": "r9"
+  }
+ ],
+ "resultado_recuperacao_elastica": [
+  {
+   "recuperacao_obtida_pct": 88,
+   "resultado_id": "r9"
+  }
+ ],
+ "resultado_viscosidade": [
+  {
+   "viscosidade_135c_cp": 1450,
+   "viscosidade_150c_cp": 720,
+   "viscosidade_177c_cp": 250,
+   "resultado_id": "r9"
+  }
+ ],
+ "resultado_marshall": [
+  {
+   "gmb_obtido": 2.401,
+   "va_pct": 4.1,
+   "vam_pct": 15.2,
+   "rbv_pct": 73,
+   "estabilidade_kgf": 980,
+   "fluencia_mm": 3.2,
+   "resistencia_tracao_mpa": 1.05,
+   "gmm_referencia": 2.5,
+   "resultado_id": "r10"
+  },
+  {
+   "gmb_obtido": 2.395,
+   "va_pct": 4.3,
+   "vam_pct": 15.4,
+   "rbv_pct": 72,
+   "estabilidade_kgf": 1010,
+   "fluencia_mm": 3,
+   "resistencia_tracao_mpa": 1.1,
+   "gmm_referencia": 2.5,
+   "resultado_id": "r10"
+  }
+ ],
+ "resultado_rice": [
+  {
+   "gmm_obtido": 2.498,
+   "resultado_id": "r11"
+  },
+  {
+   "gmm_obtido": 2.502,
+   "resultado_id": "r11"
+  }
+ ],
+ "resultado_teor_betume": [
+  {
+   "teor_obtido_pct": 5.4,
+   "resultado_id": "r12"
+  },
+  {
+   "teor_obtido_pct": 5.2,
+   "resultado_id": "r14"
+  }
+ ]
+}

@@ -14,7 +14,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     // a prévia não fala com o Supabase: fotos e sessão ficam de fora
-    alias: [{ find: /^.*\/lib\/supabase(\.js)?$/, replacement: resolve(AQUI, 'stub_supabase.js') }],
+    alias: [{ find: /^(.*\/lib\/|\.\/)supabase(\.js)?$/, replacement: resolve(AQUI, 'stub_supabase.js') }],
   },
   server: { port: 5199, strictPort: true, fs: { allow: [resolve(AQUI, '../../..')] } },
   logLevel: 'warn',

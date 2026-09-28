@@ -3,8 +3,10 @@ import { indexarModelo, calcularFicha, linhasResultado } from '../../../src/modu
 import FichaEnsaio from '../../../src/modules/fichas/components/FichaEnsaio.jsx'
 import ImpressaoFicha from '../../../src/modules/fichas/components/ImpressaoFicha.jsx'
 import { estadoAleatorio } from './estadoAleatorio.js'
+import { expandirModelo } from '../../../src/modules/quadros/motorQuadros.js'
 
 const modelos = import.meta.glob('../saida/*.modelo.json', { eager: true, import: 'default' })
+const quadros = import.meta.glob('../../../src/modules/quadros/modelos/*.json', { eager: true, import: 'default' })
 const estados = import.meta.glob('./estados/*.json', { eager: true, import: 'default' })
 const q = new URLSearchParams(location.search)
 const ficha = q.get('ficha')
@@ -18,7 +20,29 @@ const ASSIN = q.get('assinar') ? {
   nome: 'Fulano de Tal', em: '2026-09-28T12:00:00Z',
 } : null
 
-if (!ficha) {
+const quadro = q.get('quadro')
+if (q.get('tela') === 'quadros') {
+  // tela "Quadros de controle" com o banco simulado (stub_supabase.js)
+  Promise.all([import('../../../src/styles/globals.css'), import('react-router-dom'), import('../../../src/modules/laboratorio/useLaboratorio.js'), import('../../../src/modules/quadros/QuadrosView.jsx')])
+    .then(([, { MemoryRouter }, { LabContext }, { default: QuadrosView }]) => {
+      const bancos = import.meta.glob('./estados/banco_quadros.json', { eager: true, import: 'default' })
+      const banco = Object.values(bancos)[0] || { empresas: [] }
+      const lab = { perfil: { perfil: q.get('perfil') || 'LAB' }, empresasPorId: Object.fromEntries(banco.empresas.map(e => [e.id, e])) }
+      raiz.render(<MemoryRouter><LabContext.Provider value={lab}><div style={{ padding: 16 }}><QuadrosView /></div></LabContext.Provider></MemoryRouter>)
+      setTimeout(() => { window.__pronto = true }, 800)
+    })
+    .catch(e => { document.getElementById('root').textContent = `Erro: ${e?.stack || e}` })
+} else if (quadro) {
+  // quadro de controle: modelo de layout expandido + valores (estados/quadro_<CODIGO>.json, gerado pelo teste dos quadros)
+  const reg = quadros[`../../../src/modules/quadros/modelos/${quadro}.json`]
+  const e = estados[`./estados/${nomeEstado}.json`] || { n: 10, entradas: {} }
+  const modelo = expandirModelo(reg.modelo, reg.quadro, e.n)
+  const indice = indexarModelo(modelo)
+  const estado = { entradas: e.entradas, escolhas: {}, verificacoes: {} }
+  const motor = calcularFicha(indice, estado, {})
+  raiz.render(<ImpressaoFicha indice={indice} motor={motor} estado={estado} assinaturas={{}} titulo={quadro} onFechar={() => {}} />)
+  setTimeout(() => { window.__pronto = true }, 300)
+} else if (!ficha) {
   const nomes = Object.keys(modelos).map(k => k.split('/').pop().replace('.modelo.json', '')).sort()
   raiz.render(<div className="indice">{nomes.map(n => (
     <a key={n} href={`?ficha=${n}&estado=vazio`}>{n}</a>

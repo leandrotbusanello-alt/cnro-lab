@@ -161,7 +161,30 @@ Requisitos extras: Python `playwright` (Chromium já instalado) e `pdftoppm`; `P
   - impressão: `imprimir.py --todas --estado aleatorio --saida antes` com o código antigo (p.ex. `git stash`), de novo com o novo
     (`--saida depois`) e `python3 tools/fichas/previa/comparar_impressao.py antes depois` (pixel a pixel; páginas de fichas novas aparecem como "só depois").
 
+## Quadros de controle (FR-IMOB-39 a 43) — `tools/fichas/quadros/`
+Os quadros **não são fichas digitadas**: a tela *Laboratório → Quadros de controle* (`src/modules/quadros`) monta cada
+quadro com os resultados **aprovados** e imprime no layout da planilha da Qualidade (decisão de 28/09; escopo no projeto:
+`claude/CNRO_Lab_Quadros_Controle_Escopo.md`).
+- **Layout:** `python3 tools/fichas/quadros/gerar_quadros.py [CODIGO]` lê `tools/fichas/quadros/planilhas/*.xlsx` com o
+  conversor em modo `so_layout` (só o desenho — fórmulas e células auxiliares ficam de fora), marca as células que recebem
+  valor (linhas de amostra, estatísticas, cabeçalho da FR-43), compacta as linhas de amostra num **bloco modelo** e grava
+  `src/modules/quadros/modelos/<CODIGO>.json` (`{ modelo, quadro: { bloco, estatisticas, … } }`). A função de cada célula de
+  estatística (média/máx./mín./desvio) é lida da fórmula da planilha; "Média Período" = amostras do filtro, "Análise global" =
+  desde o início com os mesmos filtros. Ajustes de layout da FR-43 (textos que transbordavam no Excel) ficam em `ajustes`.
+- **De onde vem cada coluna:** `src/modules/quadros/definicoes.js` — tabelas `resultado_*` ou `dados_resultado` de fichas
+  online por código + célula (célula por revisão: `{ Rev00: 'H30', Rev01: … }` — **ficha com revisão nova precisa entrar aqui**).
+  Coluna sem fonte (sem ficha online) sai vazia e se preenche quando a ficha existir.
+- **Motor:** `src/modules/quadros/motorQuadros.js` (puro): 1 linha por amostra (pedido do material/sub-tipo do quadro com
+  ensaios aprovados), estatísticas, expansão do bloco modelo para n amostras (`expandirModelo`), e a FR-43 (séries = moldagens
+  da FR-50; ACI 214 com λ/K, fck estimado, V1, média móvel, padrões de controle e conformidade).
+- **Teste:** `node tools/fichas/quadros/testar_quadros.mjs [--gravar-estados]` — dados simulados + conta à mão para os 5
+  quadros; com `--gravar-estados` grava `previa/estados/quadro_<CODIGO>.json` e o banco simulado `previa/estados/banco_quadros.json`.
+- **Prévia:** impressão `python3 tools/fichas/previa/imprimir.py --quadro FR-IMOB-43`; tela inteira (com o banco simulado no
+  lugar do Supabase) em `http://localhost:5199/?tela=quadros` (`&perfil=ASSIST` para ver o bloqueio).
+- **Formato novo no motor de formatação:** mês por extenso sem dia (`[$-416]mmm\-yy` → "set-26").
+
 ## Regras do conversor
+- **`so_layout`** (spec): só o desenho da planilha, sem fórmulas nem auxiliares — usado pelos quadros de controle.
 - **Fórmulas bloqueadas:** as aleatórias ou voláteis (`RANDBETWEEN`, `RAND`, `NOW`, `TODAY`, `INDIRECT`, `OFFSET`) nunca entram no sistema.
 - **Fórmula em célula de entrada:** é descartada, com aviso. É assim que se tira uma fórmula errada da ficha
   enquanto a Qualidade não emite a revisão: a célula vira campo digitado (registre no `_nota` da spec).

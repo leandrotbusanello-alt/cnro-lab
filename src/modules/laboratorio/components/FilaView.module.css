@@ -58,3 +58,5 @@
   .chips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
   .chip { white-space: nowrap; }
 }
+
+.acoesTopo { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
