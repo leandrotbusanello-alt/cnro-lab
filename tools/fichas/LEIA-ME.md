@@ -103,6 +103,8 @@ Requisitos: Python 3.10+ (`openpyxl`, `lxml`), Node 18+ e LibreOffice (só para 
 - O gráfico acompanha a digitação em tempo real, sai na impressão e aparece no fim da visão em lista (celular).
 - Gráficos **fora da área da ficha** são ignorados (aviso ⚠). `"graficos": false` na spec desliga os de uma aba.
 - As células que o gráfico lê fora da área entram como auxiliares (como as das fórmulas).
+- Série que lê outra aba ou outra pasta de trabalho (p.ex. `[12]Relatório!…`, relatório do equipamento — FR-IMOB-51/52):
+  fica no modelo até a spec trocar a origem com `graficos_series`; sem troca, sai do gráfico (aviso ⚠).
 - Se a tabela que o gráfico lia foi limpa da ficha, aponte a série para outro lugar:
   `"graficos_series": { "0.0": { "x": "E29:E39", "y": "P47:P57" } }` (gráfico.série, a partir de 0).
 - Eixo log: a "unidade principal" do Excel é o **fator** entre as marcas (10 = uma década; ≤ 1 → uma década) — FR-IMOB-45.
@@ -187,6 +189,12 @@ quadro com os resultados **aprovados** e imprime no layout da planilha da Qualid
 - **Formato novo no motor de formatação:** mês por extenso sem dia (`[$-416]mmm\-yy` → "set-26").
 
 ## Regras do conversor
+- **Linhas ocultas** do Excel ficam com altura 0 e o conteúdo delas não aparece (FR-IMOB-53, peneira 5/8"); não as declare
+  como campo (`entradas`).
+- **`remover_mesclas`:** o openpyxl apaga a borda das células da mescla desfeita — reponha com `celulas_extras` `{"borda": [...]}`
+  quando a borda fizer falta (FR-IMOB-48, 51).
+- **Mapa de resultados:** um item por tabela `resultado_*`. O `aprovar_ensaio` apaga as linhas da tabela antes de gravar cada item,
+  então dois itens da mesma tabela deixam só o último — use `linhas` com todas as linhas num item só (FR-IMOB-51/52).
 - **Imagens:** entram as da área de impressão; restos de desenho (tamanho zero/negativo) e imagens que começam fora da área
   (p.ex. nas colunas só de tela) são descartados (FR-IMOB-46 Rev01).
 - **`so_layout`** (spec): só o desenho da planilha, sem fórmulas nem auxiliares — usado pelos quadros de controle.

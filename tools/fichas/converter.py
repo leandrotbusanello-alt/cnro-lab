@@ -572,6 +572,18 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
     for chave, troca in (spec.get('graficos_series') or {}).items():
         gi, si = (int(k) for k in chave.split('.'))
         graficos[gi]['series'][si].update(troca)
+        for k in troca:
+            graficos[gi]['series'][si].get('_fora', {}).pop(k, None)
+    for gi, g in enumerate(graficos):
+        ficam = []
+        for si, s_ in enumerate(g['series']):
+            fora = s_.pop('_fora', {})
+            for k, f in fora.items():
+                alertas.append(f'gráfico {gi}.{si}: série ({k}) aponta para outra aba ({f}) — '
+                               + ('ignorada.' if k == 'y' else 'sem eixo x.'))
+            if s_.get('y'):
+                ficam.append(s_)
+        g['series'] = ficam
     # spec 'graficos_eixos': {'0.x': 'auto'} — eixo com escala automática (a planilha fixava mínimo/máximo)
     for chave, cfg in (spec.get('graficos_eixos') or {}).items():
         gi, eixo = chave.split('.')
@@ -847,14 +859,15 @@ def _linha(sppr, tema):
     return out
 
 
-def _ref_local(f, ws_titulo, alertas, onde):
+def _ref_local(f, ws_titulo, alertas, onde, avisar=True):
     """"'Aba'!$C$21:$C$29" → 'C21:C29' (só a própria aba)."""
     if not f:
         return None
     m = re.match(r"^(?:'((?:[^']|'')+)'|([^!]+))!(.+)$", f.strip())
     aba, ref = ((m.group(1) or '').replace("''", "'") or m.group(2), m.group(3)) if m else (None, f)
     if aba is not None and aba != ws_titulo:
-        alertas.append(f'{onde}: série aponta para outra aba ({f}) — ignorada.')
+        if avisar:
+            alertas.append(f'{onde}: série aponta para outra aba ({f}) — ignorada.')
         return None
     return ref.replace('$', '')
 
@@ -1022,12 +1035,17 @@ def ler_grafico(cx, tema, ws_titulo, alertas, nome_arq):
         if yv is None:
             continue
         fy = yv.find('.//c:f', NS_C)
-        s['y'] = _ref_local(fy.text if fy is not None else None, ws_titulo, alertas, nome_arq)
+        s['y'] = _ref_local(fy.text if fy is not None else None, ws_titulo, alertas, nome_arq, avisar=False)
         if xv is not None:
             fx = xv.find('.//c:f', NS_C)
-            s['x'] = _ref_local(fx.text if fx is not None else None, ws_titulo, alertas, nome_arq)
+            s['x'] = _ref_local(fx.text if fx is not None else None, ws_titulo, alertas, nome_arq, avisar=False)
+            if s['x'] is None and fx is not None and fx.text:
+                s['_fora'] = {**s.get('_fora', {}), 'x': fx.text}
         if not s.get('y'):
-            continue
+            if fy is None or not fy.text:
+                continue
+            # série que lê outra aba/pasta: fica até a spec trocar a origem (graficos_series); sem troca, sai do gráfico
+            s['_fora'] = {**s.get('_fora', {}), 'y': fy.text}
         cor_padrao = '#' + tema[4 + idx % 6]
         ln = _linha(ser.find('c:spPr', NS_C), tema)
         if ln is not None:

@@ -45,9 +45,16 @@ def dividir(codigo, versao, bloco):
     corte = linhas[len(linhas) // 2]
     a = {k: v for k, v in cells.items() if int(re.search(r'\d+', k).group()) < corte}
     b = {k: v for k, v in cells.items() if k not in a}
+    # frente e verso: as outras abas vão inteiras na parte b (na parte a ficam só com o desenho, sem células)
+    abas = modelo.get('abas')
     modelo_a = {**modelo, 'cells': a}
+    if abas:
+        modelo_a['abas'] = [{**ab, 'cells': {}, 'aux': {}} for ab in abas]
     bloco_a = bloco[:m.start(1)] + js(modelo_a) + bloco[m.end(1):m.start(3)] + 'parcial-' + hsh + bloco[m.end(3):]
-    bloco_b = ("update public.fichas_modelo\n   set modelo = jsonb_set(modelo, '{cells}', (modelo->'cells') || '" + js(b) + "'::jsonb),\n"
+    novo = "jsonb_set(modelo, '{cells}', (modelo->'cells') || '" + js(b) + "'::jsonb)"
+    if abas:
+        novo = "jsonb_set(" + novo + ", '{abas}', '" + js(abas) + "'::jsonb)"
+    bloco_b = ("update public.fichas_modelo\n   set modelo = " + novo + ",\n"
                f"       hash = '{hsh}'\n where codigo = '{codigo}' and versao = '{versao}' and hash = 'parcial-{hsh}';")
     assert {**a, **b} == cells
     return bloco_a, bloco_b, corte

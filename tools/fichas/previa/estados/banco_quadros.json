@@ -78,6 +78,24 @@
    "id": "p95",
    "numero_pe": 95,
    "ano": 2026,
+   "material": "solos",
+   "sub_tipo": "agregados",
+   "dados_amostra": [
+    {
+     "tipo_agregado": "Brita 1",
+     "origem": "Pedreira Serra",
+     "data_coleta": "2026-09-20"
+    }
+   ],
+   "empresa_id": "e1",
+   "lote": "Lote 3",
+   "created_at": "2026-09-01T12:00:00Z"
+  },
+  {
+   "status": "em_andamento",
+   "id": "p96",
+   "numero_pe": 96,
+   "ano": 2026,
    "material": "asfalto",
    "sub_tipo": "ligante_asfaltico",
    "dados_amostra": [
@@ -93,8 +111,8 @@
   },
   {
    "status": "em_andamento",
-   "id": "p96",
-   "numero_pe": 96,
+   "id": "p97",
+   "numero_pe": 97,
    "ano": 2026,
    "material": "asfalto",
    "sub_tipo": "massa_asfaltica",
@@ -112,8 +130,8 @@
   },
   {
    "status": "em_andamento",
-   "id": "p97",
-   "numero_pe": 97,
+   "id": "p98",
+   "numero_pe": 98,
    "ano": 2026,
    "material": "asfalto",
    "sub_tipo": "cps_extraidos_pista",
@@ -130,8 +148,8 @@
   },
   {
    "status": "em_andamento",
-   "id": "p98",
-   "numero_pe": 98,
+   "id": "p99",
+   "numero_pe": 99,
    "ano": 2026,
    "material": "asfalto",
    "sub_tipo": "cps_extraidos_pista",
@@ -147,8 +165,8 @@
   },
   {
    "status": "em_andamento",
-   "id": "p99",
-   "numero_pe": 99,
+   "id": "p100",
+   "numero_pe": 100,
    "ano": 2026,
    "material": "concreto",
    "sub_tipo": "concreto",
@@ -166,8 +184,8 @@
   },
   {
    "status": "em_andamento",
-   "id": "p100",
-   "numero_pe": 100,
+   "id": "p101",
+   "numero_pe": 101,
    "ano": 2026,
    "material": "concreto",
    "sub_tipo": "concreto",
@@ -349,11 +367,24 @@
    "pedido_id": "p95",
    "status": "aprovado",
    "dados_resultado": {
-    "codigo": "FR-IMOB-14",
+    "codigo": "FR-IMOB-53",
     "versao": "Rev00",
     "entradas": {
-     "G56": 2.1,
-     "G59": 0.3
+     "D42": 25.4
+    },
+    "calculados": {
+     "F28": 1,
+     "O28": 0.99,
+     "F29": 0.95,
+     "O29": 0.93,
+     "F30": 0.6,
+     "O30": 0.62,
+     "F31": 0.3,
+     "O31": 0.32,
+     "F34": 0.05,
+     "O34": 0.07,
+     "F40": 0.01,
+     "O40": 0.012
     }
    },
    "resultado_id": "r9"
@@ -363,6 +394,20 @@
    "pedido_id": "p96",
    "status": "aprovado",
    "dados_resultado": {
+    "codigo": "FR-IMOB-14",
+    "versao": "Rev00",
+    "entradas": {
+     "G56": 2.1,
+     "G59": 0.3
+    }
+   },
+   "resultado_id": "r10"
+  },
+  {
+   "id": "eo11",
+   "pedido_id": "p97",
+   "status": "aprovado",
+   "dados_resultado": {
     "codigo": "FR-IMOB-13",
     "versao": "Rev00",
     "calculados": {
@@ -370,29 +415,29 @@
      "F34": 1
     }
    },
-   "resultado_id": "r10"
-  },
-  {
-   "id": "eo11",
-   "pedido_id": "p96",
-   "status": "aprovado",
-   "dados_resultado": {
-    "codigo": "FR-IMOB-10"
-   },
    "resultado_id": "r11"
   },
   {
    "id": "eo12",
-   "pedido_id": "p96",
+   "pedido_id": "p97",
    "status": "aprovado",
    "dados_resultado": {
-    "codigo": "FR-IMOB-22"
+    "codigo": "FR-IMOB-10"
    },
    "resultado_id": "r12"
   },
   {
    "id": "eo13",
-   "pedido_id": "p96",
+   "pedido_id": "p97",
+   "status": "aprovado",
+   "dados_resultado": {
+    "codigo": "FR-IMOB-22"
+   },
+   "resultado_id": "r13"
+  },
+  {
+   "id": "eo14",
+   "pedido_id": "p97",
    "status": "aprovado",
    "dados_resultado": {
     "codigo": "FR-IMOB-21",
@@ -404,20 +449,20 @@
      "L29": 5.9
     }
    },
-   "resultado_id": "r13"
-  },
-  {
-   "id": "eo14",
-   "pedido_id": "p97",
-   "status": "aprovado",
-   "dados_resultado": {
-    "codigo": "FR-IMOB-22"
-   },
    "resultado_id": "r14"
   },
   {
    "id": "eo15",
    "pedido_id": "p98",
+   "status": "aprovado",
+   "dados_resultado": {
+    "codigo": "FR-IMOB-22"
+   },
+   "resultado_id": "r15"
+  },
+  {
+   "id": "eo16",
+   "pedido_id": "p99",
    "status": "aprovado",
    "dados_resultado": {
     "codigo": "FR-IMOB-46",
@@ -429,11 +474,11 @@
      "T20": 0.43
     }
    },
-   "resultado_id": "r15"
+   "resultado_id": "r16"
   },
   {
-   "id": "eo16",
-   "pedido_id": "p99",
+   "id": "eo17",
+   "pedido_id": "p100",
    "status": "aprovado",
    "dados_resultado": {
     "codigo": "FR-IMOB-50",
@@ -509,11 +554,11 @@
      "lancamento_7": "Bombeado"
     }
    },
-   "resultado_id": "r16"
+   "resultado_id": "r17"
   },
   {
-   "id": "eo17",
-   "pedido_id": "p100",
+   "id": "eo18",
+   "pedido_id": "p101",
    "status": "aprovado",
    "dados_resultado": {
     "codigo": "FR-IMOB-50",
@@ -527,7 +572,7 @@
      "P21": 44
     }
    },
-   "resultado_id": "r17"
+   "resultado_id": "r18"
   }
  ],
  "fichas_os": [
@@ -585,19 +630,19 @@
  "resultado_penetracao": [
   {
    "penetracao_media": 55,
-   "resultado_id": "r9"
+   "resultado_id": "r10"
   }
  ],
  "resultado_ponto_amolecimento": [
   {
    "media_c": 60.5,
-   "resultado_id": "r9"
+   "resultado_id": "r10"
   }
  ],
  "resultado_recuperacao_elastica": [
   {
    "recuperacao_obtida_pct": 88,
-   "resultado_id": "r9"
+   "resultado_id": "r10"
   }
  ],
  "resultado_viscosidade": [
@@ -605,7 +650,7 @@
    "viscosidade_135c_cp": 1450,
    "viscosidade_150c_cp": 720,
    "viscosidade_177c_cp": 250,
-   "resultado_id": "r9"
+   "resultado_id": "r10"
   }
  ],
  "resultado_marshall": [
@@ -618,7 +663,7 @@
    "fluencia_mm": 3.2,
    "resistencia_tracao_mpa": 1.05,
    "gmm_referencia": 2.5,
-   "resultado_id": "r10"
+   "resultado_id": "r11"
   },
   {
    "gmb_obtido": 2.395,
@@ -629,27 +674,27 @@
    "fluencia_mm": 3,
    "resistencia_tracao_mpa": 1.1,
    "gmm_referencia": 2.5,
-   "resultado_id": "r10"
+   "resultado_id": "r11"
   }
  ],
  "resultado_rice": [
   {
    "gmm_obtido": 2.498,
-   "resultado_id": "r11"
+   "resultado_id": "r12"
   },
   {
    "gmm_obtido": 2.502,
-   "resultado_id": "r11"
+   "resultado_id": "r12"
   }
  ],
  "resultado_teor_betume": [
   {
    "teor_obtido_pct": 5.4,
-   "resultado_id": "r12"
+   "resultado_id": "r13"
   },
   {
    "teor_obtido_pct": 5.2,
-   "resultado_id": "r14"
+   "resultado_id": "r15"
   }
  ],
  "resultado_densidade_cbuq": [
@@ -658,14 +703,14 @@
    "va_pct": 5.52,
    "grau_compactacao_pct": 98.6,
    "espessura_medida_mm": 42.4,
-   "resultado_id": "r15"
+   "resultado_id": "r16"
   },
   {
    "gmb_obtido": 2.262,
    "va_pct": 6.42,
    "grau_compactacao_pct": 97.66,
    "espessura_medida_mm": 44.76,
-   "resultado_id": "r15"
+   "resultado_id": "r16"
   }
  ]
 }

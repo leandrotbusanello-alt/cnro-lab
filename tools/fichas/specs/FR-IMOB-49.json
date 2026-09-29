@@ -1,0 +1,453 @@
+{
+  "codigo": "FR-IMOB-49",
+  "versao": "Rev00",
+  "nome": "Resistência à derrapagem — pêndulo britânico",
+  "arquivo": "FR-IMOB-49_Rev00.xlsx",
+  "_nota": "Planilha-mestre Rev00 (lote 9, 28/09; 10 pontos, linhas 16–25) + 2 exemplos reais (O.S. 2026.07.28.02.428 e 2026.04.25.02.195, planilhas e PDFs). A mestre não tem fórmulas; vêm dos exemplos: média das 5 leituras; BPN = média + correção da temperatura; classificação pela tabela dos exemplos (S16:U22: 25–31 Muito Lisa, 32–39 Lisa, 40–46 Pouco Rugosa, 47–64 Medianamente Rugosa, 65–75 Rugosa, > 75 Muito Rugosa), escrita na fórmula como os exemplos a aplicam (BPN < 31 Muito Lisa; ≤ 39 Lisa; ≤ 46 Pouco Rugosa; ≤ 64 Medianamente Rugosa; ≤ 75 Rugosa; acima Muito Rugosa) — reproduz os dois PDFs. Diferenças para os exemplos: (1) a correção entra com o sinal (os exemplos faziam IF(N<0; M−N; M+N), que soma sempre o valor absoluto); (2) BPN > 75 classifica \"Muito Rugosa\" (o exemplo de abril dava #REF!); (3) sem a linha \"MÉDIA DAS LEITURAS\" e com 10 pontos, como a mestre (o exemplo de julho tinha 16 pontos e a média). Resultado: 1 linha por ponto em resultado_pendulo_britanico (leituras arredondadas a inteiro, média = BPN corrigido; faixa = trilha).",
+  "pedido": {
+    "B7": {
+      "campo": "os",
+      "manter_texto": true
+    },
+    "B8": {
+      "campo": "material",
+      "manter_texto": true
+    },
+    "J8": {
+      "campo": "registro",
+      "manter_texto": true
+    },
+    "B9": {
+      "campo": "procedencia",
+      "manter_texto": true
+    },
+    "B10": {
+      "campo": "complemento",
+      "manter_texto": true
+    }
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "J7"
+      ],
+      "tipo": "data",
+      "manter_texto": true
+    },
+    {
+      "colunas": [
+        "B",
+        "C",
+        "D",
+        "E",
+        "F"
+      ],
+      "linhas": [
+        "16-25"
+      ],
+      "tipo": "texto"
+    },
+    {
+      "colunas": [
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "N"
+      ],
+      "linhas": [
+        "16-25"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "formulas": {
+    "M16": "=IF(COUNT(H16:L16)=0,\"\",AVERAGE(H16:L16))",
+    "O16": "=IF(M16=\"\",\"\",M16+IF(ISNUMBER(N16),N16,0))",
+    "P16": "=IF(O16=\"\",\"\",IF(O16<31,\"Muito Lisa\",IF(O16<=39,\"Lisa\",IF(O16<=46,\"Pouco Rugosa\",IF(O16<=64,\"Medianamente Rugosa\",IF(O16<=75,\"Rugosa\",\"Muito Rugosa\"))))))",
+    "M17": "=IF(COUNT(H17:L17)=0,\"\",AVERAGE(H17:L17))",
+    "O17": "=IF(M17=\"\",\"\",M17+IF(ISNUMBER(N17),N17,0))",
+    "P17": "=IF(O17=\"\",\"\",IF(O17<31,\"Muito Lisa\",IF(O17<=39,\"Lisa\",IF(O17<=46,\"Pouco Rugosa\",IF(O17<=64,\"Medianamente Rugosa\",IF(O17<=75,\"Rugosa\",\"Muito Rugosa\"))))))",
+    "M18": "=IF(COUNT(H18:L18)=0,\"\",AVERAGE(H18:L18))",
+    "O18": "=IF(M18=\"\",\"\",M18+IF(ISNUMBER(N18),N18,0))",
+    "P18": "=IF(O18=\"\",\"\",IF(O18<31,\"Muito Lisa\",IF(O18<=39,\"Lisa\",IF(O18<=46,\"Pouco Rugosa\",IF(O18<=64,\"Medianamente Rugosa\",IF(O18<=75,\"Rugosa\",\"Muito Rugosa\"))))))",
+    "M19": "=IF(COUNT(H19:L19)=0,\"\",AVERAGE(H19:L19))",
+    "O19": "=IF(M19=\"\",\"\",M19+IF(ISNUMBER(N19),N19,0))",
+    "P19": "=IF(O19=\"\",\"\",IF(O19<31,\"Muito Lisa\",IF(O19<=39,\"Lisa\",IF(O19<=46,\"Pouco Rugosa\",IF(O19<=64,\"Medianamente Rugosa\",IF(O19<=75,\"Rugosa\",\"Muito Rugosa\"))))))",
+    "M20": "=IF(COUNT(H20:L20)=0,\"\",AVERAGE(H20:L20))",
+    "O20": "=IF(M20=\"\",\"\",M20+IF(ISNUMBER(N20),N20,0))",
+    "P20": "=IF(O20=\"\",\"\",IF(O20<31,\"Muito Lisa\",IF(O20<=39,\"Lisa\",IF(O20<=46,\"Pouco Rugosa\",IF(O20<=64,\"Medianamente Rugosa\",IF(O20<=75,\"Rugosa\",\"Muito Rugosa\"))))))",
+    "M21": "=IF(COUNT(H21:L21)=0,\"\",AVERAGE(H21:L21))",
+    "O21": "=IF(M21=\"\",\"\",M21+IF(ISNUMBER(N21),N21,0))",
+    "P21": "=IF(O21=\"\",\"\",IF(O21<31,\"Muito Lisa\",IF(O21<=39,\"Lisa\",IF(O21<=46,\"Pouco Rugosa\",IF(O21<=64,\"Medianamente Rugosa\",IF(O21<=75,\"Rugosa\",\"Muito Rugosa\"))))))",
+    "M22": "=IF(COUNT(H22:L22)=0,\"\",AVERAGE(H22:L22))",
+    "O22": "=IF(M22=\"\",\"\",M22+IF(ISNUMBER(N22),N22,0))",
+    "P22": "=IF(O22=\"\",\"\",IF(O22<31,\"Muito Lisa\",IF(O22<=39,\"Lisa\",IF(O22<=46,\"Pouco Rugosa\",IF(O22<=64,\"Medianamente Rugosa\",IF(O22<=75,\"Rugosa\",\"Muito Rugosa\"))))))",
+    "M23": "=IF(COUNT(H23:L23)=0,\"\",AVERAGE(H23:L23))",
+    "O23": "=IF(M23=\"\",\"\",M23+IF(ISNUMBER(N23),N23,0))",
+    "P23": "=IF(O23=\"\",\"\",IF(O23<31,\"Muito Lisa\",IF(O23<=39,\"Lisa\",IF(O23<=46,\"Pouco Rugosa\",IF(O23<=64,\"Medianamente Rugosa\",IF(O23<=75,\"Rugosa\",\"Muito Rugosa\"))))))",
+    "M24": "=IF(COUNT(H24:L24)=0,\"\",AVERAGE(H24:L24))",
+    "O24": "=IF(M24=\"\",\"\",M24+IF(ISNUMBER(N24),N24,0))",
+    "P24": "=IF(O24=\"\",\"\",IF(O24<31,\"Muito Lisa\",IF(O24<=39,\"Lisa\",IF(O24<=46,\"Pouco Rugosa\",IF(O24<=64,\"Medianamente Rugosa\",IF(O24<=75,\"Rugosa\",\"Muito Rugosa\"))))))",
+    "M25": "=IF(COUNT(H25:L25)=0,\"\",AVERAGE(H25:L25))",
+    "O25": "=IF(M25=\"\",\"\",M25+IF(ISNUMBER(N25),N25,0))",
+    "P25": "=IF(O25=\"\",\"\",IF(O25<31,\"Muito Lisa\",IF(O25<=39,\"Lisa\",IF(O25<=46,\"Pouco Rugosa\",IF(O25<=64,\"Medianamente Rugosa\",IF(O25<=75,\"Rugosa\",\"Muito Rugosa\"))))))"
+  },
+  "formatos": {
+    "M16:M25": "0.0",
+    "O16:O25": "0.0",
+    "N16:N25": "0.0",
+    "G16:G25": "0.0"
+  },
+  "assinaturas": {
+    "executor": "C27",
+    "calculista": "J27"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "J7"
+        ]
+      },
+      {
+        "titulo": "Ponto 1",
+        "celulas": [
+          "B16",
+          "C16",
+          "D16",
+          "E16",
+          "F16",
+          "G16",
+          "H16",
+          "I16",
+          "J16",
+          "K16",
+          "L16",
+          "N16"
+        ]
+      },
+      {
+        "titulo": "Ponto 2",
+        "celulas": [
+          "B17",
+          "C17",
+          "D17",
+          "E17",
+          "F17",
+          "G17",
+          "H17",
+          "I17",
+          "J17",
+          "K17",
+          "L17",
+          "N17"
+        ]
+      },
+      {
+        "titulo": "Ponto 3",
+        "celulas": [
+          "B18",
+          "C18",
+          "D18",
+          "E18",
+          "F18",
+          "G18",
+          "H18",
+          "I18",
+          "J18",
+          "K18",
+          "L18",
+          "N18"
+        ]
+      },
+      {
+        "titulo": "Ponto 4",
+        "celulas": [
+          "B19",
+          "C19",
+          "D19",
+          "E19",
+          "F19",
+          "G19",
+          "H19",
+          "I19",
+          "J19",
+          "K19",
+          "L19",
+          "N19"
+        ]
+      },
+      {
+        "titulo": "Ponto 5",
+        "celulas": [
+          "B20",
+          "C20",
+          "D20",
+          "E20",
+          "F20",
+          "G20",
+          "H20",
+          "I20",
+          "J20",
+          "K20",
+          "L20",
+          "N20"
+        ]
+      },
+      {
+        "titulo": "Ponto 6",
+        "celulas": [
+          "B21",
+          "C21",
+          "D21",
+          "E21",
+          "F21",
+          "G21",
+          "H21",
+          "I21",
+          "J21",
+          "K21",
+          "L21",
+          "N21"
+        ]
+      },
+      {
+        "titulo": "Ponto 7",
+        "celulas": [
+          "B22",
+          "C22",
+          "D22",
+          "E22",
+          "F22",
+          "G22",
+          "H22",
+          "I22",
+          "J22",
+          "K22",
+          "L22",
+          "N22"
+        ]
+      },
+      {
+        "titulo": "Ponto 8",
+        "celulas": [
+          "B23",
+          "C23",
+          "D23",
+          "E23",
+          "F23",
+          "G23",
+          "H23",
+          "I23",
+          "J23",
+          "K23",
+          "L23",
+          "N23"
+        ]
+      },
+      {
+        "titulo": "Ponto 9",
+        "celulas": [
+          "B24",
+          "C24",
+          "D24",
+          "E24",
+          "F24",
+          "G24",
+          "H24",
+          "I24",
+          "J24",
+          "K24",
+          "L24",
+          "N24"
+        ]
+      },
+      {
+        "titulo": "Ponto 10",
+        "celulas": [
+          "B25",
+          "C25",
+          "D25",
+          "E25",
+          "F25",
+          "G25",
+          "H25",
+          "I25",
+          "J25",
+          "K25",
+          "L25",
+          "N25"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "J7": "Data do ensaio",
+    "B16": "BR",
+    "C16": "Pista",
+    "D16": "Sentido",
+    "E16": "Trilha",
+    "F16": "Posição (km/est)",
+    "G16": "Temperatura (°C)",
+    "H16": "Leitura 1",
+    "I16": "Leitura 2",
+    "J16": "Leitura 3",
+    "K16": "Leitura 4",
+    "L16": "Leitura 5",
+    "N16": "Correção da temperatura",
+    "B17": "BR",
+    "C17": "Pista",
+    "D17": "Sentido",
+    "E17": "Trilha",
+    "F17": "Posição (km/est)",
+    "G17": "Temperatura (°C)",
+    "H17": "Leitura 1",
+    "I17": "Leitura 2",
+    "J17": "Leitura 3",
+    "K17": "Leitura 4",
+    "L17": "Leitura 5",
+    "N17": "Correção da temperatura",
+    "B18": "BR",
+    "C18": "Pista",
+    "D18": "Sentido",
+    "E18": "Trilha",
+    "F18": "Posição (km/est)",
+    "G18": "Temperatura (°C)",
+    "H18": "Leitura 1",
+    "I18": "Leitura 2",
+    "J18": "Leitura 3",
+    "K18": "Leitura 4",
+    "L18": "Leitura 5",
+    "N18": "Correção da temperatura",
+    "B19": "BR",
+    "C19": "Pista",
+    "D19": "Sentido",
+    "E19": "Trilha",
+    "F19": "Posição (km/est)",
+    "G19": "Temperatura (°C)",
+    "H19": "Leitura 1",
+    "I19": "Leitura 2",
+    "J19": "Leitura 3",
+    "K19": "Leitura 4",
+    "L19": "Leitura 5",
+    "N19": "Correção da temperatura",
+    "B20": "BR",
+    "C20": "Pista",
+    "D20": "Sentido",
+    "E20": "Trilha",
+    "F20": "Posição (km/est)",
+    "G20": "Temperatura (°C)",
+    "H20": "Leitura 1",
+    "I20": "Leitura 2",
+    "J20": "Leitura 3",
+    "K20": "Leitura 4",
+    "L20": "Leitura 5",
+    "N20": "Correção da temperatura",
+    "B21": "BR",
+    "C21": "Pista",
+    "D21": "Sentido",
+    "E21": "Trilha",
+    "F21": "Posição (km/est)",
+    "G21": "Temperatura (°C)",
+    "H21": "Leitura 1",
+    "I21": "Leitura 2",
+    "J21": "Leitura 3",
+    "K21": "Leitura 4",
+    "L21": "Leitura 5",
+    "N21": "Correção da temperatura",
+    "B22": "BR",
+    "C22": "Pista",
+    "D22": "Sentido",
+    "E22": "Trilha",
+    "F22": "Posição (km/est)",
+    "G22": "Temperatura (°C)",
+    "H22": "Leitura 1",
+    "I22": "Leitura 2",
+    "J22": "Leitura 3",
+    "K22": "Leitura 4",
+    "L22": "Leitura 5",
+    "N22": "Correção da temperatura",
+    "B23": "BR",
+    "C23": "Pista",
+    "D23": "Sentido",
+    "E23": "Trilha",
+    "F23": "Posição (km/est)",
+    "G23": "Temperatura (°C)",
+    "H23": "Leitura 1",
+    "I23": "Leitura 2",
+    "J23": "Leitura 3",
+    "K23": "Leitura 4",
+    "L23": "Leitura 5",
+    "N23": "Correção da temperatura",
+    "B24": "BR",
+    "C24": "Pista",
+    "D24": "Sentido",
+    "E24": "Trilha",
+    "F24": "Posição (km/est)",
+    "G24": "Temperatura (°C)",
+    "H24": "Leitura 1",
+    "I24": "Leitura 2",
+    "J24": "Leitura 3",
+    "K24": "Leitura 4",
+    "L24": "Leitura 5",
+    "N24": "Correção da temperatura",
+    "B25": "BR",
+    "C25": "Pista",
+    "D25": "Sentido",
+    "E25": "Trilha",
+    "F25": "Posição (km/est)",
+    "G25": "Temperatura (°C)",
+    "H25": "Leitura 1",
+    "I25": "Leitura 2",
+    "J25": "Leitura 3",
+    "K25": "Leitura 4",
+    "L25": "Leitura 5",
+    "N25": "Correção da temperatura"
+  },
+  "resultados": [
+    {
+      "tabela": "resultado_pendulo_britanico",
+      "repetir": {
+        "var": "r",
+        "valores": [
+          "16",
+          "17",
+          "18",
+          "19",
+          "20",
+          "21",
+          "22",
+          "23",
+          "24",
+          "25"
+        ],
+        "quando": "=ISNUMBER(O{r})"
+      },
+      "campos": {
+        "km": {
+          "expr": "=F{r}",
+          "tipo": "texto"
+        },
+        "pista": {
+          "expr": "=C{r}",
+          "tipo": "texto"
+        },
+        "faixa": {
+          "expr": "=E{r}",
+          "tipo": "texto"
+        },
+        "leitura_1": "=IF(ISNUMBER(H{r}),ROUND(H{r},0),\"\")",
+        "leitura_2": "=IF(ISNUMBER(I{r}),ROUND(I{r},0),\"\")",
+        "leitura_3": "=IF(ISNUMBER(J{r}),ROUND(J{r},0),\"\")",
+        "leitura_4": "=IF(ISNUMBER(K{r}),ROUND(K{r},0),\"\")",
+        "leitura_5": "=IF(ISNUMBER(L{r}),ROUND(L{r},0),\"\")",
+        "media_vrd": "=O{r}"
+      }
+    }
+  ],
+  "pedido_exemplo": {}
+}

@@ -1,0 +1,249 @@
+{
+  "codigo": "FR-IMOB-53",
+  "versao": "Rev00",
+  "nome": "Análise granulométrica de agregados (DNIT 031)",
+  "arquivo": "FR-IMOB-53_Rev00.xlsx",
+  "_nota": "Planilha-mestre Rev00 (lote 9, 28/09; sem exemplo). Mesmo desenho da FR-11, com as peneiras da DNIT 031. Fórmulas corrigidas (decisão do usuário: fórmulas que faltam/estão erradas são acrescentadas/corrigidas quando a conta é clara): (1) a peneira 5/8\" (16 mm) está fora de ordem, na linha 33, e o peso passado dela não somava 1½\", 1\" e ¾\" — e o da ½\", ⅜\" e ¼\" não somava o retido na 5/8\": o retido acumulado de cada peneira agora soma todas as peneiras de abertura maior ou igual (mesmo resultado quando a 5/8\" não é usada); (2) % passante da 5/8\" da Amostra 02 dividia pela massa da Amostra 01 ($G$23) e o fundo da Amostra 01 pela massa da Amostra 02 ($P$23); (3) a tabela auxiliar do gráfico (D45:G59, atrás do gráfico, com 19,4 digitado no lugar de 19,1 e #REF! em I46) foi limpa, como na FR-11: a \"% MÉDIA PASSANTE\" (N48:N60) calcula a média direto das duas amostras e o gráfico lê peneira (M48:M60) × % média passante. Fundo = peso passado na nº 200 (fórmula da mestre). A linha da 5/8\" está oculta na mestre (peneira não usada): não é campo e não aparece na ficha; as fórmulas corrigidas continuam valendo se a Qualidade voltar a exibir a linha. Diâmetro máximo digitado (como na FR-11). Sem resultado_* (granulometria de agregado sem tabela) → dados_resultado; alimenta as peneiras do quadro FR-IMOB-39 junto com a FR-11.",
+  "pedido": {
+    "C7": "os",
+    "C8": "material",
+    "I8": "registro",
+    "E9": "procedencia",
+    "E10": "complemento"
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "I7"
+      ],
+      "tipo": "data"
+    },
+    {
+      "celulas": [
+        "G23",
+        "P23",
+        "D42",
+        "M42"
+      ],
+      "tipo": "numero"
+    },
+    {
+      "colunas": [
+        "D",
+        "M"
+      ],
+      "linhas": [
+        "27-32",
+        "34-40"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "formulas": {
+    "E27": "=IF(G23=\"\",\"\",IF(D27=\"\",\"\",G23-SUM(D27)))",
+    "E28": "=IF(G23=\"\",\"\",IF(D28=\"\",\"\",G23-SUM(D27,D28)))",
+    "E29": "=IF(G23=\"\",\"\",IF(D29=\"\",\"\",G23-SUM(D27,D28,D29)))",
+    "E33": "=IF(G23=\"\",\"\",IF(D33=\"\",\"\",G23-SUM(D27,D28,D29,D33)))",
+    "E30": "=IF(G23=\"\",\"\",IF(D30=\"\",\"\",G23-SUM(D27,D28,D29,D33,D30)))",
+    "E31": "=IF(G23=\"\",\"\",IF(D31=\"\",\"\",G23-SUM(D27,D28,D29,D33,D30,D31)))",
+    "E32": "=IF(G23=\"\",\"\",IF(D32=\"\",\"\",G23-SUM(D27,D28,D29,D33,D30,D31,D32)))",
+    "E34": "=IF(G23=\"\",\"\",IF(D34=\"\",\"\",G23-SUM(D27,D28,D29,D33,D30,D31,D32,D34)))",
+    "E35": "=IF(G23=\"\",\"\",IF(D35=\"\",\"\",G23-SUM(D27,D28,D29,D33,D30,D31,D32,D34,D35)))",
+    "E36": "=IF(G23=\"\",\"\",IF(D36=\"\",\"\",G23-SUM(D27,D28,D29,D33,D30,D31,D32,D34,D35,D36)))",
+    "E37": "=IF(G23=\"\",\"\",IF(D37=\"\",\"\",G23-SUM(D27,D28,D29,D33,D30,D31,D32,D34,D35,D36,D37)))",
+    "E38": "=IF(G23=\"\",\"\",IF(D38=\"\",\"\",G23-SUM(D27,D28,D29,D33,D30,D31,D32,D34,D35,D36,D37,D38)))",
+    "E39": "=IF(G23=\"\",\"\",IF(D39=\"\",\"\",G23-SUM(D27,D28,D29,D33,D30,D31,D32,D34,D35,D36,D37,D38,D39)))",
+    "E40": "=IF(G23=\"\",\"\",IF(D40=\"\",\"\",G23-SUM(D27,D28,D29,D33,D30,D31,D32,D34,D35,D36,D37,D38,D39,D40)))",
+    "F41": "=IF(G23=\"\",\"\",IF(E41=\"\",\"\",E41/G23))",
+    "F33": "=IF(G23=\"\",\"\",IF(E33=\"\",\"\",E33/G23))",
+    "N27": "=IF(P23=\"\",\"\",IF(M27=\"\",\"\",P23-SUM(M27)))",
+    "N28": "=IF(P23=\"\",\"\",IF(M28=\"\",\"\",P23-SUM(M27,M28)))",
+    "N29": "=IF(P23=\"\",\"\",IF(M29=\"\",\"\",P23-SUM(M27,M28,M29)))",
+    "N33": "=IF(P23=\"\",\"\",IF(M33=\"\",\"\",P23-SUM(M27,M28,M29,M33)))",
+    "N30": "=IF(P23=\"\",\"\",IF(M30=\"\",\"\",P23-SUM(M27,M28,M29,M33,M30)))",
+    "N31": "=IF(P23=\"\",\"\",IF(M31=\"\",\"\",P23-SUM(M27,M28,M29,M33,M30,M31)))",
+    "N32": "=IF(P23=\"\",\"\",IF(M32=\"\",\"\",P23-SUM(M27,M28,M29,M33,M30,M31,M32)))",
+    "N34": "=IF(P23=\"\",\"\",IF(M34=\"\",\"\",P23-SUM(M27,M28,M29,M33,M30,M31,M32,M34)))",
+    "N35": "=IF(P23=\"\",\"\",IF(M35=\"\",\"\",P23-SUM(M27,M28,M29,M33,M30,M31,M32,M34,M35)))",
+    "N36": "=IF(P23=\"\",\"\",IF(M36=\"\",\"\",P23-SUM(M27,M28,M29,M33,M30,M31,M32,M34,M35,M36)))",
+    "N37": "=IF(P23=\"\",\"\",IF(M37=\"\",\"\",P23-SUM(M27,M28,M29,M33,M30,M31,M32,M34,M35,M36,M37)))",
+    "N38": "=IF(P23=\"\",\"\",IF(M38=\"\",\"\",P23-SUM(M27,M28,M29,M33,M30,M31,M32,M34,M35,M36,M37,M38)))",
+    "N39": "=IF(P23=\"\",\"\",IF(M39=\"\",\"\",P23-SUM(M27,M28,M29,M33,M30,M31,M32,M34,M35,M36,M37,M38,M39)))",
+    "N40": "=IF(P23=\"\",\"\",IF(M40=\"\",\"\",P23-SUM(M27,M28,M29,M33,M30,M31,M32,M34,M35,M36,M37,M38,M39,M40)))",
+    "O41": "=IF(P23=\"\",\"\",IF(N41=\"\",\"\",N41/P23))",
+    "O33": "=IF(P23=\"\",\"\",IF(N33=\"\",\"\",N33/P23))",
+    "N48": "=IF(AND(F40=\"\",O40=\"\"),\"\",IFERROR(AVERAGE(F27,O27),\"\"))",
+    "N49": "=IF(AND(F40=\"\",O40=\"\"),\"\",IFERROR(AVERAGE(F28,O28),\"\"))",
+    "N50": "=IF(AND(F40=\"\",O40=\"\"),\"\",IFERROR(AVERAGE(F29,O29),\"\"))",
+    "N51": "=IF(AND(F40=\"\",O40=\"\"),\"\",IFERROR(AVERAGE(F30,O30),\"\"))",
+    "N52": "=IF(AND(F40=\"\",O40=\"\"),\"\",IFERROR(AVERAGE(F31,O31),\"\"))",
+    "N53": "=IF(AND(F40=\"\",O40=\"\"),\"\",IFERROR(AVERAGE(F32,O32),\"\"))",
+    "N54": "=IF(AND(F40=\"\",O40=\"\"),\"\",IFERROR(AVERAGE(F34,O34),\"\"))",
+    "N55": "=IF(AND(F40=\"\",O40=\"\"),\"\",IFERROR(AVERAGE(F35,O35),\"\"))",
+    "N56": "=IF(AND(F40=\"\",O40=\"\"),\"\",IFERROR(AVERAGE(F36,O36),\"\"))",
+    "N57": "=IF(AND(F40=\"\",O40=\"\"),\"\",IFERROR(AVERAGE(F37,O37),\"\"))",
+    "N58": "=IF(AND(F40=\"\",O40=\"\"),\"\",IFERROR(AVERAGE(F38,O38),\"\"))",
+    "N59": "=IF(AND(F40=\"\",O40=\"\"),\"\",IFERROR(AVERAGE(F39,O39),\"\"))",
+    "N60": "=IF(AND(F40=\"\",O40=\"\"),\"\",IFERROR(AVERAGE(F40,O40),\"\"))"
+  },
+  "limpar": [
+    "D45",
+    "D46",
+    "D47",
+    "D48",
+    "D49",
+    "D50",
+    "D51",
+    "D52",
+    "D53",
+    "D54",
+    "D55",
+    "D56",
+    "D57",
+    "D58",
+    "D59",
+    "E45",
+    "E46",
+    "E47",
+    "E48",
+    "E49",
+    "E50",
+    "E51",
+    "E52",
+    "E53",
+    "E54",
+    "E55",
+    "E56",
+    "E57",
+    "E58",
+    "E59",
+    "F45",
+    "F46",
+    "F47",
+    "F48",
+    "F49",
+    "F50",
+    "F51",
+    "F52",
+    "F53",
+    "F54",
+    "F55",
+    "F56",
+    "F57",
+    "F58",
+    "F59",
+    "G45",
+    "G46",
+    "G47",
+    "G48",
+    "G49",
+    "G50",
+    "G51",
+    "G52",
+    "G53",
+    "G54",
+    "G55",
+    "G56",
+    "G57",
+    "G58",
+    "G59",
+    "I46"
+  ],
+  "graficos_series": {
+    "0.0": {
+      "x": "M48:M60",
+      "y": "N48:N60"
+    }
+  },
+  "assinaturas": {
+    "executor": "B63",
+    "calculista": "I63"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "I7"
+        ]
+      },
+      {
+        "titulo": "Amostra 01",
+        "celulas": [
+          "G23",
+          "D27",
+          "D28",
+          "D29",
+          "D30",
+          "D31",
+          "D32",
+          "D34",
+          "D35",
+          "D36",
+          "D37",
+          "D38",
+          "D39",
+          "D40",
+          "D42"
+        ]
+      },
+      {
+        "titulo": "Amostra 02",
+        "celulas": [
+          "P23",
+          "M27",
+          "M28",
+          "M29",
+          "M30",
+          "M31",
+          "M32",
+          "M34",
+          "M35",
+          "M36",
+          "M37",
+          "M38",
+          "M39",
+          "M40",
+          "M42"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "I7": "Data do ensaio",
+    "G23": "Amostra 01 — amostra total seca (g)",
+    "P23": "Amostra 02 — amostra total seca (g)",
+    "D42": "Amostra 01 — diâmetro máximo (mm)",
+    "M42": "Amostra 02 — diâmetro máximo (mm)",
+    "D27": "Amostra 01 — retido na peneira 1 1/2\" (g)",
+    "M27": "Amostra 02 — retido na peneira 1 1/2\" (g)",
+    "D28": "Amostra 01 — retido na peneira 1\" (g)",
+    "M28": "Amostra 02 — retido na peneira 1\" (g)",
+    "D29": "Amostra 01 — retido na peneira 3/4\" (g)",
+    "M29": "Amostra 02 — retido na peneira 3/4\" (g)",
+    "D30": "Amostra 01 — retido na peneira 1/2\" (g)",
+    "M30": "Amostra 02 — retido na peneira 1/2\" (g)",
+    "D31": "Amostra 01 — retido na peneira 3/8\" (g)",
+    "M31": "Amostra 02 — retido na peneira 3/8\" (g)",
+    "D32": "Amostra 01 — retido na peneira 1/4\" (g)",
+    "M32": "Amostra 02 — retido na peneira 1/4\" (g)",
+    "D33": "Amostra 01 — retido na peneira 5/8\" (g)",
+    "M33": "Amostra 02 — retido na peneira 5/8\" (g)",
+    "D34": "Amostra 01 — retido na peneira nº 4 (g)",
+    "M34": "Amostra 02 — retido na peneira nº 4 (g)",
+    "D35": "Amostra 01 — retido na peneira nº 8 (g)",
+    "M35": "Amostra 02 — retido na peneira nº 8 (g)",
+    "D36": "Amostra 01 — retido na peneira nº 16 (g)",
+    "M36": "Amostra 02 — retido na peneira nº 16 (g)",
+    "D37": "Amostra 01 — retido na peneira nº 30 (g)",
+    "M37": "Amostra 02 — retido na peneira nº 30 (g)",
+    "D38": "Amostra 01 — retido na peneira nº 50 (g)",
+    "M38": "Amostra 02 — retido na peneira nº 50 (g)",
+    "D39": "Amostra 01 — retido na peneira nº 100 (g)",
+    "M39": "Amostra 02 — retido na peneira nº 100 (g)",
+    "D40": "Amostra 01 — retido na peneira nº 200 (g)",
+    "M40": "Amostra 02 — retido na peneira nº 200 (g)"
+  },
+  "resultados": [],
+  "pedido_exemplo": {}
+}

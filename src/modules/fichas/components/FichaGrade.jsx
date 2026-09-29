@@ -110,7 +110,10 @@ function montarEstrutura(folha, soImpressao, folga = 1) {
       const vizinha = modelo.cells[colStr(c + cs) + r]
       const recortar = !d.w && vizinha && (vizinha.v !== undefined || vizinha.fx || vizinha.rt || vizinha.role)
       celulas.push({
-        a, d, rs, cs, h: Math.max(0, h - folga), oculta: largura === 0, soTela: ci >= folha.colsImpressao,
+        // coluna oculta, ou célula com conteúdo numa linha oculta do Excel (FR-IMOB-53: peneira 5/8")
+        a, d, rs, cs, h: Math.max(0, h - folga),
+        oculta: largura === 0 || (altura === 0 && rs === 1 && (d.v !== undefined || !!d.fx || !!d.role || !!d.rt)),
+        soTela: ci >= folha.colsImpressao,
         estilo: estiloTd(d), alinhamento: alinhamento(d), recortar,
         papel: d.role?.tipo || null,
       })

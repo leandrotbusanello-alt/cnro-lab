@@ -1,0 +1,23 @@
+{
+ "_nota": "Conferência do lote 9 (exemplo real FR-IMOB-48_exB.xlsx).",
+ "pedido": {
+  "os": "2026.07.28.03.427",
+  "material": "EMULSÃO - EMULEX RC1C-F103",
+  "registro": "427/2026",
+  "procedencia": "CONSÓRCIO CONSTRUTOR CENTRO NORTE - LOTE 03",
+  "complemento": "Nº DO CERTIFICADO: 37-0630-25 | DATA REFERENTE AO DIA 01/07/2026."
+ },
+ "estado": {
+  "entradas": {
+   "N14": 332.8,
+   "N15": 432.9,
+   "N16": 395.8,
+   "S14": 332.8,
+   "S15": 432.9,
+   "S16": 396.3,
+   "M7": 46259
+  },
+  "escolhas": {},
+  "verificacoes": {}
+ }
+}

@@ -1,0 +1,116 @@
+{
+  "codigo": "FR-IMOB-48",
+  "versao": "Rev00",
+  "nome": "Teor de resíduo seco de emulsões asfálticas",
+  "arquivo": "FR-IMOB-48_Rev00.xlsx",
+  "_nota": "Planilha-mestre Rev00 (lote 9, 28/09) + 2 exemplos reais (O.S. 2026.08.20.02.487 e 2026.07.28.03.427, planilhas e PDFs). A mestre não tem fórmulas: as três contas vêm dos exemplos — resíduo seco = (C − A)/(B − A) × 100 em cada ensaio (S17, S18) e a média (S19). Como nos exemplos, a média ocupa as linhas 19–20 (mesclas N19:Q20 e S19:V20). Conferido: 70,33 / 70,23 / 70,28 e 62,94 / 63,44 / 63,19, como nos PDFs. Sem tabela resultado_* de resíduo seco → dados_resultado.",
+  "pedido": {
+    "B7": {
+      "campo": "os",
+      "manter_texto": true
+    },
+    "B8": {
+      "campo": "material",
+      "manter_texto": true
+    },
+    "M8": {
+      "campo": "registro",
+      "manter_texto": true
+    },
+    "B9": {
+      "campo": "procedencia",
+      "manter_texto": true
+    },
+    "B10": {
+      "campo": "complemento",
+      "manter_texto": true
+    }
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "M7"
+      ],
+      "tipo": "data",
+      "manter_texto": true
+    },
+    {
+      "celulas": [
+        "N14",
+        "N15",
+        "N16",
+        "S14",
+        "S15",
+        "S16"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "formulas": {
+    "S17": "=IF(OR(N14=\"\",N15=\"\",N16=\"\",N15=N14),\"\",(N16-N14)/(N15-N14)*100)",
+    "S18": "=IF(OR(S14=\"\",S15=\"\",S16=\"\",S15=S14),\"\",(S16-S14)/(S15-S14)*100)",
+    "S19": "=IF(COUNT(S17:S18)=0,\"\",AVERAGE(S17:S18))"
+  },
+  "formatos": {
+    "S17:S19": "0.00",
+    "N14:V16": "0.00"
+  },
+  "remover_mesclas": [
+    "N19:Q19",
+    "N20:Q20",
+    "S19:V19",
+    "S20:V20"
+  ],
+  "mesclas_extras": [
+    "N19:Q20",
+    "S19:V20"
+  ],
+  "celulas_extras": {
+    "V19": {
+      "borda": [
+        "right"
+      ]
+    }
+  },
+  "assinaturas": {
+    "executor": "C22",
+    "calculista": "O22"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "M7"
+        ]
+      },
+      {
+        "titulo": "1º ensaio",
+        "celulas": [
+          "N14",
+          "N15",
+          "N16"
+        ]
+      },
+      {
+        "titulo": "2º ensaio",
+        "celulas": [
+          "S14",
+          "S15",
+          "S16"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "M7": "Data do ensaio",
+    "N14": "1º ensaio — (A) massa do conjunto (g)",
+    "N15": "1º ensaio — (B) conjunto + emulsão (g)",
+    "N16": "1º ensaio — (C) conjunto + resíduo seco (g)",
+    "S14": "2º ensaio — (A) massa do conjunto (g)",
+    "S15": "2º ensaio — (B) conjunto + emulsão (g)",
+    "S16": "2º ensaio — (C) conjunto + resíduo seco (g)"
+  },
+  "resultados": [],
+  "pedido_exemplo": {}
+}

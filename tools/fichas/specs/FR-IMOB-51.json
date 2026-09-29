@@ -1,0 +1,571 @@
+{
+  "codigo": "FR-IMOB-51",
+  "versao": "Rev00",
+  "nome": "Material estabilizado quimicamente — módulo de resiliência",
+  "arquivo": "FR-IMOB-51_Rev00.xlsx",
+  "_nota": "Planilha-mestre Rev00 (lote 9, 28/09; sem exemplo). A planilha puxava ciclos e gráficos de outra pasta de trabalho ([12]Relatório — relatório do equipamento): σd, δ, ε e MR de cada ciclo (5 ciclos × 3 amostras) viram campos digitados (valores do relatório do equipamento; o sistema não recalcula MR = σd/ε, para não divergir do equipamento), e o nº do ciclo vira 1 a 5. K1, K2 e R² (vazios na mestre) são calculados como a linha de tendência de potência dos gráficos: regressão de ln MR × ln σd (MR = K1·σd^K2), com colunas auxiliares de logaritmo fora da área (AK:AP). Gráficos apontados para os dados da própria ficha (o 1º e o 2º gráficos da mestre liam os mesmos dados). Dados do corpo de prova (linhas 14–18): rótulo e valor na mesma célula, com as linhas mescladas (B:M e N:Y). Área de impressão A1:Z60 (a mestre ia até AI, colunas vazias). Resultado: resultado_modulo_resiliencia, 1 linha por ciclo com MR (um item só: o aprovar_ensaio apaga a tabela a cada item).",
+  "area_impressao": "A1:Z60",
+  "pedido": {
+    "B7": {
+      "campo": "os",
+      "manter_texto": true
+    },
+    "B8": {
+      "campo": "material",
+      "manter_texto": true
+    },
+    "N8": {
+      "campo": "registro",
+      "manter_texto": true
+    },
+    "B9": {
+      "campo": "procedencia",
+      "manter_texto": true
+    },
+    "B10": {
+      "campo": "complemento",
+      "manter_texto": true
+    }
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "N7"
+      ],
+      "tipo": "data",
+      "manter_texto": true
+    },
+    {
+      "celulas": [
+        "B14"
+      ],
+      "tipo": "data",
+      "manter_texto": true
+    },
+    {
+      "celulas": [
+        "N14",
+        "B15",
+        "N15"
+      ],
+      "tipo": "texto",
+      "manter_texto": true
+    },
+    {
+      "celulas": [
+        "B16",
+        "N16",
+        "B17",
+        "N17",
+        "B18",
+        "N18"
+      ],
+      "tipo": "numero",
+      "manter_texto": true
+    },
+    {
+      "celulas": [
+        "C23",
+        "E23",
+        "G23",
+        "I23",
+        "C24",
+        "E24",
+        "G24",
+        "I24",
+        "C25",
+        "E25",
+        "G25",
+        "I25",
+        "C26",
+        "E26",
+        "G26",
+        "I26",
+        "C27",
+        "E27",
+        "G27",
+        "I27",
+        "K23",
+        "N23",
+        "P23",
+        "R23",
+        "K24",
+        "N24",
+        "P24",
+        "R24",
+        "K25",
+        "N25",
+        "P25",
+        "R25",
+        "K26",
+        "N26",
+        "P26",
+        "R26",
+        "K27",
+        "N27",
+        "P27",
+        "R27",
+        "T23",
+        "W23",
+        "X23",
+        "Y23",
+        "T24",
+        "W24",
+        "X24",
+        "Y24",
+        "T25",
+        "W25",
+        "X25",
+        "Y25",
+        "T26",
+        "W26",
+        "X26",
+        "Y26",
+        "T27",
+        "W27",
+        "X27",
+        "Y27"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "formulas": {
+    "B23": "=1",
+    "B24": "=2",
+    "B25": "=3",
+    "B26": "=4",
+    "B27": "=5",
+    "AK23": "=IF(ISNUMBER(C23),IF(C23>0,LN(C23),\"\"),\"\")",
+    "AL23": "=IF(ISNUMBER(I23),IF(I23>0,LN(I23),\"\"),\"\")",
+    "AK24": "=IF(ISNUMBER(C24),IF(C24>0,LN(C24),\"\"),\"\")",
+    "AL24": "=IF(ISNUMBER(I24),IF(I24>0,LN(I24),\"\"),\"\")",
+    "AK25": "=IF(ISNUMBER(C25),IF(C25>0,LN(C25),\"\"),\"\")",
+    "AL25": "=IF(ISNUMBER(I25),IF(I25>0,LN(I25),\"\"),\"\")",
+    "AK26": "=IF(ISNUMBER(C26),IF(C26>0,LN(C26),\"\"),\"\")",
+    "AL26": "=IF(ISNUMBER(I26),IF(I26>0,LN(I26),\"\"),\"\")",
+    "AK27": "=IF(ISNUMBER(C27),IF(C27>0,LN(C27),\"\"),\"\")",
+    "AL27": "=IF(ISNUMBER(I27),IF(I27>0,LN(I27),\"\"),\"\")",
+    "D40": "=IF(COUNT(AL23:AL27)<2,\"\",EXP(INTERCEPT(AL23:AL27,AK23:AK27)))",
+    "D41": "=IF(COUNT(AL23:AL27)<2,\"\",SLOPE(AL23:AL27,AK23:AK27))",
+    "D42": "=IF(COUNT(AL23:AL27)<2,\"\",RSQ(AL23:AL27,AK23:AK27))",
+    "AM23": "=IF(ISNUMBER(K23),IF(K23>0,LN(K23),\"\"),\"\")",
+    "AN23": "=IF(ISNUMBER(R23),IF(R23>0,LN(R23),\"\"),\"\")",
+    "AM24": "=IF(ISNUMBER(K24),IF(K24>0,LN(K24),\"\"),\"\")",
+    "AN24": "=IF(ISNUMBER(R24),IF(R24>0,LN(R24),\"\"),\"\")",
+    "AM25": "=IF(ISNUMBER(K25),IF(K25>0,LN(K25),\"\"),\"\")",
+    "AN25": "=IF(ISNUMBER(R25),IF(R25>0,LN(R25),\"\"),\"\")",
+    "AM26": "=IF(ISNUMBER(K26),IF(K26>0,LN(K26),\"\"),\"\")",
+    "AN26": "=IF(ISNUMBER(R26),IF(R26>0,LN(R26),\"\"),\"\")",
+    "AM27": "=IF(ISNUMBER(K27),IF(K27>0,LN(K27),\"\"),\"\")",
+    "AN27": "=IF(ISNUMBER(R27),IF(R27>0,LN(R27),\"\"),\"\")",
+    "M40": "=IF(COUNT(AN23:AN27)<2,\"\",EXP(INTERCEPT(AN23:AN27,AM23:AM27)))",
+    "M41": "=IF(COUNT(AN23:AN27)<2,\"\",SLOPE(AN23:AN27,AM23:AM27))",
+    "M42": "=IF(COUNT(AN23:AN27)<2,\"\",RSQ(AN23:AN27,AM23:AM27))",
+    "AO23": "=IF(ISNUMBER(T23),IF(T23>0,LN(T23),\"\"),\"\")",
+    "AP23": "=IF(ISNUMBER(Y23),IF(Y23>0,LN(Y23),\"\"),\"\")",
+    "AO24": "=IF(ISNUMBER(T24),IF(T24>0,LN(T24),\"\"),\"\")",
+    "AP24": "=IF(ISNUMBER(Y24),IF(Y24>0,LN(Y24),\"\"),\"\")",
+    "AO25": "=IF(ISNUMBER(T25),IF(T25>0,LN(T25),\"\"),\"\")",
+    "AP25": "=IF(ISNUMBER(Y25),IF(Y25>0,LN(Y25),\"\"),\"\")",
+    "AO26": "=IF(ISNUMBER(T26),IF(T26>0,LN(T26),\"\"),\"\")",
+    "AP26": "=IF(ISNUMBER(Y26),IF(Y26>0,LN(Y26),\"\"),\"\")",
+    "AO27": "=IF(ISNUMBER(T27),IF(T27>0,LN(T27),\"\"),\"\")",
+    "AP27": "=IF(ISNUMBER(Y27),IF(Y27>0,LN(Y27),\"\"),\"\")",
+    "V40": "=IF(COUNT(AP23:AP27)<2,\"\",EXP(INTERCEPT(AP23:AP27,AO23:AO27)))",
+    "V41": "=IF(COUNT(AP23:AP27)<2,\"\",SLOPE(AP23:AP27,AO23:AO27))",
+    "V42": "=IF(COUNT(AP23:AP27)<2,\"\",RSQ(AP23:AP27,AO23:AO27))"
+  },
+  "formatos": {
+    "D40:E42": "0.000",
+    "M40:N42": "0.000",
+    "V40:W42": "0.000",
+    "C23:Y27": "0.000",
+    "B23:B27": "0"
+  },
+  "remover_mesclas": [
+    "F14:M14"
+  ],
+  "celulas_extras": {
+    "M14": {
+      "borda": [
+        "right"
+      ]
+    },
+    "B14": {
+      "h": "left"
+    },
+    "N14": {
+      "h": "left"
+    },
+    "B15": {
+      "h": "left"
+    },
+    "N15": {
+      "h": "left"
+    },
+    "B16": {
+      "h": "left"
+    },
+    "N16": {
+      "h": "left"
+    },
+    "B17": {
+      "h": "left"
+    },
+    "N17": {
+      "h": "left"
+    },
+    "B18": {
+      "h": "left"
+    },
+    "N18": {
+      "h": "left"
+    }
+  },
+  "mesclas_extras": [
+    "B14:M14",
+    "B15:M15",
+    "B16:M16",
+    "B17:M17",
+    "B18:M18",
+    "N14:Y14",
+    "N15:Y15",
+    "N16:Y16",
+    "N17:Y17",
+    "N18:Y18"
+  ],
+  "graficos_series": {
+    "0.0": {
+      "x": "C23:C27",
+      "y": "I23:I27"
+    },
+    "1.0": {
+      "x": "K23:K27",
+      "y": "R23:R27"
+    },
+    "2.0": {
+      "x": "T23:T27",
+      "y": "Y23:Y27"
+    }
+  },
+  "assinaturas": {
+    "executor": "B55",
+    "calculista": "N55"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "N7"
+        ]
+      },
+      {
+        "titulo": "Dados do corpo de prova",
+        "celulas": [
+          "B14",
+          "N14",
+          "B15",
+          "N15",
+          "B16",
+          "N16",
+          "B17",
+          "N17",
+          "B18",
+          "N18"
+        ]
+      },
+      {
+        "titulo": "Amostra 01",
+        "celulas": [
+          "C23",
+          "E23",
+          "G23",
+          "I23",
+          "C24",
+          "E24",
+          "G24",
+          "I24",
+          "C25",
+          "E25",
+          "G25",
+          "I25",
+          "C26",
+          "E26",
+          "G26",
+          "I26",
+          "C27",
+          "E27",
+          "G27",
+          "I27"
+        ]
+      },
+      {
+        "titulo": "Amostra 02",
+        "celulas": [
+          "K23",
+          "N23",
+          "P23",
+          "R23",
+          "K24",
+          "N24",
+          "P24",
+          "R24",
+          "K25",
+          "N25",
+          "P25",
+          "R25",
+          "K26",
+          "N26",
+          "P26",
+          "R26",
+          "K27",
+          "N27",
+          "P27",
+          "R27"
+        ]
+      },
+      {
+        "titulo": "Amostra 03",
+        "celulas": [
+          "T23",
+          "W23",
+          "X23",
+          "Y23",
+          "T24",
+          "W24",
+          "X24",
+          "Y24",
+          "T25",
+          "W25",
+          "X25",
+          "Y25",
+          "T26",
+          "W26",
+          "X26",
+          "Y26",
+          "T27",
+          "W27",
+          "X27",
+          "Y27"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "N7": "Data do ensaio",
+    "B14": "Data de compactação",
+    "N14": "Energia de compactação",
+    "B15": "Tipo de estabilizante químico",
+    "N15": "Tamanho do corpo de prova (mm)",
+    "B16": "Tempo de cura (dias)",
+    "N16": "Teor de umidade do CP (%)",
+    "B17": "Porcentagem do estabilizante químico (%)",
+    "N17": "Peso específico seco do CP (kN/m³)",
+    "B18": "Curso do LVDT empregado (mm)",
+    "N18": "Grau de compactação do CP (%)",
+    "C23": "Amostra 01 — ciclo 1 — σd (MPa)",
+    "E23": "Amostra 01 — ciclo 1 — δ (mm)",
+    "G23": "Amostra 01 — ciclo 1 — ε (%)",
+    "I23": "Amostra 01 — ciclo 1 — MR (MPa)",
+    "C24": "Amostra 01 — ciclo 2 — σd (MPa)",
+    "E24": "Amostra 01 — ciclo 2 — δ (mm)",
+    "G24": "Amostra 01 — ciclo 2 — ε (%)",
+    "I24": "Amostra 01 — ciclo 2 — MR (MPa)",
+    "C25": "Amostra 01 — ciclo 3 — σd (MPa)",
+    "E25": "Amostra 01 — ciclo 3 — δ (mm)",
+    "G25": "Amostra 01 — ciclo 3 — ε (%)",
+    "I25": "Amostra 01 — ciclo 3 — MR (MPa)",
+    "C26": "Amostra 01 — ciclo 4 — σd (MPa)",
+    "E26": "Amostra 01 — ciclo 4 — δ (mm)",
+    "G26": "Amostra 01 — ciclo 4 — ε (%)",
+    "I26": "Amostra 01 — ciclo 4 — MR (MPa)",
+    "C27": "Amostra 01 — ciclo 5 — σd (MPa)",
+    "E27": "Amostra 01 — ciclo 5 — δ (mm)",
+    "G27": "Amostra 01 — ciclo 5 — ε (%)",
+    "I27": "Amostra 01 — ciclo 5 — MR (MPa)",
+    "K23": "Amostra 02 — ciclo 1 — σd (MPa)",
+    "N23": "Amostra 02 — ciclo 1 — δ (mm)",
+    "P23": "Amostra 02 — ciclo 1 — ε (%)",
+    "R23": "Amostra 02 — ciclo 1 — MR (MPa)",
+    "K24": "Amostra 02 — ciclo 2 — σd (MPa)",
+    "N24": "Amostra 02 — ciclo 2 — δ (mm)",
+    "P24": "Amostra 02 — ciclo 2 — ε (%)",
+    "R24": "Amostra 02 — ciclo 2 — MR (MPa)",
+    "K25": "Amostra 02 — ciclo 3 — σd (MPa)",
+    "N25": "Amostra 02 — ciclo 3 — δ (mm)",
+    "P25": "Amostra 02 — ciclo 3 — ε (%)",
+    "R25": "Amostra 02 — ciclo 3 — MR (MPa)",
+    "K26": "Amostra 02 — ciclo 4 — σd (MPa)",
+    "N26": "Amostra 02 — ciclo 4 — δ (mm)",
+    "P26": "Amostra 02 — ciclo 4 — ε (%)",
+    "R26": "Amostra 02 — ciclo 4 — MR (MPa)",
+    "K27": "Amostra 02 — ciclo 5 — σd (MPa)",
+    "N27": "Amostra 02 — ciclo 5 — δ (mm)",
+    "P27": "Amostra 02 — ciclo 5 — ε (%)",
+    "R27": "Amostra 02 — ciclo 5 — MR (MPa)",
+    "T23": "Amostra 03 — ciclo 1 — σd (MPa)",
+    "W23": "Amostra 03 — ciclo 1 — δ (mm)",
+    "X23": "Amostra 03 — ciclo 1 — ε (%)",
+    "Y23": "Amostra 03 — ciclo 1 — MR (MPa)",
+    "T24": "Amostra 03 — ciclo 2 — σd (MPa)",
+    "W24": "Amostra 03 — ciclo 2 — δ (mm)",
+    "X24": "Amostra 03 — ciclo 2 — ε (%)",
+    "Y24": "Amostra 03 — ciclo 2 — MR (MPa)",
+    "T25": "Amostra 03 — ciclo 3 — σd (MPa)",
+    "W25": "Amostra 03 — ciclo 3 — δ (mm)",
+    "X25": "Amostra 03 — ciclo 3 — ε (%)",
+    "Y25": "Amostra 03 — ciclo 3 — MR (MPa)",
+    "T26": "Amostra 03 — ciclo 4 — σd (MPa)",
+    "W26": "Amostra 03 — ciclo 4 — δ (mm)",
+    "X26": "Amostra 03 — ciclo 4 — ε (%)",
+    "Y26": "Amostra 03 — ciclo 4 — MR (MPa)",
+    "T27": "Amostra 03 — ciclo 5 — σd (MPa)",
+    "W27": "Amostra 03 — ciclo 5 — δ (mm)",
+    "X27": "Amostra 03 — ciclo 5 — ε (%)",
+    "Y27": "Amostra 03 — ciclo 5 — MR (MPa)"
+  },
+  "resultados": [
+    {
+      "tabela": "resultado_modulo_resiliencia",
+      "linhas": [
+        {
+          "quando": "=AND(ISNUMBER(C23),ISNUMBER(I23))",
+          "campos": {
+            "tipo_material": "Material estabilizado quimicamente — Amostra 01 — ciclo 1",
+            "tensao_desvio_kpa": "=C23*1000",
+            "modulo_mr_mpa": "=I23",
+            "modelo_utilizado": "MR = K1·σd^K2"
+          }
+        },
+        {
+          "quando": "=AND(ISNUMBER(C24),ISNUMBER(I24))",
+          "campos": {
+            "tipo_material": "Material estabilizado quimicamente — Amostra 01 — ciclo 2",
+            "tensao_desvio_kpa": "=C24*1000",
+            "modulo_mr_mpa": "=I24",
+            "modelo_utilizado": "MR = K1·σd^K2"
+          }
+        },
+        {
+          "quando": "=AND(ISNUMBER(C25),ISNUMBER(I25))",
+          "campos": {
+            "tipo_material": "Material estabilizado quimicamente — Amostra 01 — ciclo 3",
+            "tensao_desvio_kpa": "=C25*1000",
+            "modulo_mr_mpa": "=I25",
+            "modelo_utilizado": "MR = K1·σd^K2"
+          }
+        },
+        {
+          "quando": "=AND(ISNUMBER(C26),ISNUMBER(I26))",
+          "campos": {
+            "tipo_material": "Material estabilizado quimicamente — Amostra 01 — ciclo 4",
+            "tensao_desvio_kpa": "=C26*1000",
+            "modulo_mr_mpa": "=I26",
+            "modelo_utilizado": "MR = K1·σd^K2"
+          }
+        },
+        {
+          "quando": "=AND(ISNUMBER(C27),ISNUMBER(I27))",
+          "campos": {
+            "tipo_material": "Material estabilizado quimicamente — Amostra 01 — ciclo 5",
+            "tensao_desvio_kpa": "=C27*1000",
+            "modulo_mr_mpa": "=I27",
+            "modelo_utilizado": "MR = K1·σd^K2"
+          }
+        },
+        {
+          "quando": "=AND(ISNUMBER(K23),ISNUMBER(R23))",
+          "campos": {
+            "tipo_material": "Material estabilizado quimicamente — Amostra 02 — ciclo 1",
+            "tensao_desvio_kpa": "=K23*1000",
+            "modulo_mr_mpa": "=R23",
+            "modelo_utilizado": "MR = K1·σd^K2"
+          }
+        },
+        {
+          "quando": "=AND(ISNUMBER(K24),ISNUMBER(R24))",
+          "campos": {
+            "tipo_material": "Material estabilizado quimicamente — Amostra 02 — ciclo 2",
+            "tensao_desvio_kpa": "=K24*1000",
+            "modulo_mr_mpa": "=R24",
+            "modelo_utilizado": "MR = K1·σd^K2"
+          }
+        },
+        {
+          "quando": "=AND(ISNUMBER(K25),ISNUMBER(R25))",
+          "campos": {
+            "tipo_material": "Material estabilizado quimicamente — Amostra 02 — ciclo 3",
+            "tensao_desvio_kpa": "=K25*1000",
+            "modulo_mr_mpa": "=R25",
+            "modelo_utilizado": "MR = K1·σd^K2"
+          }
+        },
+        {
+          "quando": "=AND(ISNUMBER(K26),ISNUMBER(R26))",
+          "campos": {
+            "tipo_material": "Material estabilizado quimicamente — Amostra 02 — ciclo 4",
+            "tensao_desvio_kpa": "=K26*1000",
+            "modulo_mr_mpa": "=R26",
+            "modelo_utilizado": "MR = K1·σd^K2"
+          }
+        },
+        {
+          "quando": "=AND(ISNUMBER(K27),ISNUMBER(R27))",
+          "campos": {
+            "tipo_material": "Material estabilizado quimicamente — Amostra 02 — ciclo 5",
+            "tensao_desvio_kpa": "=K27*1000",
+            "modulo_mr_mpa": "=R27",
+            "modelo_utilizado": "MR = K1·σd^K2"
+          }
+        },
+        {
+          "quando": "=AND(ISNUMBER(T23),ISNUMBER(Y23))",
+          "campos": {
+            "tipo_material": "Material estabilizado quimicamente — Amostra 03 — ciclo 1",
+            "tensao_desvio_kpa": "=T23*1000",
+            "modulo_mr_mpa": "=Y23",
+            "modelo_utilizado": "MR = K1·σd^K2"
+          }
+        },
+        {
+          "quando": "=AND(ISNUMBER(T24),ISNUMBER(Y24))",
+          "campos": {
+            "tipo_material": "Material estabilizado quimicamente — Amostra 03 — ciclo 2",
+            "tensao_desvio_kpa": "=T24*1000",
+            "modulo_mr_mpa": "=Y24",
+            "modelo_utilizado": "MR = K1·σd^K2"
+          }
+        },
+        {
+          "quando": "=AND(ISNUMBER(T25),ISNUMBER(Y25))",
+          "campos": {
+            "tipo_material": "Material estabilizado quimicamente — Amostra 03 — ciclo 3",
+            "tensao_desvio_kpa": "=T25*1000",
+            "modulo_mr_mpa": "=Y25",
+            "modelo_utilizado": "MR = K1·σd^K2"
+          }
+        },
+        {
+          "quando": "=AND(ISNUMBER(T26),ISNUMBER(Y26))",
+          "campos": {
+            "tipo_material": "Material estabilizado quimicamente — Amostra 03 — ciclo 4",
+            "tensao_desvio_kpa": "=T26*1000",
+            "modulo_mr_mpa": "=Y26",
+            "modelo_utilizado": "MR = K1·σd^K2"
+          }
+        },
+        {
+          "quando": "=AND(ISNUMBER(T27),ISNUMBER(Y27))",
+          "campos": {
+            "tipo_material": "Material estabilizado quimicamente — Amostra 03 — ciclo 5",
+            "tensao_desvio_kpa": "=T27*1000",
+            "modulo_mr_mpa": "=Y27",
+            "modelo_utilizado": "MR = K1·σd^K2"
+          }
+        }
+      ]
+    }
+  ],
+  "pedido_exemplo": {}
+}

@@ -66,6 +66,7 @@ function verificar(codigo, dados, filtros, conferir) {
     pedido('solos', 'agregados', { tipo_agregado: 'Brita 1', origem: 'Pedreira Serra', data_coleta: '2026-09-15' }),
     pedido('solos', 'agregados', { tipo_agregado: 'Brita 1', origem: 'Pedreira Serra', data_coleta: '2026-06-10' }),   // fora do período
     pedido('solos', 'agregados', { tipo_agregado: 'Areia', origem: 'Porto Rio', data_coleta: '2026-09-07' }),          // outro tipo
+    pedido('solos', 'agregados', { tipo_agregado: 'Brita 1', origem: 'Pedreira Serra', data_coleta: '2026-09-20' }),   // FR-53 (DNIT 031)
   ]
   const fr11 = (h, q) => ({ codigo: 'FR-IMOB-11', versao: 'Rev00', calculados: { H30: h[0], H31: h[1], H33: h[2], H34: h[3], H35: h[4], H36: h[5], H37: h[6], H38: h[7], H39: h[8], Q30: q[0], Q31: q[1], Q33: q[2], Q34: q[3], Q35: q[4], Q36: q[5], Q37: q[6], Q38: q[7], Q39: q[8] }, entradas: {} })
   const g = [[1, 0.98, 0.6, 0.3, 0.05, 0.03, 0.02, 0.015, 0.01], [1, 0.96, 0.58, 0.28, 0.06, 0.035, 0.022, 0.016, 0.011], [1, 0.97, 0.55, 0.25, 0.04, 0.02, 0.015, 0.012, 0.008]]
@@ -79,11 +80,15 @@ function verificar(codigo, dados, filtros, conferir) {
     { pedido_id: peds[1].id, dados_resultado: { codigo: 'FR-IMOB-06' }, resultados: dens(2.712, 0.5) },
     { pedido_id: peds[2].id, dados_resultado: fr11(g[2], g[2]) },
     { pedido_id: peds[3].id, dados_resultado: fr11(g[0], g[0]) },
+    { pedido_id: peds[4].id, dados_resultado: { codigo: 'FR-IMOB-53', versao: 'Rev00', entradas: { D42: 25.4 },
+      calculados: { F28: 1, O28: 0.99, F29: 0.95, O29: 0.93, F30: 0.6, O30: 0.62, F31: 0.3, O31: 0.32, F34: 0.05, O34: 0.07, F40: 0.01, O40: 0.012 } } },
   ]
   verificar('FR-IMOB-39', { pedidos: peds, ensaios, empresasPorId: EMPRESAS }, { inicio: '2026-09-01', fim: '2026-09-30', tipo: 'Brita 1' }, (r, meta) => {
-    ok(r.linhas.length === 2, 'FR-39: 2 amostras no período (tipo Brita 1)')
+    ok(r.linhas.length === 3, 'FR-39: 3 amostras no período (tipo Brita 1)')
     const L0 = meta.bloco.linha
     perto(r.entradas[`F${L0}`], (0.98 + 0.96) / 2 * 100, 'FR-39 3/4" amostra 1')
+    perto(r.entradas[`F${L0 + 2}`], (0.95 + 0.93) / 2 * 100, 'FR-39 3/4" pela FR-53'); perto(r.entradas[`M${L0 + 2}`], 1.1, 'FR-39 nº 200 pela FR-53')
+    perto(r.entradas[`O${L0 + 2}`], 25.4, 'FR-39 Dmáx digitado na FR-53'); ok(r.entradas[`J${L0 + 2}`] === undefined, 'FR-39 nº 10: FR-53 não tem')
     perto(r.entradas[`F${L0 + 1}`], (0.96 + 0.97) / 2 * 100, 'FR-39 3/4" amostra 2')
     perto(r.entradas[`P${L0}`], 2.36, 'FR-39 IF paquímetro')
     ok(r.entradas[`P${L0 + 1}`] === undefined, 'FR-39: IF por crivos não entra')
@@ -95,9 +100,9 @@ function verificar(codigo, dados, filtros, conferir) {
     // estatísticas: endereço depois da expansão
     const a = Object.entries(meta.estatisticas).find(([, e]) => e.col === 'F' && e.fn === 'media' && e.escopo === 'periodo')[0]
     const aExp = a.replace(/\d+$/, m => +m + (r.n - 1) * meta.bloco.altura)
-    perto(r.entradas[aExp], avg([(0.98 + 0.96) / 2 * 100, (0.96 + 0.97) / 2 * 100]), 'FR-39 média do período 3/4"')
+    perto(r.entradas[aExp], avg([(0.98 + 0.96) / 2 * 100, (0.96 + 0.97) / 2 * 100, (0.95 + 0.93) / 2 * 100]), 'FR-39 média do período 3/4" (FR-11 + FR-53)')
     const gl = Object.entries(meta.estatisticas).find(([, e]) => e.col === 'F' && e.fn === 'desvio')[0].replace(/\d+$/, m => +m + (r.n - 1) * meta.bloco.altura)
-    perto(r.entradas[gl], desvio([(0.98 + 0.96) / 2 * 100, (0.96 + 0.97) / 2 * 100, 97]), 'FR-39 desvio global 3/4" (3 amostras Brita 1)')
+    perto(r.entradas[gl], desvio([(0.98 + 0.96) / 2 * 100, (0.96 + 0.97) / 2 * 100, 97, (0.95 + 0.93) / 2 * 100]), 'FR-39 desvio global 3/4" (4 amostras Brita 1)')
   })
 }
 

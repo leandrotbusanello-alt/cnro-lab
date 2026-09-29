@@ -1,0 +1,23 @@
+{
+ "_nota": "Conferência do lote 9 (exemplo real FR-IMOB-48_exA.xlsx).",
+ "pedido": {
+  "os": "2026.08.20.02.487",
+  "material": "EMULSÃO RR-2C",
+  "registro": "487/2026",
+  "procedencia": "CONSÓRCIO NOVA IMIGRANTES - CUIABÁ A VÁRZEA GRANDE / LOTE 02",
+  "complemento": "NF: 010486/2026 | Nº DO LACRE: 0297 | DATA: 19/08/2026."
+ },
+ "estado": {
+  "entradas": {
+   "N14": 333.1,
+   "N15": 433.2,
+   "N16": 403.5,
+   "S14": 333.2,
+   "S15": 433.3,
+   "S16": 403.5,
+   "M7": 46261
+  },
+  "escolhas": {},
+  "verificacoes": {}
+ }
+}

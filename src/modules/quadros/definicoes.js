@@ -26,6 +26,17 @@ const locais = a => [a.pista, a.faixa, a.lado, a.estaca && `Est. ${a.estaca}`].f
 // Peneiras da FR-11 (análise granulométrica de agregados): % passante em fração nas colunas H (amostra 1)
 // e Q (amostra 2); o quadro mostra a média das duas, em %.
 const peneiraFR11 = linha => ficha('FR-IMOB-11', [`H${linha}`, `Q${linha}`], { fator: 100 })
+// Peneiras de agregado: FR-11 (colunas H e Q) e FR-53 — análise granulométrica DNIT 031 (colunas F e O, fração) —
+// média das amostras das fichas aprovadas da amostra, em %. linha53 = null: peneira que a FR-53 não tem.
+const peneiraAgregado = (linha11, linha53) => ({
+  tipo: 'funcao',
+  fn: l => {
+    const v = [...valoresFicha(l, ['FR-IMOB-11'], [`H${linha11}`, `Q${linha11}`]),
+      ...(linha53 ? valoresFicha(l, ['FR-IMOB-53'], [`F${linha53}`, `O${linha53}`]) : [])]
+    const m = media(v)
+    return m === null ? null : m * 100
+  },
+})
 // Peneiras da FR-21 (granulometria da mistura): % passante média (coluna L), já em %.
 const peneiraFR21 = linha => ficha('FR-IMOB-21', `L${linha}`)
 
@@ -57,10 +68,11 @@ export const QUADROS = {
       B: l => l.dataSerial,               // Mês (formato mmm-aa)
       C: l => l.numero,                   // Amostra (nº do registro)
       D: l => l.dataSerial,               // Data da coleta
-      E: peneiraFR11(30), F: peneiraFR11(31), G: peneiraFR11(33), H: peneiraFR11(34), I: peneiraFR11(35),
-      J: peneiraFR11(36), K: peneiraFR11(37), L: peneiraFR11(38), M: peneiraFR11(39),
+      E: peneiraAgregado(30, 28), F: peneiraAgregado(31, 29), G: peneiraAgregado(33, 30), H: peneiraAgregado(34, 31),
+      I: peneiraAgregado(35, 34), J: peneiraAgregado(36, null), K: peneiraAgregado(37, null), L: peneiraAgregado(38, null),
+      M: peneiraAgregado(39, 40),
       // N (fundo): sem definição — vazio
-      O: { tipo: 'funcao', depois: true, fn: (l, v) => primeiroNumero(l, 'FR-IMOB-11', ['F41', 'O41']) ?? dmaxDasPeneiras(v, PENEIRAS_39) },
+      O: { tipo: 'funcao', depois: true, fn: (l, v) => primeiroNumero(l, 'FR-IMOB-11', ['F41', 'O41']) ?? primeiroNumero(l, 'FR-IMOB-53', ['D42', 'M42']) ?? dmaxDasPeneiras(v, PENEIRAS_39) },
       P: tabela('resultado_indice_forma', 'indice_forma_pct', { filtro: r => r.metodo === 'Paquímetro' }),   // decisão 28/09: paquímetro
       Q: tabela(['resultado_densidade_agregado_graudo', 'resultado_densidade_agregado_miudo'], 'densidade_real'), // massa específica real
       // R (massa unitária): nenhuma ficha online — vazio
