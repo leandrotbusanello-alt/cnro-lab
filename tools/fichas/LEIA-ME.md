@@ -214,6 +214,11 @@ quadro com os resultados **aprovados** e imprime no layout da planilha da Qualid
 - **Formato novo no motor de formatação:** mês por extenso sem dia (`[$-416]mmm\-yy` → "set-26").
 
 ## Regras do conversor
+- **Códigos:** além das FR-IMOB, o conversor e o `sql_lote.py` aceitam as fichas do laboratório (FR-LAB-01, 02, 51…), que ficam
+  lado a lado com as FR-IMOB do mesmo ensaio (decisão de 29/09) e gravam nas mesmas tabelas `resultado_*`.
+- **Imagem dentro da célula** ("Colocar na célula" do Excel — logotipo das FR-LAB-02 e 51): com `"imagens_na_celula": true` na spec
+  (ou na aba extra), o conversor lê a imagem (richData) e a põe na célula/mescla, reduzida e centralizada; a célula perde o `#VALUE!`.
+  É opcional porque a FR-IMOB-33 tem uma assinatura de exemplo dentro de célula, que não deve entrar.
 - **Texto girado 90°** (de baixo para cima, "Constante da Prensa" da FR-IMOB-55) é desenhado na vertical; o empilhado (255) não.
 - **Texto com quebra de linha (Alt+Enter) em célula sem "quebrar texto automaticamente"**: o Excel mostra numa linha só e a ficha
   quebra — troque o texto por `celulas_extras` `{"v": "…"}` sem a quebra (FR-IMOB-56/57).

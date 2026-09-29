@@ -15,13 +15,13 @@ O Excel é a fonte da verdade do layout e das fórmulas: nada é redesenhado.
 A spec só diz o papel de cada célula (quem preenche o quê) e como gerar os resultados.
 Requisitos: Python 3.10+, openpyxl, lxml.
 """
-import base64, datetime, hashlib, json, re, sys
+import base64, datetime, hashlib, io, json, re, sys
 from pathlib import Path
 
 import openpyxl
 from openpyxl.cell.rich_text import CellRichText, TextBlock
 from openpyxl.worksheet.formula import ArrayFormula
-from openpyxl.utils import get_column_letter, column_index_from_string, range_boundaries
+from openpyxl.utils import get_column_letter, column_index_from_string, range_boundaries, coordinate_to_tuple
 from lxml import etree
 
 AQUI = Path(__file__).resolve().parent
@@ -546,6 +546,29 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
         imgs.append({'x': round(x, 1), 'y': round(y, 1), 'w': round(w, 1), 'h': round(h, 1),
                      'src': f'data:{mime};base64,' + base64.b64encode(dados).decode()})
 
+    # imagem dentro da célula ("Colocar na célula" do Excel, richData — logotipo da FR-LAB-02 Rev.04):
+    # ocupa a célula (ou a mescla), reduzida para caber e centralizada, como no Excel
+    # só com "imagens_na_celula": true na spec (a FR-IMOB-33 tem uma assinatura de exemplo dentro de célula)
+    for a, dados in (imagens_na_celula(caminho, ws.title) if spec.get('imagens_na_celula') else {}).items():
+        rr, cc = coordinate_to_tuple(a)
+        if not (c1 <= cc <= c2_impressao and r1 <= rr <= r2):
+            continue
+        rb, cb = mescla.get((rr, cc), (rr, cc))
+        rb, cb = min(rb, r2), min(cb, c2)
+        x0, y0 = x_off[cc - c1], y_off[rr - r1]
+        wc, hc = x_off[cb - c1 + 1] - x0, y_off[rb - r1 + 1] - y0
+        try:
+            from PIL import Image
+            iw, ih = Image.open(io.BytesIO(dados)).size
+        except Exception:
+            iw, ih = wc, hc
+        k = min(wc / iw, hc / ih) if iw and ih else 1
+        w, h = iw * k, ih * k
+        mime = 'image/png' if dados[:4] == b'\x89PNG' else 'image/jpeg'
+        imgs.append({'x': round(x0 + (wc - w) / 2, 1), 'y': round(y0 + (hc - h) / 2, 1), 'w': round(w, 1), 'h': round(h, 1),
+                     'src': f'data:{mime};base64,' + base64.b64encode(dados).decode()})
+        cells.get(a, {}).pop('v', None)          # o Excel grava #VALUE! na célula da imagem
+
     # listas suspensas (validação de dados do Excel) nas células de entrada/revisão → opções do campo
     for dv in ws.data_validations.dataValidation:
         if (dv.type or '') != 'list' or not dv.formula1:
@@ -716,6 +739,47 @@ def refs_locais(formula):
         for rr in range(min(ra, rb), max(ra, rb) + 1):
             for cc in range(min(ca, cb), max(ca, cb) + 1):
                 out.append((cc, rr))
+    return out
+
+
+def imagens_na_celula(caminho, titulo):
+    """{endereço: bytes} das imagens "na célula" (richData) de uma aba. Vazio se a pasta não tem richData."""
+    import zipfile, posixpath
+    out = {}
+    try:
+        z = zipfile.ZipFile(caminho)
+    except Exception:
+        return out
+    nomes = set(z.namelist())
+    if 'xl/richData/richValueRel.xml' not in nomes or 'xl/metadata.xml' not in nomes:
+        return out
+    ler = lambda n: z.read(n).decode('utf-8', 'replace')
+    wbx, rels = ler('xl/workbook.xml'), ler('xl/_rels/workbook.xml.rels')
+    m = re.search(r'<sheet [^>]*name="' + re.escape(titulo.replace('&', '&amp;')) + r'"[^>]*r:id="([^"]+)"', wbx)
+    if not m:
+        return out
+    alvo = re.search(r'<Relationship [^>]*Id="' + m.group(1) + r'"[^>]*Target="([^"]+)"', rels) or \
+        re.search(r'<Relationship [^>]*Target="([^"]+)"[^>]*Id="' + m.group(1) + r'"', rels)
+    folha = 'xl/' + alvo.group(1).lstrip('/').replace('xl/', '', 1)
+    meta = ler('xl/metadata.xml')
+    # valueMetadata (vm, a partir de 1) → futureMetadata XLRICHVALUE → índice do rich value
+    fut = re.search(r'<futureMetadata name="XLRICHVALUE"[^>]*>(.*?)</futureMetadata>', meta, re.S)
+    rvb = [int(x) for x in re.findall(r'<xlrd:rvb i="(\d+)"', fut.group(1))] if fut else []
+    vm_bk = re.search(r'<valueMetadata[^>]*>(.*?)</valueMetadata>', meta, re.S)
+    vm_rc = [int(x) for x in re.findall(r'<rc t="\d+" v="(\d+)"', vm_bk.group(1))] if vm_bk else []
+    rvs = re.findall(r'<rv [^>]*>(.*?)</rv>', ler('xl/richData/rdrichvalue.xml'), re.S)
+    relx = re.findall(r'<rel r:id="([^"]+)"', ler('xl/richData/richValueRel.xml'))
+    rrels = ler('xl/richData/_rels/richValueRel.xml.rels')
+    for coord, vm in re.findall(r'<c r="([A-Z]+\d+)"[^>]*?\svm="(\d+)"', ler(folha)):
+        try:
+            rv = rvb[vm_rc[int(vm) - 1]]
+            rel = int(re.findall(r'<v[^>]*>([^<]*)</v>', rvs[rv])[0])
+            rid = relx[rel]
+            t = re.search(r'<Relationship [^>]*Id="' + rid + r'"[^>]*Target="([^"]+)"', rrels) or \
+                re.search(r'<Relationship [^>]*Target="([^"]+)"[^>]*Id="' + rid + r'"', rrels)
+            out[coord] = z.read(posixpath.normpath(posixpath.join('xl/richData', t.group(1))))
+        except Exception:
+            continue
     return out
 
 
@@ -1113,7 +1177,7 @@ def ler_grafico(cx, tema, ws_titulo, alertas, nome_arq):
     return g
 
 
-CHAVES_DA_FOLHA = ('graficos_series', 'graficos_eixos', 'graficos_escala', 'fotos', 'formatos', 'remover_mesclas', 'alturas', 'celulas_extras', 'pedido', 'entradas', 'revisao', 'escolhas', 'assinaturas', 'linhas_assinatura', 'formulas',
+CHAVES_DA_FOLHA = ('imagens_na_celula', 'graficos_series', 'graficos_eixos', 'graficos_escala', 'fotos', 'formatos', 'remover_mesclas', 'alturas', 'celulas_extras', 'pedido', 'entradas', 'revisao', 'escolhas', 'assinaturas', 'linhas_assinatura', 'formulas',
                    'colunas_tela', 'limpar', 'mesclas_extras', 'lista', 'rotulos', 'verificacoes', 'area_impressao', 'graficos')
 RE_ABA_FORMULA = re.compile(r"(?:'((?:[^']|'')+)'|([A-Za-z_][A-Za-z0-9_.]*))!\$?[A-Z]{1,3}\$?\d")
 

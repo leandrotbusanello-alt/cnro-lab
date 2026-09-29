@@ -1,0 +1,146 @@
+{
+  "codigo": "FR-LAB-01",
+  "versao": "Rev03",
+  "nome": "Massa específica, densidade relativa e absorção de agregado graúdo (laboratório)",
+  "arquivo": "FR-LAB-01_Rev03.xlsx",
+  "aba": "FR-LAB-01-rev03",
+  "titulo_aba": "Frente",
+  "_nota": "Ficha do laboratório (FR-LAB), lado a lado com a FR-IMOB-06 (decisão do usuário, 29/09): mesmo ensaio e mesmas contas (DNIT 413 / NBR 16917), cabeçalho do laboratório. Planilha Rev.03 sem alterações de conteúdo. Frente e verso (equipamentos e 5 pontos de verificação). C6 (2ª linha das informações complementares) é campo de texto. Conferida com os exemplos reais BRITA 0 e BRITA 1 (O.S. 2026.03.11.03.099). Resultado: resultado_densidade_agregado_graudo, 1 linha por ensaio, como a FR-IMOB-06 (alimenta o quadro FR-39).",
+  "pedido": {
+    "B2": "os",
+    "B3": "material",
+    "E3": "registro",
+    "C4": "procedencia",
+    "C5": "complemento"
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "E2"
+      ],
+      "tipo": "data"
+    },
+    {
+      "celulas": [
+        "C6"
+      ],
+      "tipo": "texto"
+    },
+    {
+      "colunas": [
+        "E",
+        "F"
+      ],
+      "linhas": [
+        "10-14"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "assinaturas": {
+    "executor": "A36",
+    "calculista": "D36"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "E2",
+          "C6"
+        ]
+      },
+      {
+        "titulo": "1º ensaio",
+        "colunas": [
+          "E"
+        ]
+      },
+      {
+        "titulo": "2º ensaio",
+        "colunas": [
+          "F"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "E2": "Data do ensaio",
+    "C6": "Informações complementares (2ª linha)",
+    "E10": "1º ensaio — (A) cesta vazia (g)",
+    "E11": "1º ensaio — (B) cesta + amostra seca (g)",
+    "E12": "1º ensaio — (C) cesta imersa (g)",
+    "E13": "1º ensaio — (D) cesta imersa + amostra (g)",
+    "E14": "1º ensaio — (E) cesta + amostra saturada (g)",
+    "F10": "2º ensaio — (A) cesta vazia (g)",
+    "F11": "2º ensaio — (B) cesta + amostra seca (g)",
+    "F12": "2º ensaio — (C) cesta imersa (g)",
+    "F13": "2º ensaio — (D) cesta imersa + amostra (g)",
+    "F14": "2º ensaio — (E) cesta + amostra saturada (g)"
+  },
+  "abas_extras": [
+    {
+      "id": "VERSO",
+      "aba": "VERSO",
+      "titulo": "Verso",
+      "entradas": [
+        {
+          "celulas": [
+            "C6",
+            "C7"
+          ],
+          "tipo": "texto"
+        }
+      ],
+      "rotulos": {
+        "C6": "Balança — identificação",
+        "C7": "Estufa — identificação"
+      },
+      "lista": {
+        "grupos": [
+          {
+            "titulo": "Equipamentos utilizados",
+            "celulas": [
+              "C6",
+              "C7"
+            ]
+          },
+          {
+            "titulo": "Pontos de verificação",
+            "linhas": "9-13"
+          }
+        ]
+      }
+    }
+  ],
+  "resultados": [
+    {
+      "tabela": "resultado_densidade_agregado_graudo",
+      "linhas": [
+        {
+          "quando": "=ISNUMBER(F17)",
+          "campos": {
+            "massa_seca_g": "=E11-E10",
+            "massa_submersa_g": "=E13-E12",
+            "massa_saturada_g": "=IF(ISNUMBER(E14),E14-E10,\"\")",
+            "densidade_real": "=F17",
+            "densidade_aparente": "=F20",
+            "absorcao_pct": "=F31"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(F18)",
+          "campos": {
+            "massa_seca_g": "=F11-F10",
+            "massa_submersa_g": "=F13-F12",
+            "massa_saturada_g": "=IF(ISNUMBER(F14),F14-F10,\"\")",
+            "densidade_real": "=F18",
+            "densidade_aparente": "=F21",
+            "absorcao_pct": "=F32"
+          }
+        }
+      ]
+    }
+  ],
+  "pedido_exemplo": {}
+}

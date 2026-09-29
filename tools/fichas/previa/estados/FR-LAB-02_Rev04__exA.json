@@ -1,0 +1,26 @@
+{
+ "_nota": "Conferência do lote 11 (exemplo real lab02r4.xlsx).",
+ "pedido": {
+  "os": "2025.04.16.03.042",
+  "material": "PÓ DE PEDRA",
+  "registro": "042/2025",
+  "procedencia": "SANCHES TRIPOLONI - SINOP"
+ },
+ "estado": {
+  "entradas": {
+   "G17": 160.43,
+   "G18": 660.13,
+   "G19": 964.94,
+   "G20": 655.9,
+   "G21": 661.77,
+   "H17": 169.06,
+   "H18": 667.69,
+   "H19": 966.24,
+   "H20": 657.56,
+   "H21": 669.66,
+   "G9": 45776
+  },
+  "escolhas": {},
+  "verificacoes": {}
+ }
+}

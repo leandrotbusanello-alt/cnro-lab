@@ -1,0 +1,26 @@
+{
+ "_nota": "Conferência do lote 11 (PDF O.S. 2025.08.22.03.325).",
+ "pedido": {
+  "os": "2025.08.22.03.325",
+  "material": "PÓ DE PEDRA",
+  "registro": "325/2025",
+  "procedencia": "CONSTRUTORA TRIPOLONI - LRV / SSR"
+ },
+ "estado": {
+  "entradas": {
+   "G9": 45911,
+   "G17": 152.55,
+   "G18": 650.45,
+   "G19": 966.82,
+   "G20": 657.32,
+   "G21": 653.07,
+   "H17": 160.43,
+   "H18": 658.68,
+   "H19": 965.28,
+   "H20": 655.94,
+   "H21": 660.88
+  },
+  "escolhas": {},
+  "verificacoes": {}
+ }
+}

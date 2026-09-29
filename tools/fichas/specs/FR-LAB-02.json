@@ -1,0 +1,123 @@
+{
+  "codigo": "FR-LAB-02",
+  "versao": "Rev04",
+  "nome": "Massa específica, densidade relativa e absorção de agregado miúdo (laboratório)",
+  "arquivo": "FR-LAB-02_Rev04.xlsx",
+  "imagens_na_celula": true,
+  "_nota": "Ficha do laboratório (FR-LAB), lado a lado com a FR-IMOB-07 (decisão do usuário, 29/09); vale a Rev.04 (cabeçalho novo com ciclo de aprovação). A aba ainda se chama 'FR-LAB-31_REV.03'. A planilha veio preenchida (O.S. 2025.04.16.03.042): os valores viram campos. Logotipo = imagem dentro da célula C3 (recurso do Excel; o conversor passou a ler). A planilha não tem campo de assinatura (só o ciclo de aprovação): a linha 41 recebeu 'Responsável executor' e 'Responsável calculista', como na FR-28. Conferida com os 2 exemplos em Excel e o PDF (O.S. 2025.08.22.03.325). Resultado: resultado_densidade_agregado_miudo, 1 linha por ensaio, como a FR-IMOB-07 (alimenta o quadro FR-39).",
+  "pedido": {
+    "D9": "os",
+    "D10": "material",
+    "G10": "registro",
+    "E11": "procedencia",
+    "E12": "complemento"
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "G9"
+      ],
+      "tipo": "data"
+    },
+    {
+      "colunas": [
+        "G",
+        "H"
+      ],
+      "linhas": [
+        "17-21"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "alturas": {
+    "41": 42
+  },
+  "mesclas_extras": [
+    "C41:E41",
+    "F41:H41"
+  ],
+  "celulas_extras": {
+    "C41": {
+      "v": "Responsável executor:",
+      "estilo_de": "C22",
+      "negrito": true,
+      "h": "center",
+      "v_al": "bottom"
+    },
+    "F41": {
+      "v": "Responsável calculista:",
+      "estilo_de": "C22",
+      "negrito": true,
+      "h": "center",
+      "v_al": "bottom"
+    }
+  },
+  "assinaturas": {
+    "executor": "C41",
+    "calculista": "F41"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "G9"
+        ]
+      },
+      {
+        "titulo": "1º ensaio",
+        "colunas": [
+          "G"
+        ]
+      },
+      {
+        "titulo": "2º ensaio",
+        "colunas": [
+          "H"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "G9": "Data do ensaio",
+    "G17": "1º ensaio — (A) picnômetro (g)",
+    "G18": "1º ensaio — (B) picnômetro + amostra seca (g)",
+    "G19": "1º ensaio — (C) picnômetro + amostra + água (g)",
+    "G20": "1º ensaio — (D) picnômetro + água (g)",
+    "G21": "1º ensaio — (E) picnômetro + massa saturada (g)",
+    "H17": "2º ensaio — (A) picnômetro (g)",
+    "H18": "2º ensaio — (B) picnômetro + amostra seca (g)",
+    "H19": "2º ensaio — (C) picnômetro + amostra + água (g)",
+    "H20": "2º ensaio — (D) picnômetro + água (g)",
+    "H21": "2º ensaio — (E) picnômetro + massa saturada (g)"
+  },
+  "resultados": [
+    {
+      "tabela": "resultado_densidade_agregado_miudo",
+      "linhas": [
+        {
+          "quando": "=ISNUMBER(H24)",
+          "campos": {
+            "massa_seca_g": "=G18-G17",
+            "massa_saturada_g": "=IF(ISNUMBER(G21),G21-G17,\"\")",
+            "densidade_real": "=H24",
+            "densidade_aparente": "=H27",
+            "absorcao_pct": "=H38"
+          }
+        },
+        {
+          "quando": "=ISNUMBER(H25)",
+          "campos": {
+            "massa_seca_g": "=H18-H17",
+            "massa_saturada_g": "=IF(ISNUMBER(H21),H21-H17,\"\")",
+            "densidade_real": "=H25",
+            "densidade_aparente": "=H28",
+            "absorcao_pct": "=H39"
+          }
+        }
+      ]
+    }
+  ],
+  "pedido_exemplo": {}
+}
