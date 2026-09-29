@@ -588,9 +588,11 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
     for chave, cfg in (spec.get('graficos_eixos') or {}).items():
         gi, eixo = chave.split('.')
         ex = graficos[int(gi)]['eixos'].get(eixo, {})
-        if cfg == 'auto':
+        if cfg in ('auto', 'justo'):
             for k in ('min', 'max', 'unidade', 'unidadeMenor'):
                 ex.pop(k, None)
+            if cfg == 'justo':
+                ex['justo'] = 1        # escala automática sem forçar o zero (curva de compactação, FR-IMOB-55)
         elif isinstance(cfg, dict):
             ex.update(cfg)
     # spec 'graficos_escala': {'0': [0]} — séries que definem a escala automática do gráfico
@@ -611,6 +613,8 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
             'margens': [pm.top, pm.right, pm.bottom, pm.left],
             'centralizar': bool(ws.print_options.horizontalCentered),
             'ajuste': [1 if ps.fitToWidth is None else ps.fitToWidth, 1 if ps.fitToHeight is None else ps.fitToHeight],
+            # quebras de página da spec (última linha de cada página, como as quebras do Excel) — FR-IMOB-55
+            **({'quebras': [int(q) - r1 + 1 for q in spec['quebras']]} if spec.get('quebras') else {}),
         },
         'lista': spec.get('lista', {}),
         **({'aux': aux} if aux else {}),
@@ -643,7 +647,7 @@ def _valor_cf(t):
 
 def formatacao_condicional(ws, cells, area, cores, alertas):
     """Formatação condicional do Excel → role de estilo por célula (cells[a]['cf'] = [regras]).
-    Tipos: contém erro / não contém erro / valor da célula (cellIs) / expressão simples ($S$16<>100).
+    Tipos: contém erro / não contém erro / vazio / contém texto / valor da célula (cellIs) / expressão simples ($S$16<>100).
     Estilo: cor da fonte, preenchimento, negrito, itálico. A ficha aplica na hora, com os valores calculados."""
     c1, r1, c2, r2 = area
     for cf in ws.conditional_formatting:
@@ -671,6 +675,8 @@ def formatacao_condicional(ws, cells, area, cores, alertas):
                 r['t'] = 'semErro'
             elif regra.type == 'containsBlanks':
                 r['t'] = 'vazio'
+            elif regra.type == 'containsText' and regra.text:
+                r.update({'t': 'contem', 'txt': str(regra.text)})     # FR-IMOB-55: esconde 'FALSO'
             elif regra.type == 'cellIs' and regra.operator:
                 vals = [_valor_cf(f) for f in regra.formula or []]
                 if not vals or any(v is None for v in vals):
@@ -1005,6 +1011,7 @@ def ler_grafico(cx, tema, ws_titulo, alertas, nome_arq):
         e['linha'] = ln if ln is not None else None
         tl = ax.find('c:tickLblPos', NS_C)
         if tl is not None and tl.get('val') == 'none': e['semRotulos'] = 1
+        if tl is not None and tl.get('val') == 'high': e['rotulosAlto'] = 1     # rótulos do lado oposto (FR-IMOB-55, % passante à direita)
         mt = ax.find('c:majorTickMark', NS_C)
         if mt is not None: e['marcas'] = mt.get('val')
         at = ax.find('c:title', NS_C)
@@ -1058,6 +1065,10 @@ def ler_grafico(cx, tema, ws_titulo, alertas, nome_arq):
             msp = mk.find('c:spPr', NS_C) if mk is not None else None
             cor = cor_drawingml(msp.find('a:solidFill', NS_C), tema) if msp is not None else None
             borda = _linha(msp, tema) if msp is not None else {}
+            sem_fundo = msp is not None and msp.find('a:noFill', NS_C) is not None
+            if sem_fundo and borda is None:
+                simb = 'none'          # marcador sem preenchimento e sem contorno: invisível no Excel (FR-IMOB-55)
+        if simb != 'none':
             s['marcador'] = {'tipo': 'circle' if simb == 'auto' else simb, 'tam': tam,
                              'cor': cor[0] if cor else (ln or {}).get('cor', cor_padrao),
                              **({'borda': borda.get('cor', (ln or {}).get('cor', cor_padrao))} if borda is not None else {})}
@@ -1148,8 +1159,15 @@ def converter(spec, arquivo_spec):
                 if nome not in apelidos:
                     alertas.append(f'{rot}{a}: fórmula aponta para a aba "{nome}", que não faz parte da ficha (=' + d['fx'] + ')')
 
+    # valores postos pela spec em células auxiliares (tabela de taras da FR-IMOB-55): o teste com LibreOffice grava na cópia
+    extras_aux = {a: cfg['v'] for a, cfg in spec.get('celulas_extras', {}).items()
+                  if 'v' in cfg and a in modelo.get('aux', {}) and 'fx' not in modelo['aux'][a]}
+    if spec.get('valores_excel') is False:
+        # planilha-banco: os valores gravados vêm de outra linha da aba de dados (não do exemplo) — FR-IMOB-55
+        exemplo, excel = {}, {}
     verificacao = {'exemplo': exemplo, 'excel': excel, 'pedido_exemplo': spec.get('pedido_exemplo', {}),
                    **({'verificacoes': verif_ex} if verif_ex else {}),
+                   **({'extras_aux': extras_aux} if extras_aux else {}),
                    'abas_excel': {v: k for k, v in apelidos.items()}}
     return modelo, spec.get('resultados', []), verificacao, alertas
 

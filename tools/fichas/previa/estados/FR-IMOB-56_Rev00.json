@@ -1,0 +1,25 @@
+{
+ "_nota": "Conferência do lote 10 (PDF O.S. 2026.01.27.02.015).",
+ "pedido": {
+  "os": "2026.01.27.02.015",
+  "material": "AREIA LAVADA",
+  "registro": "15",
+  "procedencia": "CONSÓRCIO NOVA IMIGRANTES"
+ },
+ "estado": {
+  "entradas": {
+   "H7": 46050,
+   "H15": 2206,
+   "I15": 2206,
+   "J15": 2206,
+   "H16": 2000,
+   "I16": 2000,
+   "J16": 2000,
+   "H17": 5212,
+   "I17": 5232,
+   "J17": 5228
+  },
+  "escolhas": {},
+  "verificacoes": {}
+ }
+}

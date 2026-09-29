@@ -1,0 +1,121 @@
+{
+  "codigo": "FR-IMOB-54",
+  "versao": "Rev01",
+  "nome": "Concreto asfáltico — Análise granulométrica da mistura (DNIT 031)",
+  "arquivo": "FR-IMOB-54_Rev01.xlsx",
+  "_nota": "Planilha Rev01 (o cabeçalho interno diz Versão 00), no padrão da FR-21 Rev01. Listas suspensas: M19 = faixa DNIT 031 A–D (limites M/N) e M17 = traço de projeto (faixa de trabalho O/P); as tabelas de faixas e traços (colunas R…AJ, fora da área) entram como células auxiliares. Massa inicial, retidos e fundo digitados; massa total = soma. Decisão do usuário (29/09): % retida acumulada das DUAS amostras sobre a massa total (a planilha usava a massa total na Amostra 01 e a massa inicial na Amostra 02, J21:J33 → $H$35). Área A1:P64 (as linhas 66–92, ocultas, têm uma cópia da tabela de faixas). Conferido com o exemplo real Rev01 (O.S. 2026.09.11.03.547) e o da Rev00 (O.S. 2026.07.21.02.401). Sem resultado_* (como a FR-21); as peneiras 1\", 3/4\", 1/2\", 3/8\", nº 4 e nº 200 (média, coluna L) alimentam os quadros FR-41/42.",
+  "pedido": {
+    "C7": "os",
+    "C8": "material",
+    "I8": "registro",
+    "E9": "procedencia",
+    "E10": "complemento"
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "I7"
+      ],
+      "tipo": "data"
+    },
+    {
+      "celulas": [
+        "M17",
+        "M19"
+      ],
+      "tipo": "texto"
+    },
+    {
+      "colunas": [
+        "D",
+        "H"
+      ],
+      "linhas": [
+        20,
+        "21-34"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "formulas": {
+    "J21": "=IF(H21=\"\",\"\",(I21/$H$35)*100)",
+    "J22": "=IF(H22=\"\",\"\",(I22/$H$35)*100)",
+    "J23": "=IF(H23=\"\",\"\",(I23/$H$35)*100)",
+    "J24": "=IF(H24=\"\",\"\",(I24/$H$35)*100)",
+    "J25": "=IF(H25=\"\",\"\",(I25/$H$35)*100)",
+    "J26": "=IF(H26=\"\",\"\",(I26/$H$35)*100)",
+    "J27": "=IF(H27=\"\",\"\",(I27/$H$35)*100)",
+    "J28": "=IF(H28=\"\",\"\",(I28/$H$35)*100)",
+    "J29": "=IF(H29=\"\",\"\",(I29/$H$35)*100)",
+    "J30": "=IF(H30=\"\",\"\",(I30/$H$35)*100)",
+    "J31": "=IF(H31=\"\",\"\",(I31/$H$35)*100)",
+    "J32": "=IF(H32=\"\",\"\",(I32/$H$35)*100)",
+    "J33": "=IF(H33=\"\",\"\",(I33/$H$35)*100)"
+  },
+  "area_impressao": "A1:P64",
+  "assinaturas": {
+    "executor": "B59",
+    "calculista": "J59"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "I7",
+          "M19",
+          "M17"
+        ]
+      },
+      {
+        "titulo": "Amostra 01",
+        "colunas": [
+          "D"
+        ]
+      },
+      {
+        "titulo": "Amostra 02",
+        "colunas": [
+          "H"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "I7": "Data do ensaio",
+    "M19": "Faixa granulométrica (DNIT 031)",
+    "M17": "Traço de projeto (faixa de trabalho)",
+    "D20": "Massa inicial (g)",
+    "D34": "Fundo (g)",
+    "D21": "Massa retida — peneira 1 1/2\" (g)",
+    "D22": "Massa retida — peneira 1\" (g)",
+    "D23": "Massa retida — peneira 3/4\" (g)",
+    "D24": "Massa retida — peneira 1/2\" (g)",
+    "D25": "Massa retida — peneira 3/8\" (g)",
+    "D26": "Massa retida — peneira 1/4\" (g)",
+    "D27": "Massa retida — peneira nº 4 (g)",
+    "D28": "Massa retida — peneira nº 8 (g)",
+    "D29": "Massa retida — peneira nº 16 (g)",
+    "D30": "Massa retida — peneira nº 30 (g)",
+    "D31": "Massa retida — peneira nº 50 (g)",
+    "D32": "Massa retida — peneira nº 100 (g)",
+    "D33": "Massa retida — peneira nº 200 (g)",
+    "H20": "Massa inicial (g)",
+    "H34": "Fundo (g)",
+    "H21": "Massa retida — peneira 1 1/2\" (g)",
+    "H22": "Massa retida — peneira 1\" (g)",
+    "H23": "Massa retida — peneira 3/4\" (g)",
+    "H24": "Massa retida — peneira 1/2\" (g)",
+    "H25": "Massa retida — peneira 3/8\" (g)",
+    "H26": "Massa retida — peneira 1/4\" (g)",
+    "H27": "Massa retida — peneira nº 4 (g)",
+    "H28": "Massa retida — peneira nº 8 (g)",
+    "H29": "Massa retida — peneira nº 16 (g)",
+    "H30": "Massa retida — peneira nº 30 (g)",
+    "H31": "Massa retida — peneira nº 50 (g)",
+    "H32": "Massa retida — peneira nº 100 (g)",
+    "H33": "Massa retida — peneira nº 200 (g)"
+  },
+  "resultados": [],
+  "pedido_exemplo": {}
+}

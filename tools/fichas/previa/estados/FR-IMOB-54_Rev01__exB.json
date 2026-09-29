@@ -1,0 +1,48 @@
+{
+ "_nota": "Conferência do lote 10 (exemplo real FR54_exB_rev00.xlsx).",
+ "pedido": {
+  "os": "2026.07.21.02.401",
+  "material": "C.A.U.Q. FAIXA C-12,5",
+  "registro": "401/2026",
+  "procedencia": "CONSÓRCIO BR-163 (TRECHO 108) - VÁRZEA GRANDE A JANGADA / LOTE 02",
+  "complemento": "DATA DA COLETA: 20/07/2026."
+ },
+ "estado": {
+  "entradas": {
+   "D20": 947.4,
+   "D21": 0,
+   "D22": 0,
+   "D23": 0,
+   "D24": 149,
+   "D25": 128.5,
+   "D26": 125.8,
+   "D27": 83.6,
+   "D28": 134,
+   "D29": 91.5,
+   "D30": 67.5,
+   "D31": 57.5,
+   "D32": 40.2,
+   "D33": 27.9,
+   "D34": 38.9,
+   "H20": 952.9,
+   "H21": 0,
+   "H22": 0,
+   "H23": 0,
+   "H24": 129.3,
+   "H25": 142.6,
+   "H26": 157.5,
+   "H27": 72.8,
+   "H28": 129.9,
+   "H29": 88.1,
+   "H30": 68.5,
+   "H31": 55.8,
+   "H32": 39.8,
+   "H33": 27.9,
+   "H34": 36.4,
+   "M19": "FAIXA D-9,5 DNIT 031/24",
+   "I7": 46238
+  },
+  "escolhas": {},
+  "verificacoes": {}
+ }
+}

@@ -239,8 +239,9 @@ export default function Grafico({ g, motor, prefixo = '', cells, responsivo = fa
           {(myFora || myDentro) > 0 && sy.marcas.map(v => (
             <line key={`yt${v}`} x1={P.x - myFora} x2={P.x + myDentro} y1={Y(v)} y2={Y(v)} stroke={linhaY?.stroke || '#000'} strokeWidth={0.75} />
           ))}
-          {rotulosY.map((t, i) => (
-            <text key={`yl${i}`} x={P.x - myFora - 3} y={Y(sy.marcas[i]) + fY.fontSize * 0.35} textAnchor="end" {...fY}>{t}</text>
+          {rotulosY.map((t, i) => (ey.rotulosAlto
+            ? <text key={`yl${i}`} x={P.x + P.w + 3} y={Y(sy.marcas[i]) + fY.fontSize * 0.35} textAnchor="start" {...fY}>{t}</text>
+            : <text key={`yl${i}`} x={P.x - myFora - 3} y={Y(sy.marcas[i]) + fY.fontSize * 0.35} textAnchor="end" {...fY}>{t}</text>
           ))}
           {ey.titulo && (() => {
             const cx = Math.max(fTy.fontSize * 0.8, P.x - myFora - 8 - largRotY - fTy.fontSize * 0.4)

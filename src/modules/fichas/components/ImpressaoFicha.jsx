@@ -24,10 +24,26 @@ export function paginaDa(folha) {
   let escala = 1
   if (aw) escala = Math.min(escala, (PW - ml - mr) / folha.larguraImpressao)
   let trechos = [[0, folha.altura]]
-  if (!ah && folha.altura * escala > util * LIMITE_REDUZIR) trechos = cortarEmPaginas(folha, util / escala)
+  if (pag.quebras?.length) {
+    // quebras fixas (última linha de cada página, contada a partir da 1ª linha da folha): todas as páginas na mesma escala
+    trechos = trechosDasQuebras(folha, pag.quebras)
+    escala = Math.min(escala, util / Math.max(...trechos.map(([a, b]) => b - a)))
+  } else if (!ah && folha.altura * escala > util * LIMITE_REDUZIR) trechos = cortarEmPaginas(folha, util / escala)
   else if (ah || folha.altura * escala > util) escala = Math.min(escala, util / folha.altura)
   const esquerda = pag.centralizar ? ml + ((PW - ml - mr) - folha.larguraImpressao * escala) / 2 : ml
   return { paisagem, PW, PH, escala, esquerda, topo: mt, trechos }
+}
+
+/** Trechos (px da folha) cortados depois das linhas de `quebras` (1 = 1ª linha da folha). */
+function trechosDasQuebras(folha, quebras) {
+  const rows = folha.modelo.rows
+  const topos = [0]
+  for (const h of rows) topos.push(topos[topos.length - 1] + h)
+  const cortes = [...new Set(quebras.filter(q => q > 0 && q < rows.length))].sort((a, b) => a - b)
+  const trechos = []
+  let ini = 0
+  for (const q of [...cortes, rows.length]) { trechos.push([topos[ini], topos[q]]); ini = q }
+  return trechos
 }
 
 /**

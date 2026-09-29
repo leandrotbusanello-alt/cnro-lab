@@ -1,0 +1,84 @@
+{
+  "codigo": "FR-IMOB-56",
+  "versao": "Rev00",
+  "nome": "Massa específica aparente da areia — calibração em laboratório",
+  "arquivo": "FR-IMOB-56_Rev00.xlsx",
+  "_nota": "Planilha-mestre Rev00 sem alterações. D = C − A; E = D/B; média dos 3 ensaios (J28). As linhas 20–27 e 30 (ocultas) têm contas de Gmm de mistura asfáltica copiadas de outra ficha: ficam ocultas, como na planilha. Os valores de exemplo de A, B e C (2206/2000/5202…) viram campos. Sem resultado_* (dados_resultado).",
+  "pedido": {
+    "D7": "os",
+    "D8": "material",
+    "H8": "registro",
+    "D9": "procedencia",
+    "D10": "complemento"
+  },
+  "entradas": [
+    {
+      "celulas": [
+        "H7"
+      ],
+      "tipo": "data"
+    },
+    {
+      "colunas": [
+        "H",
+        "I",
+        "J"
+      ],
+      "linhas": [
+        "15-17"
+      ],
+      "tipo": "numero"
+    }
+  ],
+  "celulas_extras": {
+    "B13": {
+      "v": "DNIT 458/2025 – ME Solos – Determinação da massa específica aparente in situ com emprego do frasco de areia – Método de ensaio"
+    }
+  },
+  "assinaturas": {
+    "executor": "C33",
+    "calculista": "G33"
+  },
+  "lista": {
+    "grupos": [
+      {
+        "titulo": "Identificação",
+        "celulas": [
+          "H7"
+        ]
+      },
+      {
+        "titulo": "1º ensaio",
+        "colunas": [
+          "H"
+        ]
+      },
+      {
+        "titulo": "2º ensaio",
+        "colunas": [
+          "I"
+        ]
+      },
+      {
+        "titulo": "3º ensaio",
+        "colunas": [
+          "J"
+        ]
+      }
+    ]
+  },
+  "rotulos": {
+    "H7": "Data do ensaio",
+    "H15": "1º ensaio — (A) massa do recipiente (g)",
+    "H16": "1º ensaio — (B) volume do recipiente (cm³)",
+    "H17": "1º ensaio — (C) massa do recipiente com areia (g)",
+    "I15": "2º ensaio — (A) massa do recipiente (g)",
+    "I16": "2º ensaio — (B) volume do recipiente (cm³)",
+    "I17": "2º ensaio — (C) massa do recipiente com areia (g)",
+    "J15": "3º ensaio — (A) massa do recipiente (g)",
+    "J16": "3º ensaio — (B) volume do recipiente (cm³)",
+    "J17": "3º ensaio — (C) massa do recipiente com areia (g)"
+  },
+  "resultados": [],
+  "pedido_exemplo": {}
+}

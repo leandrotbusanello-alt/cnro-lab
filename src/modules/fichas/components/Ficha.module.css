@@ -32,6 +32,9 @@
 .cc > span { display: block; white-space: pre; position: relative; z-index: 1; pointer-events: none; }   /* texto que transborda fica por cima do fundo das células vizinhas vazias, como no Excel */
 .quebra > span { white-space: pre-wrap; overflow-wrap: anywhere; }
 .quebra, .recortar { overflow: hidden; }
+/* texto girado 90° no Excel (de baixo para cima) — FR-IMOB-55 "Constante da Prensa"; o empilhado (255) não é tratado */
+.vertical { align-items: center; }
+.vertical > span { writing-mode: vertical-rl; transform: rotate(180deg); max-height: 100%; white-space: pre-wrap; }   /* "distribuído" no Excel quebra o texto */
 .oculta { visibility: hidden; }
 .imagem { position: absolute; pointer-events: none; z-index: 2; }
 .grafico { position: absolute; pointer-events: none; z-index: 2; }

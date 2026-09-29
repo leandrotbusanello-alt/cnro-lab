@@ -84,7 +84,7 @@ function passoBonito(bruto) {
 
 /**
  * Escala de um eixo: { min, max, log, marcas:[v], menores:[v], para(v) → 0..1 }.
- * ex: definição do eixo (min, max, log, unidade, unidadeMenor, inverso) · dados: valores das séries
+ * ex: definição do eixo (min, max, log, unidade, unidadeMenor, inverso, justo) · dados: valores das séries
  * · divisoes: nº aproximado de divisões quando a unidade é automática.
  */
 export function escalaDoEixo(ex = {}, dados = [], divisoes = 8) {
@@ -120,8 +120,10 @@ export function escalaDoEixo(ex = {}, dados = [], divisoes = 8) {
   if (min !== null) dMin = Math.min(dMin, min)
   if (max !== null) dMax = Math.max(dMax, max)
   if (dMax === dMin) dMax = dMin + 1
-  const passo = ex.unidade || passoBonito(((max ?? dMax) - (min ?? (dMin >= 0 && dMin <= dMax * 0.83 ? 0 : dMin))) / divisoes)
-  if (min === null) min = dMin >= 0 && dMin <= dMax * 0.83 ? 0 : limpo(Math.floor(dMin / passo) * passo)
+  // como no Excel, a escala automática começa no zero quando o menor valor é até 5/6 do maior; "justo" nunca força o zero
+  const doZero = !ex.justo && dMin >= 0 && dMin <= dMax * 0.83
+  const passo = ex.unidade || passoBonito(((max ?? dMax) - (min ?? (doZero ? 0 : dMin))) / divisoes)
+  if (min === null) min = doZero ? 0 : limpo(Math.floor(dMin / passo) * passo)
   if (max === null) max = limpo(Math.ceil(dMax / passo - 1e-9) * passo)
   if (max <= min) max = limpo(min + passo)
   for (let n = 0; n < 200; n++) {
@@ -129,10 +131,11 @@ export function escalaDoEixo(ex = {}, dados = [], divisoes = 8) {
     if (v > max + passo * 1e-9) break
     marcas.push(v)
   }
-  if (ex.unidadeMenor && ex.unidadeMenor < passo) {
+  const menor = ex.unidadeMenor || (ex.justo && ex.gradeMenor ? passo / 5 : 0)   // "justo" mantém a grade secundária
+  if (menor && menor < passo) {
     for (let n = 1; n < 2000; n++) {
-      const v = limpo(min + n * ex.unidadeMenor)
-      if (v >= max - ex.unidadeMenor * 1e-9) break
+      const v = limpo(min + n * menor)
+      if (v >= max - menor * 1e-9) break
       if (Math.abs((v - min) / passo - Math.round((v - min) / passo)) > 1e-6) menores.push(v)
     }
   }

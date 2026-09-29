@@ -131,12 +131,16 @@ function verificar(codigo, dados, filtros, conferir) {
     { pedido_id: peds[0].id, dados_resultado: { codigo: 'FR-IMOB-10' }, resultados: { resultado_rice: [{ gmm_obtido: 2.498 }, { gmm_obtido: 2.502 }] } },
     { pedido_id: peds[0].id, dados_resultado: { codigo: 'FR-IMOB-22' }, resultados: { resultado_teor_betume: [{ teor_obtido_pct: 5.4 }] } },
     { pedido_id: peds[0].id, dados_resultado: { codigo: 'FR-IMOB-21', versao: 'Rev01', calculados: { L21: 100, L22: 99.1, L25: 55.3, L29: 5.9 } } },
+    // FR-54 (DNIT 031): 3/8" na linha 25, nº 4 na 27, nº 200 na 33; nº 10 não existe (fica só a FR-21)
+    { pedido_id: peds[0].id, dados_resultado: { codigo: 'FR-IMOB-54', versao: 'Rev01', calculados: { L22: 100, L25: 80.6, L27: 52.3, L33: 5.3 } } },
   ]
   verificar('FR-IMOB-42', { pedidos: peds, ensaios, empresasPorId: EMPRESAS }, {}, (r, meta) => {
     const L0 = meta.bloco.linha
     perto(r.entradas[`P${L0}`], (2.401 + 2.395) / 2, 'FR-42 Gmb médio'); perto(r.entradas[`Q${L0}`], 2.5, 'FR-42 Gmm (Rice)')
     perto(r.entradas[`R${L0}`], 995, 'FR-42 estabilidade'); perto(r.entradas[`X${L0}`], 0.9, 'FR-42 absorção')
-    perto(r.entradas[`I${L0}`], 55.3, 'FR-42 nº4'); perto(r.entradas[`O${L0}`], 5.4, 'FR-42 teor')
+    perto(r.entradas[`I${L0}`], (55.3 + 52.3) / 2, 'FR-42 nº4 (FR-21 + FR-54)'); perto(r.entradas[`O${L0}`], 5.4, 'FR-42 teor')
+    perto(r.entradas[`M${L0}`], (5.9 + 5.3) / 2, 'FR-42 nº200 (FR-21 + FR-54)'); perto(r.entradas[`H${L0}`], 80.6, 'FR-42 3/8" (só FR-54)')
+    perto(r.entradas[`E${L0}`], 100, 'FR-42 1" (FR-21 + FR-54)'); ok(r.entradas[`J${L0}`] === undefined, 'FR-42 nº10 vazio (sem FR-21 e FR-54 não tem)')
     ok(r.entradas[`Z${L0}`] === 'Usina Beta' && r.entradas[`Y${L0}`] === 'Norte · Est. 120', 'FR-42 local e procedência')
   })
 }

@@ -62,6 +62,11 @@ function estiloCondicional(d, a, pre, motor, estado) {
     if (r.t === 'erro') ok = ehErro(v)
     else if (r.t === 'semErro') ok = !ehErro(v)
     else if (r.t === 'vazio') ok = v === null || v === ''
+    else if (r.t === 'contem' && !ehErro(v) && v !== null) {
+      // "texto que contém" (sem diferenciar maiúsculas); FALSO/VERDADEIRO como o Excel em português mostra
+      const txt = v === true ? 'VERDADEIRO' : v === false ? 'FALSO' : String(v)
+      ok = txt.toLowerCase().includes(String(r.txt).toLowerCase())
+    }
     else if (r.t === 'valor' && !ehErro(v)) {
       // como no Excel: célula vazia vale 0; texto nunca é igual a número (só "diferente")
       const numerico = typeof r.v[0] === 'number'
@@ -259,7 +264,7 @@ export default function FichaGrade({
         </div>
       )
     } else if (d.rt) {
-      return <div className={`${s.cc} ${d.w ? s.quebra : ''}`} style={{ height: cel.h, justifyContent: jc(cel), textAlign: cel.alinhamento || undefined }}><span><Trechos rt={d.rt} /></span></div>
+      return <div className={`${s.cc} ${d.w ? s.quebra : ''} ${d.rot === 90 ? s.vertical : ''}`} style={{ height: cel.h, justifyContent: jc(cel), textAlign: cel.alinhamento || undefined }}><span><Trechos rt={d.rt} /></span></div>
     } else if (d.fx || papel === 'pedido') {
       const v = motor.valores.get(a)
       numero = typeof v === 'number'
@@ -277,7 +282,7 @@ export default function FichaGrade({
     }
     return (
       <div
-        className={`${s.cc} ${d.w ? s.quebra : ''} ${cel.recortar ? s.recortar : ''}`}
+        className={`${s.cc} ${d.w ? s.quebra : ''} ${cel.recortar ? s.recortar : ''} ${d.rot === 90 ? s.vertical : ''}`}
         style={{ height: cel.h, justifyContent: jc(cel), textAlign: cel.alinhamento || (numero ? 'right' : undefined) }}
       >
         <span>{texto}</span>

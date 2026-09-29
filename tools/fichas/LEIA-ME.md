@@ -10,10 +10,16 @@ A **spec** só diz o papel de cada célula (quem preenche o quê) e como gerar o
 2. Crie `specs/<CODIGO>.json` (modelo abaixo; veja as specs existentes).
 3. Rode `python3 tools/fichas/converter.py <CODIGO>` e resolva os avisos ⚠.
 4. Rode `node tools/fichas/testar_motor.mjs --libreoffice` (ou só as fichas novas: `… --libreoffice FR-IMOB-34 FR-IMOB-35`). Todas as fórmulas precisam conferir.
+   Com `--estados`, o LibreOffice recalcula também os dados de teste de `previa/estados/<ficha>*.json` (dados reais — indispensável quando
+   os valores aleatórios dão erro em cascata, como na FR-IMOB-55). Erro nos dois lados, de tipo diferente (`#DIV/0!` × `#N/A`), é aviso ⚠ e
+   não falha: quando dois erros se combinam, o LibreOffice às vezes devolve o outro. Atenção: o LibreOffice conta FALSO como 0 no
+   AVERAGE de um intervalo (o Excel ignora) — o motor segue o Excel.
    Confira também com conta à mão e a prévia de impressão (ver "Ferramentas de conferência").
 5. Rode `python3 tools/fichas/converter.py` (sem código): isso regenera `supabase/migrations/13b_fichas_modelo_carga.sql`.
 6. SQL do lote para o SQL Editor: `python3 tools/fichas/sql_lote.py lote8 FR-IMOB-44 FR-IMOB-45 … --saida DIR` → partes de até ~200 KB
-   (`carga_<lote>_parteN.sql`); ficha maior que isso sai em duas partes (`Na`/`Nb`, modelo marcado "parcial" até rodar a `b`).
+   (`carga_<lote>_parteN.sql`); ficha maior que isso sai em várias partes (`Na`, `Nb`, `Nc`…, rodar na ordem): a `a` grava o modelo com as
+   primeiras células e hash `parcial-2-…`; cada parte seguinte só age na etapa dela e acrescenta células, auxiliares e outras abas;
+   a última grava o hash final (FR-IMOB-55: 3 partes por causa da tabela de taras).
 
 **Revisão nova (Rev01):** troque `versao` e `arquivo` na spec e gere de novo. Os ensaios já iniciados continuam na revisão anterior.
 
@@ -108,6 +114,10 @@ Requisitos: Python 3.10+ (`openpyxl`, `lxml`), Node 18+ e LibreOffice (só para 
 - Se a tabela que o gráfico lia foi limpa da ficha, aponte a série para outro lugar:
   `"graficos_series": { "0.0": { "x": "E29:E39", "y": "P47:P57" } }` (gráfico.série, a partir de 0).
 - Eixo log: a "unidade principal" do Excel é o **fator** entre as marcas (10 = uma década; ≤ 1 → uma década) — FR-IMOB-45.
+- `"graficos_eixos": { "0.x": "justo" }`: escala automática que **não força o zero** (o Excel começa no zero quando o menor valor é até 5/6
+  do maior) e mantém a grade secundária — curvas de compactação/ISC da FR-IMOB-55, que na planilha tinham eixos fixos.
+- Rótulos do eixo com "posição alta" (`tickLblPos = high`) saem do lado oposto (eixo Y à direita — granulometria da FR-IMOB-55).
+- Marcador sem preenchimento e sem contorno (invisível no Excel) não é desenhado.
 - Como no Excel: ponto com erro (`#N/D`) é pulado e a linha liga os vizinhos; célula vazia ou com texto
   interrompe a linha; em eixo log, valores ≤ 0 também interrompem.
 
@@ -139,11 +149,26 @@ Requisitos: Python 3.10+ (`openpyxl`, `lxml`), Node 18+ e LibreOffice (só para 
 ### Formatação condicional
 - Regras do Excel dentro da área da ficha entram por célula (`cells[a].cf`) e a ficha aplica na hora,
   com os valores calculados: **contém erro** (p.ex. esconder `#N/D` com fonte branca), **não contém erro**,
-  **vazio**, **valor da célula** (=, ≠, >, <, ≥, ≤, entre) e **expressão simples** do tipo `$S$16<>100`.
+  **vazio**, **contém texto** (FALSO/VERDADEIRO como no Excel em português — FR-IMOB-55), **valor da célula** (=, ≠, >, <, ≥, ≤, entre)
+  e **expressão simples** do tipo `$S$16<>100`.
 - Estilos: cor da fonte, preenchimento, negrito, itálico. Tipo não suportado gera aviso ⚠.
 - Erros digitados como valor na planilha (`#N/A` em tabela de faixas) continuam erro no motor, como no Excel.
 
+### Planilha-banco (FR-IMOB-32, FR-IMOB-55)
+- Ficha que puxa os dados de outra aba por `INDIRECT` (nº de registro): as células viram **entradas** (a fórmula é descartada, com aviso)
+  e as abas de dados/taras não entram. `"valores_excel": false` na spec: os valores gravados na planilha vêm de outra linha da aba de
+  dados, então não servem de exemplo (o teste usa só o LibreOffice).
+- **Tabela de taras dentro da ficha** (FR-IMOB-55, até o cadastro de equipamentos): `celulas_extras` com os valores em colunas livres
+  (FB:FH) e `VLOOKUP(nº; tabela; col; FALSE)` no lugar do `LOOKUP` da planilha — nº fora da tabela dá `#N/D`. O teste com LibreOffice
+  grava esses valores na cópia (`extras_aux` no `.verificacao.json`).
+- **Caixas de seleção de configuração fora da ficha** (pontos da curva, método): viram listas Sim/Não num **painel só da tela**
+  (`colunas_tela`), e as células ligadas às caixas recebem fórmula (`"AL7": "=O19<>\"Não\""`). Limpe o estilo das colunas do painel
+  (`celulas_extras` com `estilo_de` de uma célula vazia) e desfaça mesclas que invadem o painel.
+- `LOGEST` não existe no motor: use `INTERCEPT`/`SLOPE` sobre `LN(y)` (curva do limite de liquidez da FR-IMOB-55).
+
 ### Quebra de página (impressão)
+- **Quebras fixas** (`"quebras": [74, 153]` na spec, última linha de cada página): a folha sai em páginas cortadas nessas linhas, todas na
+  mesma escala (a da página mais alta) — FR-IMOB-55, 3 páginas como no Excel.
 - Planilha com "ajustar à largura" e **altura automática** (`fitToHeight = 0`, `pagina.ajuste = [1, 0]`): se a folha, na escala
   da largura, passa de **1,25 página**, ela sai em **várias páginas A4**, cortadas entre linhas, como no Excel (FR-IMOB-37, 124 linhas → 3 páginas).
   Até 1,25 página ela é reduzida para caber numa página (a ficha física é uma página por aba; FR-06 e FR-30 passam 6% e 12%).
@@ -189,6 +214,9 @@ quadro com os resultados **aprovados** e imprime no layout da planilha da Qualid
 - **Formato novo no motor de formatação:** mês por extenso sem dia (`[$-416]mmm\-yy` → "set-26").
 
 ## Regras do conversor
+- **Texto girado 90°** (de baixo para cima, "Constante da Prensa" da FR-IMOB-55) é desenhado na vertical; o empilhado (255) não.
+- **Texto com quebra de linha (Alt+Enter) em célula sem "quebrar texto automaticamente"**: o Excel mostra numa linha só e a ficha
+  quebra — troque o texto por `celulas_extras` `{"v": "…"}` sem a quebra (FR-IMOB-56/57).
 - **Linhas ocultas** do Excel ficam com altura 0 e o conteúdo delas não aparece (FR-IMOB-53, peneira 5/8"); não as declare
   como campo (`entradas`).
 - **`remover_mesclas`:** o openpyxl apaga a borda das células da mescla desfeita — reponha com `celulas_extras` `{"borda": [...]}`

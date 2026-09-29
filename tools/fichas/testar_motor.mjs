@@ -6,6 +6,7 @@
 //   node tools/fichas/testar_motor.mjs --libreoffice   # + 3 rodadas com valores aleatórios recalculados
 //                                                      #   no LibreOffice (conferência independente)
 //   node tools/fichas/testar_motor.mjs --libreoffice FR-IMOB-34 FR-IMOB-35   # só estas fichas
+//   node tools/fichas/testar_motor.mjs --libreoffice --estados FR-IMOB-55    # + dados de teste de previa/estados
 //
 // Rode depois de python3 tools/fichas/converter.py (que gera a pasta saida/). Sai com código 1 se algo divergir.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -20,6 +21,8 @@ import { ehErro } from '../../src/modules/fichas/motor/formulas.js'
 const AQUI = dirname(fileURLToPath(import.meta.url))
 const SAIDA = join(AQUI, 'saida')
 const usarLibre = process.argv.includes('--libreoffice')
+const usarEstados = process.argv.includes('--estados')      // com --libreoffice: também os dados de previa/estados
+const ESTADOS = join(AQUI, 'previa', 'estados')
 const filtro = process.argv.slice(2).filter(a => !a.startsWith('--'))
 
 function igual(a, b) {
@@ -28,16 +31,21 @@ function igual(a, b) {
   if (vazioA && (vazioB || b === 0)) return true
   if (ehErro(a)) return typeof b === 'string' && (b === a.err || (a.err === '#N/A' && b === '#N/A'))
   if (typeof a === 'number' && typeof b === 'number') return Math.abs(a - b) <= 1e-8 * Math.max(1, Math.abs(b))   // 1e-8: arredondamento em contas com cancelamento (parábola da compactação)
-  if (typeof a === 'boolean') return a === b
+  if (typeof a === 'boolean') return a === b || (typeof b === 'number' && +a === b)   // LibreOffice grava FALSO/VERDADEIRO de IF sem "senão" como 0/1
   return String(a) === String(b)
 }
 
-function comparar(indice, motor, esperado) {
+// Erro × erro de tipo diferente: quando dois erros se combinam numa conta (p.ex. #DIV/0! * #N/A), o Excel devolve o
+// da esquerda e o LibreOffice às vezes o outro. Não é divergência de cálculo: conta à parte (aviso), não como falha.
+const ehTextoErro = x => typeof x === 'string' && /^#[A-Z/0!?]+[!?A]?$/.test(x)
+function comparar(indice, motor, esperado, errosCruzados = []) {
   const dif = []
   for (const [a, ex] of Object.entries(esperado)) {
     if (!(a in indice.formulas)) continue
     const v = motor.valores.get(a)
-    if (!igual(v === undefined ? null : v, ex)) dif.push({ a, sistema: ehErro(v) ? v.err : v, excel: ex })
+    if (igual(v === undefined ? null : v, ex)) continue
+    if (ehErro(v) && ehTextoErro(ex)) { errosCruzados.push(a); continue }
+    dif.push({ a, sistema: ehErro(v) ? v.err : v, excel: ex })
   }
   return dif
 }
@@ -93,13 +101,24 @@ for (const arq of readdirSync(SAIDA).filter(f => f.endsWith('.modelo.json')).sor
   // 2) Valores aleatórios recalculados pelo LibreOffice
   if (usarLibre) {
     const tmp = mkdtempSync(join(tmpdir(), 'fichas-'))
-    for (let rodada = 1; rodada <= 3; rodada++) {
-      const entradas = valoresAleatorios(indice, verif.exemplo)
+    // rodadas 1–3: valores aleatórios; com --estados, também os dados de teste de previa/estados/<ficha>*.json
+    const rodadas = [1, 2, 3].map(n => ({ rotulo: `rodada ${n}` }))
+    if (usarEstados) {
+      for (const f of readdirSync(ESTADOS).filter(f => f.endsWith('.json') && (f === `${nome}.json` || f.startsWith(`${nome}__`))).sort()) {
+        const e = JSON.parse(readFileSync(join(ESTADOS, f), 'utf8'))
+        rodadas.push({ rotulo: `estado ${f.replace('.json', '')}`, entradas: e.estado.entradas, escolhas: e.estado.escolhas || {} })
+      }
+    }
+    for (const [i, rd] of rodadas.entries()) {
+      const rodada = i + 1
+      const entradas = rd.entradas || valoresAleatorios(indice, verif.exemplo)
       // escolhas (Sim/Não, marcas "X"): uma opção sorteada por grupo
-      const escolhas = {}
-      for (const [g, ops] of Object.entries(indice.gruposEscolha)) {
-        if (aleatorio() < 0.3) continue
-        escolhas[g] = ops[Math.floor(aleatorio() * ops.length)].opcao
+      const escolhas = rd.escolhas || {}
+      if (!rd.entradas) {
+        for (const [g, ops] of Object.entries(indice.gruposEscolha)) {
+          if (aleatorio() < 0.3) continue
+          escolhas[g] = ops[Math.floor(aleatorio() * ops.length)].opcao
+        }
       }
       const arqIn = join(tmp, `in${rodada}.json`), arqOut = join(tmp, `out${rodada}.json`)
       const planilha = { ...entradas }
@@ -113,6 +132,7 @@ for (const arq of readdirSync(SAIDA).filter(f => f.endsWith('.modelo.json')).sor
         if (d.fxi) planilha[a] = `=${d.fx}`
         if (d.vx) planilha[a] = d.v                     // valor posto pela spec (celulas_extras)
       }
+      Object.assign(planilha, verif.extras_aux || {})    // valores da spec em células auxiliares (tabela de taras)
       for (const f of indice.folhas) {                    // auxiliares com fórmula da spec
         for (const [a, d] of Object.entries(f.modelo.aux || {})) if (d.fxi) planilha[f.prefixo + a] = `=${d.fx}`
       }
@@ -127,12 +147,14 @@ for (const arq of readdirSync(SAIDA).filter(f => f.endsWith('.modelo.json')).sor
         return [i > 0 && deExcel[a.slice(0, i)] ? `${deExcel[a.slice(0, i)]}!${a.slice(i + 1)}` : a, v]
       }))
       const motor = calcularFicha(indice, { entradas, escolhas, verificacoes: {} }, {})
-      const dif = comparar(indice, motor, esperado)
+      const cruzados = []
+      const dif = comparar(indice, motor, esperado, cruzados)
+      if (cruzados.length) console.log(`   ⚠ ${cruzados.length} célula(s) com erro nos dois, de tipo diferente (precedência de erros do LibreOffice): ${cruzados.slice(0, 5).join(', ')}…`)
       if (rodada === 1) {
         const res = linhasResultado(mapa, motor)
         res.forEach(r => console.log(`   → ${r.tabela}: ${r.linhas.length} linha(s)`, JSON.stringify(r.linhas[0] || {})))
       }
-      console.log(`${nome}: rodada ${rodada} (LibreOffice, ${Object.keys(entradas).length} entradas) → ${nFormulas - dif.length}/${nFormulas} iguais`)
+      console.log(`${nome}: ${rd.rotulo} (LibreOffice, ${Object.keys(entradas).length} entradas) → ${nFormulas - dif.length}/${nFormulas} iguais`)
       dif.slice(0, +(process.env.MAXDIF || 8)).forEach(d => console.log(`   ✗ ${d.a}: sistema ${JSON.stringify(d.sistema)} · LibreOffice ${JSON.stringify(d.excel)}`))
       falhas += dif.length
     }

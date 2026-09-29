@@ -37,8 +37,13 @@ const peneiraAgregado = (linha11, linha53) => ({
     return m === null ? null : m * 100
   },
 })
-// Peneiras da FR-21 (granulometria da mistura): % passante média (coluna L), já em %.
-const peneiraFR21 = linha => ficha('FR-IMOB-21', `L${linha}`)
+// Peneiras da granulometria da mistura: FR-21 (Dersa) e FR-54 (DNIT 031), % passante média (coluna L), já em %.
+// linha54 = null: peneira que a FR-54 não tem (nº 10, 40 e 80).
+const peneiraFR21 = (linha21, linha54) => ({
+  tipo: 'funcao',
+  fn: l => media([...valoresFicha(l, ['FR-IMOB-21'], [`L${linha21}`]),
+    ...(linha54 ? valoresFicha(l, ['FR-IMOB-54'], [`L${linha54}`]) : [])]),
+})
 
 /** Diâmetro máximo (NBR NM 248): menor abertura em que a % retida acumulada é ≤ 5% — a partir das peneiras do quadro. */
 function dmaxDasPeneiras(v, peneiras) {
@@ -115,8 +120,8 @@ export const QUADROS = {
     tabelas: ['resultado_teor_betume', 'resultado_densidade_cbuq', 'resultado_rice'],
     colunas: {
       A: l => l.dataSerial, B: l => l.numero, C: l => l.dataSerial,
-      D: peneiraFR21(21), E: peneiraFR21(22), F: peneiraFR21(23), G: peneiraFR21(24), H: peneiraFR21(25),
-      I: peneiraFR21(26), J: peneiraFR21(27), K: peneiraFR21(28), L: peneiraFR21(29),
+      D: peneiraFR21(21, 22), E: peneiraFR21(22, 23), F: peneiraFR21(23, 24), G: peneiraFR21(24, 25), H: peneiraFR21(25, 27),
+      I: peneiraFR21(26, null), J: peneiraFR21(27, null), K: peneiraFR21(28, null), L: peneiraFR21(29, 33),
       N: tabela('resultado_teor_betume', 'teor_obtido_pct'),
       O: tabela('resultado_densidade_cbuq', 'gmb_obtido'),        // FR-46
       P: tabela('resultado_rice', 'gmm_obtido'),
@@ -142,8 +147,8 @@ export const QUADROS = {
     tabelas: ['resultado_teor_betume', 'resultado_marshall', 'resultado_rice'],
     colunas: {
       B: l => l.dataSerial, C: l => l.numero, D: l => l.dataSerial,
-      E: peneiraFR21(21), F: peneiraFR21(22), G: peneiraFR21(23), H: peneiraFR21(24), I: peneiraFR21(25),
-      J: peneiraFR21(26), K: peneiraFR21(27), L: peneiraFR21(28), M: peneiraFR21(29),
+      E: peneiraFR21(21, 22), F: peneiraFR21(22, 23), G: peneiraFR21(23, 24), H: peneiraFR21(24, 25), I: peneiraFR21(25, 27),
+      J: peneiraFR21(26, null), K: peneiraFR21(27, null), L: peneiraFR21(28, null), M: peneiraFR21(29, 33),
       O: tabela('resultado_teor_betume', 'teor_obtido_pct'),
       P: tabela('resultado_marshall', 'gmb_obtido'),
       Q: { tipo: 'funcao', fn: l => media(valoresTabela(l, ['resultado_rice'], 'gmm_obtido')) ?? media(valoresTabela(l, ['resultado_marshall'], 'gmm_referencia')) },
