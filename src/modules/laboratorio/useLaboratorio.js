@@ -207,6 +207,7 @@ export function useLaboratorio() {
     permissoes,
     acoes,
     urlAssinatura: repo.urlAssinatura,
+    previaFichaOS: repo.previaFichaOS,
     urlArquivo: repo.urlArquivo,
     carregarResultadoDetalhado: repo.carregarResultadoDetalhado,
   }

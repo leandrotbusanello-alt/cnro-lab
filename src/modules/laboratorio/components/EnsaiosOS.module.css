@@ -48,3 +48,7 @@
 @media (max-width: 600px) {
   .linha { grid-template-columns: 1fr; }
 }
+
+/* Executor: escolher e confirmar com "Atribuir ensaio" */
+.celExecutor { flex-direction: column; align-items: stretch; }
+.atribuirAcoes { display: flex; gap: 6px; flex-wrap: wrap; }

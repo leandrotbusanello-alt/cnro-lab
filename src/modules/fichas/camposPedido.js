@@ -3,8 +3,9 @@
 //   os · registro · material · procedencia · complemento · pe · lote · rodovia · empresa
 // ─────────────────────────────────────────────────────────────────────────────
 import {
-  normalizarAmostras, rotuloCampo, rotuloMaterial, rotuloSubtipo, valorExibicao, nomeEmpresa,
+  normalizarAmostras, rotuloCampo, rotuloMaterial, rotuloSubtipo, valorExibicao, nomeEmpresa, campoOculto,
 } from '../laboratorio/utils'
+import { ordemCampos } from '../campo/formularios'
 
 /** "2026.03.06.02.0094" (sem o prefixo "O.S.") */
 function numeroOSTexto(p) {
@@ -41,10 +42,13 @@ function descricaoMaterial(p, amostras) {
 }
 
 function textoComplementar(p, amostras) {
+  const ordem = ordemCampos(p.sub_tipo)
+  const pos = k => (ordem.indexOf(k) < 0 ? 999 : ordem.indexOf(k))
   const blocos = amostras.map((a, i) => {
     const itens = Object.entries(a)
-      .filter(([k, v]) => !IGNORAR.has(k) && !CAMPOS_MATERIAL.includes(k) && v !== '' && v !== null && v !== undefined && typeof v !== 'object')
-      .map(([k, v]) => `${rotuloCampo(k)}: ${valorExibicao(v)}`)
+      .sort((x, y) => pos(x[0]) - pos(y[0]))
+      .filter(([k, v]) => !IGNORAR.has(k) && !campoOculto(k) && !CAMPOS_MATERIAL.includes(k) && v !== '' && v !== null && v !== undefined && typeof v !== 'object')
+      .map(([k, v]) => `${rotuloCampo(k)}: ${valorExibicao(v, k)}`)
     if (!itens.length) return ''
     return (amostras.length > 1 ? `Amostra ${i + 1} — ` : '') + itens.join('; ')
   }).filter(Boolean)
@@ -63,7 +67,7 @@ export function camposDoPedido(pedido, ctx = {}) {
   return {
     os: numeroOSTexto(pedido),
     registro: registroAmostra(pedido),
-    pe: pedido.numero_pe ? `PE-${pedido.ano}-${pedido.numero_pe}` : '',
+    pe: pedido.numero_pe ? `${pedido.numero_pe}/${pedido.ano}` : '',
     material: descricaoMaterial(pedido, amostras),
     procedencia: nomeEmpresa(pedido, ctx.empresasPorId),
     empresa: nomeEmpresa(pedido, ctx.empresasPorId),

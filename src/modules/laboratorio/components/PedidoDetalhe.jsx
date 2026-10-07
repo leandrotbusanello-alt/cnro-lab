@@ -10,6 +10,7 @@ import {
 import { situacao } from '../classificacao'
 import { StatusPedido, Selo } from './StatusBadge'
 import AmostrasView from './AmostrasView'
+import AvisoTraco from './AvisoTraco'
 import EditarPedido from './EditarPedido'
 import EnsaiosOS from './EnsaiosOS'
 import HistoricoTimeline from './HistoricoTimeline'
@@ -91,6 +92,21 @@ export default function PedidoDetalhe() {
 
   const fechar = () => setModal(null)
 
+  // FR-IMOB-04 aberta antes da O.S. (migração 17): com internet, abre a ficha já
+  // preenchida e o botão "Gerar O.S." fica dentro dela. Sem internet, o modal simples.
+  async function abrirGerarOS() {
+    if (!navigator.onLine || ehIdTemp(pedido.id)) { setModal({ tipo: 'gerarOS' }); return }
+    setOcupado(true)
+    try {
+      const previa = await lab.previaFichaOS(pedido.id)
+      setModal(previa ? { tipo: 'ficha', doc: 'os', previa } : { tipo: 'gerarOS' })
+    } catch (e) {
+      setToast({ type: 'error', message: e.message || 'Não foi possível abrir a FR-IMOB-04.' })
+    } finally {
+      setOcupado(false)
+    }
+  }
+
   return (
     <div className={styles.wrapper}>
       {/* ── Cabeçalho ─────────────────────────────────────────────────────── */}
@@ -125,7 +141,7 @@ export default function PedidoDetalhe() {
               <button className={`${ui.btn} ${ui.btnPerigo}`} onClick={() => setModal({ tipo: 'devolverCampo' })} disabled={ocupado}>
                 ↩ Devolver ao campo
               </button>
-              <button className={`${ui.btn} ${ui.btnAcao}`} onClick={() => setModal({ tipo: 'gerarOS' })} disabled={ocupado}>
+              <button className={`${ui.btn} ${ui.btnAcao}`} onClick={abrirGerarOS} disabled={ocupado}>
                 ✓ Validar e gerar O.S.
               </button>
             </>
@@ -196,6 +212,7 @@ export default function PedidoDetalhe() {
             </section>
 
             {/* Amostras */}
+            <AvisoTraco pedido={pedido} />
             <AmostrasView pedido={pedido} />
 
             {/* Ensaios */}
@@ -241,9 +258,9 @@ export default function PedidoDetalhe() {
                 </button>
                 <button
                   className={`${ui.btn} ${ui.btnSecundario}`}
-                  onClick={() => setModal({ tipo: 'ficha', doc: 'os' })}
-                  disabled={!temOS}
-                  title={temOS ? '' : 'Disponível após gerar a O.S.'}
+                  onClick={() => (temOS ? setModal({ tipo: 'ficha', doc: 'os' }) : abrirGerarOS())}
+                  disabled={!temOS && (!perm.podeAnalisar || ocupado)}
+                  title={temOS ? '' : perm.podeAnalisar ? 'Abrir a ficha, ajustar e gerar a O.S.' : 'Disponível após gerar a O.S.'}
                 >
                   📄 FR-IMOB-04 · Ordem de Serviço
                 </button>
@@ -343,9 +360,14 @@ export default function PedidoDetalhe() {
         <FichaDocumento
           doc={modal.doc}
           pedido={pedido}
-          editavel={modal.doc === 'os' ? perm.podeGerenciarOS : (perm.podeAnalisar || perm.podeGerenciarOS)}
+          previa={modal.previa}
+          editavel={modal.previa ? perm.podeAnalisar : modal.doc === 'os' ? perm.podeGerenciarOS : (perm.podeAnalisar || perm.podeGerenciarOS)}
           ocupado={ocupado}
           onFechar={fechar}
+          onGerarOS={async opcoes => {
+            const ok = await rodar(() => lab.acoes.gerarOS(pedido, opcoes), 'O.S. gerada.')
+            if (ok) fechar()
+          }}
           onSalvar={dados => rodar(
             () => (modal.doc === 'os'
               ? lab.acoes.salvarFichaOS(pedido, dados)

@@ -1,6 +1,6 @@
-// Número sequencial do PE / final da O.S. (migração 16):
+// Número do pedido / final da O.S. (migrações 16 e 17):
 // mínimo de 3 dígitos, como no papel (094, 137); a partir de 1000 cresce
-// normalmente (1000, 1024…). Sem limite de 9999.
+// normalmente (1000, 1024…). Sem limite de 9999. Exibição: "145/2026".
 export const MAX_SEQUENCIAL = 99999
 
 export function fmtSeq(n) {
@@ -10,7 +10,7 @@ export function fmtSeq(n) {
   return v < 1000 ? String(v).padStart(3, '0') : String(v)
 }
 
-/** "PE-2026-094" */
+/** "145/2026" */
 export function formatarPE(ano, numero) {
-  return `PE-${ano}-${fmtSeq(numero)}`
+  return `${fmtSeq(numero)}/${ano}`
 }

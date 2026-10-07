@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
 import { useLab } from '../useLaboratorio'
 import { TIPOS_AMOSTRA, SUBCATEGORIAS } from '../../campo/constants'
-import CampoSolos from '../../campo/components/subcategorias/CampoSolos'
-import CampoAsfalto from '../../campo/components/subcategorias/CampoAsfalto'
-import CampoConcreto from '../../campo/components/subcategorias/CampoConcreto'
-import CampoEspecial from '../../campo/components/subcategorias/CampoEspecial'
+import CamposFormulario from '../../campo/components/CamposFormulario'
+import {
+  camposGerais, camposAmostra, herdarAmostra, montarDadosAmostra, separarDadosAmostra,
+} from '../../campo/formularios'
+import { useCadastros } from '../../../lib/cadastros'
 import EnsaiosPicker from './EnsaiosPicker'
 import { normalizarAmostras, deepEqual } from '../utils'
 import styles from './EditarPedido.module.css'
@@ -17,6 +18,7 @@ import ui from './ui.module.css'
  */
 export default function EditarPedido({ pedido, onSalvar, onCancelar, ocupado }) {
   const { empresas, ensaios } = useLab()
+  const cadastros = useCadastros()
 
   const empresaInicial = pedido.empresa_id
     || empresas.find(e => e.nome === pedido.empresa)?.id
@@ -29,9 +31,14 @@ export default function EditarPedido({ pedido, onSalvar, onCancelar, ocupado }) 
     material: pedido.material || '',
     sub_tipo: pedido.sub_tipo || '',
     ensaios_ids: pedido.ensaios_ids || [],
-    dados_amostra: normalizarAmostras(pedido.dados_amostra).length
-      ? normalizarAmostras(pedido.dados_amostra) : [{}],
   }), [pedido, empresaInicial])
+
+  // Campos do tipo de amostra (mesmo formulário do Campo)
+  const inicial = useMemo(() => separarDadosAmostra(pedido.sub_tipo, normalizarAmostras(pedido.dados_amostra)), [pedido])
+  const [geral, setGeral] = useState(inicial.geral)
+  const [amostras, setAmostras] = useState(inicial.amostras)
+  const montadoInicial = useMemo(
+    () => montarDadosAmostra(pedido.sub_tipo, inicial.geral, inicial.amostras), [pedido.sub_tipo, inicial])
 
   const [form, setForm] = useState(() => ({ ...original }))
   const [amIdx, setAmIdx] = useState(0)
@@ -45,23 +52,19 @@ export default function EditarPedido({ pedido, onSalvar, onCancelar, ocupado }) 
     setForm(f => ({ ...f, empresa_id: id, lote: f.lote || emp?.lote || '' }))
   }
 
-  function alterarAmostra(dados) {
-    setForm(f => {
-      const lista = [...f.dados_amostra]
-      lista[amIdx] = dados
-      return { ...f, dados_amostra: lista }
-    })
+  function alterarAmostra(patch) {
+    setAmostras(lista => lista.map((a, i) => (i === amIdx ? { ...a, ...patch } : a)))
   }
 
   function adicionarAmostra() {
-    setForm(f => ({ ...f, dados_amostra: [...f.dados_amostra, { ...f.dados_amostra[f.dados_amostra.length - 1] }] }))
-    setAmIdx(form.dados_amostra.length)
+    setAmostras(lista => [...lista, herdarAmostra(form.sub_tipo, geral, lista[lista.length - 1])])
+    setAmIdx(amostras.length)
   }
 
   function removerAmostra() {
-    if (form.dados_amostra.length <= 1) return
+    if (amostras.length <= 1) return
     if (!window.confirm(`Remover a amostra ${amIdx + 1}?`)) return
-    setForm(f => ({ ...f, dados_amostra: f.dados_amostra.filter((_, i) => i !== amIdx) }))
+    setAmostras(lista => lista.filter((_, i) => i !== amIdx))
     setAmIdx(i => Math.max(0, i - 1))
   }
 
@@ -75,7 +78,7 @@ export default function EditarPedido({ pedido, onSalvar, onCancelar, ocupado }) 
     const campos = []
     const rotulos = {
       empresa_id: 'Empresa', lote: 'Lote', observacoes: 'Observações', material: 'Material',
-      sub_tipo: 'Subcategoria', ensaios_ids: 'Ensaios', dados_amostra: 'Amostras',
+      sub_tipo: 'Subcategoria', ensaios_ids: 'Ensaios',
     }
     for (const k of Object.keys(rotulos)) {
       const novo = typeof form[k] === 'string' ? form[k].trim() : form[k]
@@ -84,22 +87,18 @@ export default function EditarPedido({ pedido, onSalvar, onCancelar, ocupado }) 
         campos.push(rotulos[k])
       }
     }
+    const dados = montarDadosAmostra(form.sub_tipo, geral, amostras)
+    if (!deepEqual(dados, montadoInicial) || form.sub_tipo !== original.sub_tipo) {
+      patch.dados_amostra = dados
+      patch.traco_id = geral.traco_id || null
+      campos.push('Amostras')
+    }
     if (campos.length === 0) { onCancelar(); return }
     onSalvar(patch, campos)
   }
 
-  const amostra = form.dados_amostra[amIdx] || {}
-
-  function formularioAmostra() {
-    const props = { subcategoria: form.sub_tipo, dados: amostra, onChange: alterarAmostra }
-    switch (form.material) {
-      case 'solos':    return <CampoSolos {...props} />
-      case 'asfalto':  return <CampoAsfalto {...props} />
-      case 'concreto': return <CampoConcreto dados={amostra} onChange={alterarAmostra} />
-      case 'especial': return <CampoEspecial {...props} />
-      default:         return <p className={ui.vazio}>Selecione o material para editar as amostras.</p>
-    }
-  }
+  const camposG = camposGerais(form.sub_tipo, geral)
+  const camposA = camposAmostra(form.sub_tipo, geral)
 
   return (
     <div className={styles.wrapper}>
@@ -138,7 +137,7 @@ export default function EditarPedido({ pedido, onSalvar, onCancelar, ocupado }) 
           {subcats.length > 0 && (
             <label className={ui.campo}>
               <span className={ui.rotulo}>Subcategoria</span>
-              <select className={ui.input} value={form.sub_tipo} onChange={e => set('sub_tipo', e.target.value)}>
+              <select className={ui.input} value={form.sub_tipo} onChange={e => { set('sub_tipo', e.target.value); setAmIdx(0) }}>
                 <option value="">Selecione…</option>
                 {subcats.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
               </select>
@@ -158,22 +157,33 @@ export default function EditarPedido({ pedido, onSalvar, onCancelar, ocupado }) 
       </section>
 
       <section className={ui.secao}>
-        <div className={ui.secaoTitulo}>Amostras</div>
-        <div className={amStyles.abas}>
-          {form.dados_amostra.map((_, i) => (
-            <button key={i} type="button"
-              className={`${amStyles.aba} ${i === amIdx ? amStyles.abaAtiva : ''}`}
-              onClick={() => setAmIdx(i)}>
-              Amostra {i + 1}
-            </button>
-          ))}
-          <button type="button" className={`${amStyles.aba} ${amStyles.adicionar}`} onClick={adicionarAmostra}>+ Amostra</button>
-          {form.dados_amostra.length > 1 && (
-            <button type="button" className={`${amStyles.aba} ${amStyles.remover}`} onClick={removerAmostra}>Remover</button>
-          )}
-        </div>
-        {formularioAmostra()}
+        <div className={ui.secaoTitulo}>Informações gerais</div>
+        {camposG.length
+          ? <CamposFormulario campos={camposG} valores={geral} onChange={p => setGeral(g => ({ ...g, ...p }))}
+              cadastros={cadastros} empresaId={form.empresa_id} />
+          : <p className={ui.vazio}>Selecione o material e a subcategoria para editar.</p>}
       </section>
+
+      {camposA && (
+        <section className={ui.secao}>
+          <div className={ui.secaoTitulo}>Amostras</div>
+          <div className={amStyles.abas}>
+            {amostras.map((_, i) => (
+              <button key={i} type="button"
+                className={`${amStyles.aba} ${i === amIdx ? amStyles.abaAtiva : ''}`}
+                onClick={() => setAmIdx(i)}>
+                Amostra {i + 1}
+              </button>
+            ))}
+            <button type="button" className={`${amStyles.aba} ${amStyles.adicionar}`} onClick={adicionarAmostra}>+ Amostra</button>
+            {amostras.length > 1 && (
+              <button type="button" className={`${amStyles.aba} ${amStyles.remover}`} onClick={removerAmostra}>Remover</button>
+            )}
+          </div>
+          <CamposFormulario key={amIdx} campos={camposA} valores={amostras[amIdx] || {}} onChange={alterarAmostra}
+            cadastros={cadastros} empresaId={form.empresa_id} />
+        </section>
+      )}
 
       {erro && <div className={`${ui.aviso} ${ui.avisoErro}`}>{erro}</div>}
 

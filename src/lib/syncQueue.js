@@ -182,6 +182,7 @@ export async function enfileirarUnico(op) {
 const COLUNAS_PEDIDO_CAMPO = [
   'empresa_id', 'empresa', 'lote', 'observacoes', 'material', 'sub_tipo', 'tipo_amostra',
   'tipo_solicitacao', 'ensaios_ids', 'dados_amostra', 'solicitante_id', 'created_at',
+  'especificacoes', 'traco_id',   // migrações 15 e 17 (antes as especificações se perdiam no envio offline)
 ]
 
 function filtrarColunas(obj, colunas) {

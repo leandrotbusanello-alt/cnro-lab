@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase'
+import { recortarAssinatura } from '../../lib/assinatura'
 import {
   cacheSubstituir, cacheGetAll, cacheGet, cachePut, cacheDelete,
   getPedidosPendentes, arquivoObter, arquivoSalvar, idMapTodos,
@@ -202,7 +203,9 @@ export async function urlAssinatura(usuario) {
     } catch { /* sem assinatura disponível */ }
   }
   if (!blob) return null
-  const url = URL.createObjectURL(blob)
+  // margens em branco cortadas: a assinatura ocupa o espaço dela na ficha
+  const recortada = await recortarAssinatura(blob)
+  const url = URL.createObjectURL(recortada)
   urlsCriadas.set(chave, url)
   return url
 }
@@ -340,7 +343,19 @@ export async function devolverAoCampo(ctx, pedido, motivo) {
   ])
 }
 
-export async function gerarOS(ctx, pedido, { lote, dataValidacao }) {
+/** Prévia da FR-IMOB-04 (nada é gravado) — migração 17. Só com internet. */
+export async function previaFichaOS(pedidoId) {
+  if (!navigator.onLine || ehIdTemp(pedidoId)) return null
+  const { data, error } = await supabase.rpc('previa_ficha_os', { p_pedido_id: pedidoId })
+  if (error) throw new Error(mensagemErro(error))
+  return data
+}
+
+/**
+ * Gera a O.S. Com `fichaOS`, grava logo em seguida o que o laboratorista ajustou
+ * na FR-IMOB-04 aberta antes da O.S. (mesma fila, na ordem).
+ */
+export async function gerarOS(ctx, pedido, { lote, dataValidacao, fichaOS }) {
   // Linhas provisórias de ensaios da O.S. (substituídas pelas do servidor na sincronização)
   const itens = (pedido.ensaios_ids || []).map(ensaioId => ({ tempId: novoIdTemp('eo'), ensaio_id: ensaioId }))
 
@@ -368,6 +383,15 @@ export async function gerarOS(ctx, pedido, { lote, dataValidacao }) {
       }
     },
   })
+  if (fichaOS && Object.keys(fichaOS).length) {
+    passos.push({
+      op: {
+        tipo: 'rpc', rpc: 'salvar_ficha_os',
+        args: { p_pedido_id: pedido.id, p_dados: fichaOS },
+        descricao: 'Salvar ficha FR-IMOB-04', pedidoId: pedido.id,
+      },
+    })
+  }
   return executarSequencia(passos)
 }
 

@@ -6,10 +6,12 @@ import { ehDev, dataParaISO, laboratoristasHistorico, rotuloUsuario } from '../.
 import { hojeISO } from '../../laboratorio/utils'
 import { TIPOS_SOLICITACAO, TIPOS_AMOSTRA, SUBCATEGORIAS } from '../constants'
 import EnsaiosSelector from './EnsaiosSelector'
-import CampoSolos    from './subcategorias/CampoSolos'
-import CampoAsfalto  from './subcategorias/CampoAsfalto'
-import CampoConcreto from './subcategorias/CampoConcreto'
-import CampoEspecial from './subcategorias/CampoEspecial'
+import CamposFormulario from './CamposFormulario'
+import { useCadastros } from '../../../lib/cadastros'
+import {
+  camposGerais, camposAmostra, geralInicial, herdarAmostra, validarFormulario,
+  montarDadosAmostra, separarDadosAmostra,
+} from '../formularios'
 import Toast from '../../../components/ui/Toast'
 import styles from './NovoPedidoForm.module.css'
 import { formatarPE, MAX_SEQUENCIAL } from '../../../lib/numeracao'
@@ -24,19 +26,10 @@ function parseDadosAmostra(dados) {
   return null
 }
 
-// Informações Gerais → nome do campo gravado em cada amostra (o que o Laboratório lê)
-const CAMPOS_GERAIS = {
-  trecho:         'trecho',
-  estaca_inicial: 'estaca_inicial',
-  estaca_final:   'estaca_final',
-  pista:          'pista',
-  data_coleta:    'data_coleta',
-  responsavel:    'responsavel_coleta',
-}
-
 export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCorrecao = false }) {
   const { empresas, ensaios, usuarios, enviarPedido, corrigirPedido, uploadCertificado } = useCampo()
   const { perfil } = useAuthStore()
+  const cadastros = useCadastros()
   const navigate = useNavigate()
   const [toast, setToast]       = useState(null)
   const [enviando, setEnviando] = useState(false)
@@ -63,35 +56,26 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
   const [tipoAmostra,  setTipoAmostra]  = useState(pedidoInicial?.material || '')
   const [subcategoria, setSubcategoria] = useState(pedidoInicial?.sub_tipo     || '')
 
-  // ── Seção 4: Informações Gerais (preenchidas uma vez) ─────────────────────
-  const [infoGeral, setInfoGeral] = useState(
-    dadosAmostraInit?.[0]?.info_geral ? { ...dadosAmostraInit[0].info_geral, lote: pedidoInicial?.lote || '', observacoes: pedidoInicial?.observacoes || '' } : {
-      lote:           pedidoInicial?.lote        || '',
-      trecho:         '',
-      estaca_inicial: '',
-      estaca_final:   '',
-      pista:          '',
-      data_coleta:    '',
-      responsavel:    '',
-      observacoes:    pedidoInicial?.observacoes || '',
-    }
-  )
-
-  // ── Seção 5: Amostras (com herança de dados) ──────────────────────────────
-  // Na correção, cada amostra volta sem os campos das Informações Gerais (que são reaplicados no envio)
-  const [amostras, setAmostras] = useState(
-    dadosAmostraInit?.map(a => {
-      const { info_geral: ig, ...resto } = a
-      if (!ig) return { ...resto }
-      const limpa = { ...resto }
-      for (const [k, campo] of Object.entries(CAMPOS_GERAIS)) {
-        if (limpa[campo] !== undefined && limpa[campo] === ig[k]) delete limpa[campo]
-      }
-      return limpa
-    }) || [{}]
-  )
+  // ── Seção 4 e 5: campos do tipo de amostra (formularios.js) ─────────────────
+  const reaberto = separarDadosAmostra(pedidoInicial?.sub_tipo, dadosAmostraInit)
+  const [lote, setLote] = useState(pedidoInicial?.lote || '')
+  const [observacoes, setObservacoes] = useState(pedidoInicial?.observacoes || '')
+  const [geral, setGeral] = useState(reaberto.geral)
+  const [amostras, setAmostras] = useState(reaberto.amostras)
   const [amIdx, setAmIdx] = useState(0)
-  const [certificadoFile, setCertificadoFile] = useState(null)
+  const [arquivos, setArquivos] = useState({})   // { certificado: File }
+
+  const camposG = camposGerais(subcategoria, geral)
+  const camposA = camposAmostra(subcategoria, geral)
+
+  function escolherSubcategoria(sub) {
+    if (sub === subcategoria) return
+    setSubcategoria(sub)
+    setGeral(geralInicial(sub, hojeISO()))
+    setAmostras([{}])
+    setAmIdx(0)
+    setArquivos({})
+  }
 
   const empresaSel   = empresas.find(e => e.id === empresaId)
   const subcatOpcoes = SUBCATEGORIAS[tipoAmostra] || []
@@ -100,53 +84,33 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
   function handleEmpresaChange(id) {
     const emp = empresas.find(e => e.id === id)
     setEmpresaId(id)
-    if (emp?.lote && !infoGeral.lote) {
-      setInfoGeral(g => ({ ...g, lote: emp.lote }))
-    }
+    if (emp?.lote && !lote) setLote(emp.lote)
   }
 
-  // ── Herança de dados entre amostras ───────────────────────────────────────
+  // ── Amostras (com herança de dados da anterior) ─────────────────────────────
   function adicionarAmostra() {
-    const ultima = amostras[amostras.length - 1] || {}
-    const herdados = {
-      camada:          ultima.camada          || '',
-      pista:           ultima.pista           || '',
-      faixa:           ultima.faixa           || '',
-      lado:            ultima.lado            || '',
-      proctor:         ultima.proctor         || '',
-      gc_minimo:       ultima.gc_minimo       || '',
-      lancamento:      ultima.lancamento      || '',
-      tipo_concreto:   ultima.tipo_concreto   || '',
-      resistencia_fck: ultima.resistencia_fck || '',
-      tipo_mistura:    ultima.tipo_mistura    || '',
-      ligante:         ultima.ligante         || '',
-      data_aplicacao:  ultima.data_aplicacao  || '',
-    }
-    setAmostras(prev => [...prev, herdados])
+    setAmostras(prev => [...prev, herdarAmostra(subcategoria, geral, prev[prev.length - 1])])
     setAmIdx(amostras.length)
   }
 
   function removerAmostra(idx) {
     if (amostras.length === 1) return
-    const novas = amostras.filter((_, i) => i !== idx)
-    setAmostras(novas)
+    setAmostras(prev => prev.filter((_, i) => i !== idx))
     setAmIdx(Math.max(0, idx - 1))
   }
 
-  function atualizarAmostra(dados) {
-    setAmostras(prev => {
-      const novas = [...prev]
-      novas[amIdx] = dados
-      return novas
-    })
+  function atualizarAmostra(patch) {
+    setAmostras(prev => prev.map((a, i) => (i === amIdx ? { ...a, ...patch } : a)))
   }
 
   // ── Validação básica ───────────────────────────────────────────────────────
   function validar() {
     if (!empresaId)                            return 'Selecione a empresa.'
-    if (!infoGeral.lote)                       return 'Informe o lote.'
+    if (!lote)                                 return 'Informe o lote.'
     if (!tipoAmostra)                          return 'Selecione o tipo de amostra.'
     if (subcatOpcoes.length && !subcategoria)  return 'Selecione a subcategoria.'
+    const erroForm = validarFormulario(subcategoria, geral, amostras)
+    if (erroForm)                              return erroForm
     if (ensaiosSel.length === 0)               return 'Selecione ao menos um ensaio em "Detalhar Ensaios".'
     if (hist.ativo) {
       if (!hist.data || hist.data > hojeISO())  return 'Lançamento histórico: informe a data da solicitação.'
@@ -165,34 +129,18 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
     setEnviando(true)
     try {
       // Certificado do ligante: arquivo privado no Supabase (precisa de internet)
-      let certificado = null
-      if (certificadoFile) certificado = await uploadCertificado(certificadoFile)
-
-      // Informações Gerais entram em cada amostra com os nomes que o Laboratório
-      // e as fichas FR-IMOB-04/05 já leem (estaca_inicial, pista…). O que a amostra
-      // preencheu vale mais que a informação geral. `info_geral` guarda o original
-      // para reabrir o formulário na correção.
-      const geral = {}
-      for (const [k, campo] of Object.entries(CAMPOS_GERAIS)) {
-        if (String(infoGeral[k] ?? '').trim() !== '') geral[campo] = infoGeral[k]
-      }
-      const { lote: _l, observacoes: _o, ...infoGeralAmostra } = infoGeral // eslint-disable-line no-unused-vars
-      const dadosAmostra = amostras.map(am => {
-        const propria = Object.fromEntries(Object.entries(am).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-        return {
-          ...geral,
-          ...propria,
-          ...(certificado ? { certificado } : {}),
-          info_geral: infoGeralAmostra,
-        }
-      })
+      const geralFinal = { ...geral }
+      if (arquivos.certificado) geralFinal.certificado = await uploadCertificado(arquivos.certificado)
+      const dadosAmostra = montarDadosAmostra(subcategoria, geralFinal, amostras)
+      const tracoId = geralFinal.traco_id || null
 
       const idsCatalogo = new Set((ensaios || []).map(e => e.id))
       const payload = {
         empresa_id:       empresaId,
-        lote:             infoGeral.lote,
+        lote:             lote,
         tipo_solicitacao: tipoSolicitacao,
-        observacoes:      infoGeral.observacoes,
+        observacoes:      observacoes,
+        traco_id:         tracoId,
         material:         tipoAmostra,
         sub_tipo:         subcategoria,
         ensaios_ids:      ensaiosSel.filter(id => idsCatalogo.has(id)),
@@ -242,24 +190,6 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
     }
   }
 
-  // ── Renderiza form da amostra por tipo ────────────────────────────────────
-  function renderAmostraForm() {
-    const am = amostras[amIdx] || {}
-    const props = {
-      subcategoria,
-      dados: am,
-      onChange: atualizarAmostra,
-      onCertificadoChange: setCertificadoFile,
-    }
-    switch (tipoAmostra) {
-      case 'solos':    return <CampoSolos    {...props} />
-      case 'asfalto':  return <CampoAsfalto  {...props} />
-      case 'concreto': return <CampoConcreto {...props} />
-      case 'especial': return <CampoEspecial {...props} />
-      default: return null
-    }
-  }
-
   return (
     <div className={styles.page}>
       <div className={styles.inner}>
@@ -305,7 +235,7 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
                     </label>
                     <label className={styles.field}>
                       <span className={styles.label}>Nº do PE (papel)</span>
-                      <input className={styles.input} inputMode="numeric" value={hist.numero} placeholder="Ex.: 0350"
+                      <input className={styles.input} inputMode="numeric" value={hist.numero} placeholder="Ex.: 350"
                         onChange={e => setHist({ ...hist, numero: e.target.value.replace(/\D/g, '').slice(0, 5) })} />
                     </label>
                     <label className={styles.field}>
@@ -356,8 +286,8 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
               <span className={styles.label}>Lote <span className={styles.req}>*</span></span>
               <input
                 className={styles.input}
-                value={infoGeral.lote}
-                onChange={e => setInfoGeral(g => ({ ...g, lote: e.target.value }))}
+                value={lote}
+                onChange={e => setLote(e.target.value)}
                 placeholder={empresaSel?.lote ? `Padrão: ${empresaSel.lote}` : 'Ex: Lote 3'}
               />
             </label>
@@ -385,7 +315,7 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
             <div className={styles.fieldGroup}>
               <div className={styles.infoBox}>
                 <span className={styles.infoIcon}>📋</span>
-                <span>Para ensaios especiais, a equipe do laboratório se deslocará ao campo. Informe detalhes do local e data desejada nas observações.</span>
+                <span>Para ensaios especiais, a equipe do laboratório se deslocará ao campo. Informe os detalhes do local nas observações, no final do pedido.</span>
               </div>
             </div>
           )}
@@ -403,7 +333,6 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
           </div>
           <EnsaiosSelector
             modo="especificacao"
-            tipoAmostra={tipoAmostra}
             selecionados={especificacoes}
             onChange={setEspecificacoes}
           />
@@ -424,7 +353,7 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
                 key={t.value}
                 type="button"
                 className={`${styles.tipoCard} ${tipoAmostra === t.value ? styles.tipoAtivo : ''}`}
-                onClick={() => { setTipoAmostra(t.value); setSubcategoria('') }}
+                onClick={() => { if (t.value !== tipoAmostra) { setTipoAmostra(t.value); escolherSubcategoria('') } }}
               >
                 {t.icone} {t.label}
               </button>
@@ -440,7 +369,7 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
                     key={s.value}
                     type="button"
                     className={`${styles.subcatCard} ${subcategoria === s.value ? styles.subcatAtivo : ''}`}
-                    onClick={() => setSubcategoria(s.value)}
+                    onClick={() => escolherSubcategoria(s.value)}
                   >
                     {s.label}
                   </button>
@@ -451,95 +380,31 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
         </section>
 
         {/* ══════════════════════════════════════════════════════════
-            SEÇÃO 4 — Informações Gerais (preenchidas uma vez)
+            SEÇÃO 4 — Informações Gerais (do tipo de amostra; preenchidas uma vez)
         ═══════════════════════════════════════════════════════════ */}
-        <section className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <div className={styles.sectionNum}>4</div>
-            <h3 className={styles.sectionTitle}>Informações Gerais</h3>
-            <span className={styles.sectionSub}>Válidas para todas as amostras</span>
-          </div>
-
-          <div className={styles.grid2}>
-            <label className={styles.field}>
-              <span className={styles.label}>Trecho / Segmento</span>
-              <input
-                className={styles.input}
-                value={infoGeral.trecho}
-                onChange={e => setInfoGeral(g => ({ ...g, trecho: e.target.value }))}
-                placeholder="Ex: Km 12+500 ao Km 15+000"
-              />
-            </label>
-
-            <label className={styles.field}>
-              <span className={styles.label}>Estaca Inicial</span>
-              <input
-                className={styles.input}
-                value={infoGeral.estaca_inicial}
-                onChange={e => setInfoGeral(g => ({ ...g, estaca_inicial: e.target.value }))}
-                placeholder="Ex: 250+00"
-              />
-            </label>
-
-            <label className={styles.field}>
-              <span className={styles.label}>Estaca Final</span>
-              <input
-                className={styles.input}
-                value={infoGeral.estaca_final}
-                onChange={e => setInfoGeral(g => ({ ...g, estaca_final: e.target.value }))}
-                placeholder="Ex: 300+00"
-              />
-            </label>
-
-            <label className={styles.field}>
-              <span className={styles.label}>Pista</span>
-              <input
-                className={styles.input}
-                value={infoGeral.pista}
-                onChange={e => setInfoGeral(g => ({ ...g, pista: e.target.value }))}
-                placeholder="Ex: Norte, Sul…"
-              />
-            </label>
-
-            <label className={styles.field}>
-              <span className={styles.label}>Data da Coleta</span>
-              <input
-                type="date"
-                className={styles.input}
-                value={infoGeral.data_coleta}
-                onChange={e => setInfoGeral(g => ({ ...g, data_coleta: e.target.value }))}
-              />
-            </label>
-
-            <label className={styles.field}>
-              <span className={styles.label}>Responsável pela Coleta</span>
-              <input
-                className={styles.input}
-                value={infoGeral.responsavel}
-                onChange={e => setInfoGeral(g => ({ ...g, responsavel: e.target.value }))}
-                placeholder="Nome do responsável"
-              />
-            </label>
-          </div>
-
-          <label className={styles.field} style={{ marginTop: '0.5rem' }}>
-            <span className={styles.label}>Observações</span>
-            <textarea
-              className={`${styles.input} ${styles.textarea}`}
-              value={infoGeral.observacoes}
-              onChange={e => setInfoGeral(g => ({ ...g, observacoes: e.target.value }))}
-              rows={3}
-              placeholder="Informações adicionais, local de retirada, condições da coleta…"
+        {subcategoria && (
+          <section className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <div className={styles.sectionNum}>4</div>
+              <h3 className={styles.sectionTitle}>Informações Gerais</h3>
+              <span className={styles.sectionSub}>{camposA ? 'Válidas para todas as amostras' : 'Dados da amostra'}</span>
+            </div>
+            <CamposFormulario
+              campos={camposG}
+              valores={geral}
+              onChange={patch => setGeral(g => ({ ...g, ...patch }))}
+              cadastros={cadastros}
+              empresaId={empresaId}
+              onArquivo={(nome, file) => setArquivos(a => ({ ...a, [nome]: file }))}
             />
-          </label>
-        </section>
+          </section>
+        )}
 
         {/* ══════════════════════════════════════════════════════════
-            SEÇÃO 5 — Cadastro de Amostras
+            SEÇÃO 5 — Amostras (com herança de dados)
         ═══════════════════════════════════════════════════════════ */}
-        {tipoAmostra && (
+        {subcategoria && camposA && (
           <section className={styles.section}>
-
             <div className={styles.sectionHeader}>
               <div className={styles.sectionNum}>5</div>
               <h3 className={styles.sectionTitle}>Amostras</h3>
@@ -548,7 +413,6 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
               </span>
             </div>
 
-            {/* Tabs das amostras */}
             <div className={styles.amostrasBar}>
               <div className={styles.amTabs}>
                 {amostras.map((_, i) => (
@@ -582,7 +446,14 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
             )}
 
             <div className={styles.amostrasContent}>
-              {renderAmostraForm()}
+              <CamposFormulario
+                key={amIdx}
+                campos={camposA}
+                valores={amostras[amIdx] || {}}
+                onChange={atualizarAmostra}
+                cadastros={cadastros}
+                empresaId={empresaId}
+              />
             </div>
           </section>
         )}
@@ -593,16 +464,30 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
         ═══════════════════════════════════════════════════════════ */}
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
-            <div className={styles.sectionNum}>6</div>
+            <div className={styles.sectionNum}>{camposA ? 6 : 5}</div>
             <h3 className={styles.sectionTitle}>Detalhar Ensaios</h3>
-            <span className={styles.sectionSub}>Por tipo de material</span>
+            <span className={styles.sectionSub}>Conforme FR-IMOB-04</span>
           </div>
           <EnsaiosSelector
             modo="detalhar"
-            tipoAmostra={tipoAmostra}
             selecionados={ensaiosSel}
             onChange={setEnsaiosSel}
             catalogo={ensaios}
+          />
+        </section>
+
+        {/* ── Observações (no final, antes de enviar) ── */}
+        <section className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionNum}>{camposA ? 7 : 6}</div>
+            <h3 className={styles.sectionTitle}>Observações</h3>
+          </div>
+          <textarea
+            className={`${styles.input} ${styles.textarea}`}
+            value={observacoes}
+            onChange={e => setObservacoes(e.target.value)}
+            rows={3}
+            placeholder="Informações adicionais, local de retirada, condições da coleta…"
           />
         </section>
 

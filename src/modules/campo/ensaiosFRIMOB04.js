@@ -14,6 +14,7 @@
 export const ESPECIFICACAO = [
   { id: 'espec_programar_coleta',      nome: 'Programar coleta dos materiais em campo' },
   { id: 'espec_caract_agregados',      nome: 'Caracterização dos agregados (brita, pedrisco, pó)' },
+  { id: 'espec_caract_material_asfaltico', nome: 'Caracterização de material asfáltico' },
   { id: 'espec_caract_ligante',        nome: 'Caracterização do ligante' },
   { id: 'espec_caract_rap',            nome: 'Caracterização do RAP' },
   { id: 'espec_dosagem_asfaltica',     nome: 'Estudos de dosagem de misturas asfálticas' },
@@ -22,7 +23,6 @@ export const ESPECIFICACAO = [
   { id: 'espec_controle_campo',        nome: 'Controle em campo' },
   { id: 'espec_misturas_frescas',      nome: 'Misturas frescas' },
   { id: 'espec_misturas_endurecidas',  nome: 'Misturas endurecidas' },
-  { id: 'espec_outros',                nome: 'Outros' },
 ]
 
 // ── Seção B: Ensaios por material ─────────────────────────────────────────
@@ -43,7 +43,6 @@ export const ENSAIOS_ASFALTO = [
   { codigo: 'ens_modulo_resiliencia',   nome: 'Ensaio de módulo de resiliência' },
   { codigo: 'ens_fadiga',               nome: 'Ensaio de fadiga' },
   { codigo: 'ens_deformacao_perm',      nome: 'Ensaio de deformação permanente' },
-  { codigo: 'ens_outros_asfalto',       nome: 'Outros (Especificar na observação)' },
 ]
 
 export const ENSAIOS_SOLOS = [
@@ -57,21 +56,19 @@ export const ENSAIOS_SOLOS = [
   { codigo: 'ens_benkelman',            nome: 'Verificação deflectométrica - viga benkelman' },
   { codigo: 'ens_dens_agr_graudo',      nome: 'Massa específica, densidade relativa, absorção de agregado graúdo' },
   { codigo: 'ens_dens_agr_miudo',       nome: 'Massa específica real, densidade relativa real de agregado miúdo' },
-  { codigo: 'ens_outros_solos',         nome: 'Outros (Especificar na observação)' },
 ]
 
 export const ENSAIOS_CONCRETO = [
   { codigo: 'ens_compressao_axial',     nome: 'Compressão Axial de Corpo de Prova' },
 ]
 
-// Mapa por tipo de material
-export const ENSAIOS_POR_TIPO = {
-  asfalto:  ENSAIOS_ASFALTO,
-  solos:    ENSAIOS_SOLOS,
-  concreto: ENSAIOS_CONCRETO,
-  // Ensaios especiais in loco: mostra todas as listas
-  especial: [...ENSAIOS_ASFALTO, ...ENSAIOS_SOLOS, ...ENSAIOS_CONCRETO],
-}
+// Grupos mostrados no pedido: todos os ensaios, independente do material
+// (decisão de 06/10/2026 — "Outros" saiu a pedido do auditor)
+export const GRUPOS_ENSAIOS = [
+  { titulo: 'Asfalto', itens: ENSAIOS_ASFALTO },
+  { titulo: 'Solos e Agregados', itens: ENSAIOS_SOLOS },
+  { titulo: 'Concreto', itens: ENSAIOS_CONCRETO },
+]
 
 /**
  * Liga os itens da FR-IMOB-04 aos ensaios do catálogo (ensaios.codigo_frimob04).

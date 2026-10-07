@@ -32,9 +32,13 @@ export const SUBCATEGORIAS = {
     { value: 'mancha_areia',      label: 'Mancha de Areia' },
     { value: 'pendulo_britanico', label: 'Pêndulo Britânico' },
     { value: 'densimetro',        label: 'Densímetro Nuclear' },
-    { value: 'outros',            label: 'Outros' },
   ],
 }
+
+// Subcategorias que não são mais oferecidas, mas aparecem em pedidos antigos
+export const SUBCATEGORIAS_ANTIGAS = [
+  { value: 'outros', label: 'Outros' },
+]
 
 // Camadas por categoria de material
 export const OPCOES_CAMADA_SOLO = [

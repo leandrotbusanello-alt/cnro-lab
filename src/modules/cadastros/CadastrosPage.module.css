@@ -1,0 +1,51 @@
+.wrapper { max-width: 1100px; margin: 0 auto; padding: 20px 16px 90px; display: flex; flex-direction: column; gap: 14px; }
+.header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.titulo { margin: 0; font-size: 22px; color: var(--navy); }
+.sub { margin: 4px 0 0; color: var(--muted); font-size: 13.5px; }
+
+.abas { display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid var(--border); }
+.aba {
+  border: none; background: transparent; padding: 10px 14px; font-size: 14px; font-weight: 600; color: var(--muted);
+  border-bottom: 3px solid transparent; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: inherit;
+}
+.abaAtiva { color: var(--navy); border-bottom-color: var(--teal); }
+.bolinha { background: #dc2626; color: #fff; border-radius: 999px; font-size: 11px; padding: 1px 7px; }
+
+.barra { display: flex; gap: 10px; }
+.barra > input { flex: 1; }
+
+.filtros { display: flex; gap: 6px; flex-wrap: wrap; }
+.filtro {
+  border: 1px solid var(--border); background: #fff; border-radius: 999px; padding: 5px 12px; font-size: 13px;
+  cursor: pointer; color: var(--text); font-family: inherit;
+}
+.filtro span { color: var(--muted); margin-left: 4px; }
+.filtroAtivo { border-color: var(--teal); background: #e7f8f7; color: #0b7d78; font-weight: 600; }
+
+.lista { display: grid; gap: 10px; }
+.cartao { background: #fff; border: 1px solid var(--border); border-left: 4px solid #cbd5e1; border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.borda_vigente { border-left-color: #16a34a; }
+.borda_vence { border-left-color: #f59e0b; }
+.borda_vencido { border-left-color: #dc2626; }
+.cartaoTopo { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.nome { color: var(--navy); font-size: 14.5px; }
+.detalhes { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: #374151; }
+.acoes { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.tabelaWrap { overflow-x: auto; background: #fff; border: 1px solid var(--border); border-radius: 10px; }
+.tabela { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tabela th, .tabela td { padding: 9px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+.tabela th { font-size: 12px; text-transform: uppercase; color: var(--muted); letter-spacing: .3px; }
+.inativo td { color: var(--muted); }
+.colAcao { text-align: right; white-space: nowrap; }
+
+.faixa { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.faixa th, .faixa td { border: 1px solid var(--border); padding: 4px 6px; text-align: center; }
+.historico { display: flex; flex-direction: column; gap: 8px; }
+.histItem { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 13px; display: flex; flex-direction: column; gap: 2px; }
+.histItem small { color: var(--muted); }
+
+@media (max-width: 600px) {
+  .barra { flex-direction: column; }
+  .header { flex-direction: column; }
+}

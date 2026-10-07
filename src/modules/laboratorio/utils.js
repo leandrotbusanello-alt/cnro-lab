@@ -1,19 +1,19 @@
 import { format, formatDistanceToNowStrict } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { TIPOS_AMOSTRA, SUBCATEGORIAS } from '../campo/constants'
+import { TIPOS_AMOSTRA, SUBCATEGORIAS, SUBCATEGORIAS_ANTIGAS } from '../campo/constants'
 import { ehIdTemp } from '../../lib/syncQueue'
 import { fmtSeq } from '../../lib/numeracao'
+import { normalizarKm } from '../../lib/km'
+import { ROTULOS_FORMULARIO, CAMPOS_KM, CAMPOS_OCULTOS } from '../campo/formularios'
 
 // ── Números de documento ─────────────────────────────────────────────────────
 
-/** PE-2026-0047 (ou "PE provisório" para pedido ainda não sincronizado) */
+/** 145/2026 (ou "Pedido provisório" para pedido ainda não sincronizado) */
 export function numeroPE(p) {
   if (!p) return '—'
-  if (ehIdTemp(p.id) || (!p.numero_pe && !p.sequencial)) return 'PE provisório'
-  const n = p.numero_pe ?? p.sequencial
-  const num = fmtSeq(n)
-  if (num.startsWith('PE-')) return num
-  return `PE-${p.ano ?? new Date(p.created_at).getFullYear()}-${num}`
+  if (ehIdTemp(p.id) || (!p.numero_pe && !p.sequencial)) return 'Pedido provisório'
+  const num = fmtSeq(p.numero_pe ?? p.sequencial)
+  return `${num}/${p.ano ?? new Date(p.created_at).getFullYear()}`
 }
 
 export function ehOSProvisoria(p) {
@@ -72,7 +72,7 @@ export function rotuloMaterial(material) {
 }
 
 export function rotuloSubtipo(material, subTipo) {
-  const lista = SUBCATEGORIAS[material] || Object.values(SUBCATEGORIAS).flat()
+  const lista = [...(SUBCATEGORIAS[material] || Object.values(SUBCATEGORIAS).flat()), ...SUBCATEGORIAS_ANTIGAS]
   return lista.find(s => s.value === subTipo)?.label || subTipo || ''
 }
 
@@ -99,13 +99,20 @@ const ROTULOS_CAMPOS = {
 }
 
 export function rotuloCampo(chave) {
+  if (ROTULOS_FORMULARIO[chave]) return ROTULOS_FORMULARIO[chave]
   if (ROTULOS_CAMPOS[chave]) return ROTULOS_CAMPOS[chave]
   const t = String(chave).replace(/_pct$/, ' (%)').replace(/_/g, ' ')
   return t.charAt(0).toUpperCase() + t.slice(1)
 }
 
-export function valorExibicao(v) {
+/** Campo interno (id de cadastro, cópia das informações gerais): não aparece na tela */
+export function campoOculto(chave) {
+  return CAMPOS_OCULTOS.has(chave)
+}
+
+export function valorExibicao(v, chave) {
   if (v === null || v === undefined || v === '') return '—'
+  if (chave && CAMPOS_KM.has(chave) && typeof v === 'string') return normalizarKm(v)
   if (typeof v === 'boolean') return v ? 'Sim' : 'Não'
   if (/^\d{4}-\d{2}-\d{2}$/.test(String(v))) return data(v)
   if (typeof v === 'object') return JSON.stringify(v)

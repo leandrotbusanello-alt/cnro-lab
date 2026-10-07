@@ -4,6 +4,7 @@ import BlocoCampo from './components/BlocoCampo'
 import BlocoLaboratorio from './components/BlocoLaboratorio'
 import BlocoAssistente from './components/BlocoAssistente'
 import BlocoGestor from './components/BlocoGestor'
+import AlertaTracos from './components/AlertaTracos'
 import ui from '../laboratorio/components/ui.module.css'
 import styles from './DashboardPage.module.css'
 
@@ -41,6 +42,8 @@ export default function DashboardPage() {
       )}
 
       {d.erro && <div className={`${ui.aviso} ${ui.avisoErro}`}>⚠️ {d.erro}</div>}
+
+      {(d.modulos.includes('laboratorio') || d.ehGestor) && <AlertaTracos />}
 
       <PeriodoSeletor
         tipo={d.tipoPeriodo} referencia={d.referencia} podeAvancar={d.podeAvancar}

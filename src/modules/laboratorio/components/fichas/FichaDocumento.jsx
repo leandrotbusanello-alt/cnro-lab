@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useLab } from '../../useLaboratorio'
-import { numeroPE, normalizarAmostras, nomeEmpresa, deepEqual } from '../../utils'
+import { numeroPE, normalizarAmostras, nomeEmpresa, deepEqual, hojeISO, previaNumeroOS } from '../../utils'
+import { ehHistorico, isoParaData } from '../../../../lib/historico'
 import FichaOS from './FichaOS'
 import FichaSolicitacao from './FichaSolicitacao'
 import {
@@ -13,17 +14,23 @@ import s from './fichas.module.css'
 /**
  * Abre a ficha (FR-IMOB-04 ou FR-IMOB-05) sobre a tela: editar, salvar e imprimir/PDF.
  *   doc = 'os' | 'solicitacao'
+ *   previa (só 'os'): FR-IMOB-04 antes da O.S. (valores de previa_ficha_os). No lugar de
+ *     "Salvar", o botão "Gerar O.S." gera a O.S. e grava o que foi ajustado (onGerarOS).
  */
-export default function FichaDocumento({ doc, pedido, editavel, ocupado, onSalvar, onFechar }) {
+export default function FichaDocumento({ doc, pedido, editavel, ocupado, onSalvar, onFechar, previa, onGerarOS }) {
   const lab = useLab()
   const [imprimindo, setImprimindo] = useState(false)
+  const modoPrevia = !!previa
+  const historico = ehHistorico(pedido)
+  const dataPedido = isoParaData(pedido.created_at)
+  const [dataOS, setDataOS] = useState(historico ? dataPedido : hojeISO())
 
   // Recalcula os valores iniciais só quando a ficha salva muda (não a cada atualização da tela)
   const ficha = doc === 'os' ? pedido.ficha_os : pedido.ficha_sol
   const chave = `${doc}|${pedido.id}|${pedido.numero_os || ''}|${ficha?.updated_at || ''}|${ficha?.id || ''}`
   const inicial = useMemo(
-    () => (doc === 'os' ? valoresOS(pedido, lab) : valoresSolicitacao(pedido, lab)),
-    [chave], // eslint-disable-line react-hooks/exhaustive-deps
+    () => (modoPrevia ? valoresPrevia(previa) : doc === 'os' ? valoresOS(pedido, lab) : valoresSolicitacao(pedido, lab)),
+    [chave, previa], // eslint-disable-line react-hooks/exhaustive-deps
   )
   const [v, setV] = useState(inicial)
   useEffect(() => { setV(inicial) }, [inicial])
@@ -48,8 +55,29 @@ export default function FichaDocumento({ doc, pedido, editavel, ocupado, onSalva
   }, [onFechar, alterado])
 
   function fechar() {
-    if (alterado && !window.confirm('Há alterações não salvas na ficha. Fechar mesmo assim?')) return
+    if (alterado && !window.confirm(modoPrevia
+      ? 'A O.S. ainda não foi gerada e os ajustes na ficha serão perdidos. Fechar mesmo assim?'
+      : 'Há alterações não salvas na ficha. Fechar mesmo assim?')) return
     onFechar()
+  }
+
+  // Prévia: número da O.S. calculado com o lote e a data informados
+  const numeroPrevio = modoPrevia
+    ? (previaNumeroOS({ data: dataOS, lote: v.lote, sequencial: pedido.sequencial }) || 'gerado ao confirmar')
+    : null
+  const loteOk = /\d/.test(v.lote || '')
+  const dataOk = !!dataOS && dataOS <= hojeISO() && (!historico || dataOS >= dataPedido)
+
+  async function gerar() {
+    if (!loteOk) { window.alert('Informe o lote na ficha (precisa conter o número).'); return }
+    if (!dataOk) { window.alert('A data da O.S. precisa estar entre a data do pedido e hoje.'); return }
+    const ajustes = {}
+    for (const [k, val] of Object.entries(v)) {
+      if (k === 'numero_os') continue
+      if (!deepEqual(val, inicial[k])) ajustes[k] = val
+    }
+    if (Object.keys(ajustes).length) ajustes.indicador = calcularIndicador(v) || null
+    await onGerarOS({ lote: String(v.lote).trim(), dataValidacao: dataOS, fichaOS: ajustes })
   }
 
   async function salvar() {
@@ -73,25 +101,44 @@ export default function FichaDocumento({ doc, pedido, editavel, ocupado, onSalva
       <div className={s.barraFerramentas}>
         <div className={s.barraTitulo}>
           <strong>{titulo}</strong>
-          <small>{numeroPE(pedido)}{editavel ? ' · edição liberada' : ' · somente leitura'}</small>
+          <small>{numeroPE(pedido)}{modoPrevia ? ' · confira, ajuste e gere a O.S.' : editavel ? ' · edição liberada' : ' · somente leitura'}</small>
         </div>
         <div className={s.barraAcoes}>
-          {editavel && (
+          {modoPrevia && historico && (
+            <label className={s.dataOS}>
+              <span>📜 Data da O.S. (papel)</span>
+              <input type="date" value={dataOS} max={hojeISO()} min={dataPedido} onChange={e => setDataOS(e.target.value)} />
+            </label>
+          )}
+          {modoPrevia && (
+            <button className={`${s.btn} ${s.btnGerar}`} onClick={gerar} disabled={ocupado || !loteOk || !dataOk}
+              title={loteOk ? '' : 'Informe o lote na ficha'}>
+              {ocupado ? 'Gerando…' : '✓ Gerar O.S.'}
+            </button>
+          )}
+          {editavel && !modoPrevia && (
             <button className={`${s.btn} ${s.btnSalvar}`} onClick={salvar} disabled={!alterado || ocupado}>
               {ocupado ? 'Salvando…' : alterado ? '💾 Salvar ficha' : 'Salvo'}
             </button>
           )}
-          <button className={`${s.btn} ${s.btnImprimir}`} onClick={() => setImprimindo(true)} disabled={ocupado}>
-            🖨 Imprimir / PDF
-          </button>
+          {!modoPrevia && (
+            <button className={`${s.btn} ${s.btnImprimir}`} onClick={() => setImprimindo(true)} disabled={ocupado}>
+              🖨 Imprimir / PDF
+            </button>
+          )}
           <button className={s.btn} onClick={fechar}>Fechar</button>
         </div>
       </div>
-      {editavel && alterado && (
+      {modoPrevia ? (
+        <div className={s.aviso}>
+          A O.S. ainda não foi gerada. Confira a ficha (lote, datas, itens marcados e observação), ajuste o que precisar
+          e clique em <strong>Gerar O.S.</strong> Os ajustes são gravados junto.
+        </div>
+      ) : editavel && alterado && (
         <div className={s.aviso}>Alterações não salvas. Salve antes de imprimir para que a versão impressa fique registrada.</div>
       )}
       <div className={s.area}>
-        <Ficha v={v} set={set} editavel={podeEditar} responsaveis={responsaveis(pedido, doc)} />
+        <Ficha v={modoPrevia ? { ...v, numero_os: numeroPrevio } : v} set={set} editavel={podeEditar} responsaveis={responsaveis(pedido, doc)} />
       </div>
     </div>,
     document.body,
@@ -145,6 +192,24 @@ function valoresOS(pedido, lab) {
     contato: f.contato || '',
     ...booleanos,
     observacao: f.observacao || observacaoPadrao(pedido, amostras, empresa),
+  }
+}
+
+function valoresPrevia(p) {
+  const marcados = p.marcados || {}
+  return {
+    numero_os: '',
+    data_solicitacao: dataISO(p.data_solicitacao),
+    inicio_ensaios: '', fim_ensaios: '',
+    previsao_entrega: dataISO(p.previsao_entrega),
+    analise_ensaios: '', repactuacao_data: '', entrega_solicitacao: '',
+    motivo_repactuacao: '',
+    obra: p.obra || '',
+    lote: p.lote || '',
+    solicitante: p.solicitante || '',
+    contato: p.contato || '',
+    ...Object.fromEntries(CAMPOS_BOOLEANOS_OS.map(c => [c, !!marcados[c]])),
+    observacao: p.observacao || '',
   }
 }
 

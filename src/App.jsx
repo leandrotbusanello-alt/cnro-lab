@@ -12,6 +12,7 @@ import RedefinirSenhaPage from './pages/RedefinirSenhaPage'
 import NotFoundPage from './pages/NotFoundPage'
 import CampoPage from './modules/campo/CampoPage'
 import LaboratorioPage from './modules/laboratorio/LaboratorioPage'
+import CadastrosPage from './modules/cadastros/CadastrosPage'
 
 function RequireAuth({ children }) {
   const { perfil, carregando } = useAuthStore()
@@ -48,6 +49,7 @@ export default function App() {
           <Route path="laboratorio/*" element={<LaboratorioPage />} />
           <Route path="assistente/*" element={<AssistentePage />} />
           <Route path="gestor/*" element={<GestorPage />} />
+          <Route path="cadastros" element={<CadastrosPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
 

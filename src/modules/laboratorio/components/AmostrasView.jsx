@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { normalizarAmostras, rotuloCampo, valorExibicao } from '../utils'
+import { normalizarAmostras, rotuloCampo, valorExibicao, campoOculto } from '../utils'
 import { urlArquivo } from '../labRepo'
+import { ordemCampos } from '../../campo/formularios'
 import styles from './AmostrasView.module.css'
 import ui from './ui.module.css'
 
@@ -11,7 +12,11 @@ export default function AmostrasView({ pedido }) {
   const atual = amostras[Math.min(idx, amostras.length - 1)] || {}
   // info_geral = cópia usada só pelo formulário do Campo (os campos já estão na amostra)
   const campos = Object.entries(atual)
-    .filter(([k, v]) => k !== 'info_geral' && v !== '' && v !== null && v !== undefined)
+    .filter(([k, v]) => !campoOculto(k) && v !== '' && v !== null && v !== undefined)
+  // mesma ordem do formulário do Campo (campos desconhecidos/antigos no final)
+  const ordem = ordemCampos(pedido.sub_tipo)
+  const pos = k => (ordem.indexOf(k) < 0 ? 999 : ordem.indexOf(k))
+  campos.sort((a, b) => pos(a[0]) - pos(b[0]))
 
   return (
     <section className={ui.secao}>
@@ -46,7 +51,7 @@ export default function AmostrasView({ pedido }) {
                   <span className={ui.kvValor}>
                     {k === 'certificado' && typeof v === 'string'
                       ? <AbrirArquivo caminho={v} />
-                      : valorExibicao(v)}
+                      : valorExibicao(v, k)}
                   </span>
                 </div>
               ))}

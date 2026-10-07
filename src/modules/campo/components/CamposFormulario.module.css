@@ -1,0 +1,14 @@
+.largo { grid-column: 1 / -1; }
+
+.opcoes { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.opcao {
+  border: 1.5px solid #e2e6ee; border-radius: 8px; background: #fff; color: #2d3348;
+  padding: 0.55rem 1.4rem; font-size: 0.92rem; font-weight: 600; cursor: pointer; font-family: inherit;
+}
+.opcao:hover { border-color: #13B2AC; }
+.opcaoAtiva { border-color: #13B2AC; background: #e7f8f7; color: #0b7d78; }
+
+.alerta { font-size: 0.8rem; color: #b42318; font-weight: 600; }
+.aviso { font-size: 0.8rem; color: #b45309; }
+
+.vazio { font-size: 0.88rem; color: #6b7280; margin: 0; }

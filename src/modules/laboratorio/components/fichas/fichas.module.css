@@ -154,3 +154,8 @@
   .area { padding: 8px; }
   .folha { zoom: .48; }
 }
+
+/* FR-IMOB-04 antes da O.S. (migração 17) */
+.btnGerar { background: var(--teal); border-color: var(--teal); color: #fff; font-weight: 700; }
+.dataOS { display: flex; align-items: center; gap: 6px; color: #fff; font-size: 13px; }
+.dataOS input { border-radius: 6px; border: 1px solid #cbd5e1; padding: 6px 8px; font-size: 13px; }

@@ -91,6 +91,7 @@ export function useCampo() {
       ensaios_ids:      dados.ensaios_ids,
       especificacoes:   dados.especificacoes || [],
       dados_amostra:    dados.dados_amostra,
+      traco_id:         dados.traco_id || null,   // projeto adotado (cadastro de traços — migração 17)
       solicitante_id:   perfil?.id,
       status: 'aguardando_lab',   // (item 3) nome oficial do status
       created_at: new Date().toISOString(),

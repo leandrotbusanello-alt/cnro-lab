@@ -19,6 +19,8 @@ export default function EnsaiosOS({ pedido, ensaiosOs, podeGerenciar, ocupado, r
   const fichasOnline = useMemo(() => new Set((modelos || []).filter(m => m.ativo !== false).map(m => m.ficha_ensaio_id)), [modelos])
   const rotuloFicha = f => `${f.codigo} — ${f.nome}${f.versao ? ` (${f.versao})` : ''}${fichasOnline.has(f.id) ? ' · online' : ' · sem ficha online'}`
   const [adicionando, setAdicionando] = useState(false)
+  // Executor escolhido na lista, ainda não atribuído (só vale ao clicar em "Atribuir")
+  const [escolhido, setEscolhido] = useState({})
 
   const historico = ehHistorico(pedido)
   const executores = useMemo(() => {
@@ -55,7 +57,7 @@ export default function EnsaiosOS({ pedido, ensaiosOs, podeGerenciar, ocupado, r
 
       {podeGerenciar && semAtribuicao > 0 && (
         <div className={`${ui.aviso} ${ui.avisoAlerta} ${styles.avisoTopo}`}>
-          {semAtribuicao} ensaio(s) sem executor. Selecione o assistente de cada ensaio.
+          {semAtribuicao} ensaio(s) sem executor. Escolha a ficha e o executor de cada ensaio e clique em "Atribuir ensaio".
         </div>
       )}
 
@@ -113,15 +115,14 @@ export default function EnsaiosOS({ pedido, ensaiosOs, podeGerenciar, ocupado, r
                   </select>
                 </label>
 
-                <label className={styles.cel}>
+                <div className={`${styles.cel} ${styles.celExecutor}`}>
                   <span className={styles.rotuloMobile}>Executor</span>
                   <select
                     className={ui.input}
-                    value={eo.assistente_id || ''}
+                    value={escolhido[eo.id] ?? (eo.assistente_id || '')}
                     disabled={!podeGerenciar || ocupado || travadoExecutor}
                     title={travadoExecutor ? 'Resultado já enviado — devolva ao assistente para trocar o executor' : ''}
-                    onChange={e => rodar(() => acoes.atualizarAtribuicao(pedido, eo, { assistenteId: e.target.value || null }),
-                      e.target.value ? 'Ensaio atribuído.' : 'Atribuição removida.')}
+                    onChange={e => setEscolhido(x => ({ ...x, [eo.id]: e.target.value }))}
                   >
                     <option value="">— Selecionar —</option>
                     {executores.assistentes.length > 0 && (
@@ -138,7 +139,28 @@ export default function EnsaiosOS({ pedido, ensaiosOs, podeGerenciar, ocupado, r
                       <option value={eo.assistente_id}>(usuário inativo)</option>
                     )}
                   </select>
-                </label>
+                  {escolhido[eo.id] !== undefined && escolhido[eo.id] !== (eo.assistente_id || '') && (
+                    <div className={styles.atribuirAcoes}>
+                      <button
+                        type="button"
+                        className={`${ui.btn} ${escolhido[eo.id] ? ui.btnAcao : ui.btnPerigo} ${ui.btnPequeno}`}
+                        disabled={ocupado}
+                        onClick={async () => {
+                          const novo = escolhido[eo.id]
+                          const ok = await rodar(() => acoes.atualizarAtribuicao(pedido, eo, { assistenteId: novo || null }),
+                            novo ? 'Ensaio atribuído.' : 'Atribuição removida.')
+                          if (ok) setEscolhido(({ [eo.id]: _, ...resto }) => resto)
+                        }}
+                      >
+                        {escolhido[eo.id] ? (eo.assistente_id ? '✓ Trocar executor' : '✓ Atribuir ensaio') : 'Remover atribuição'}
+                      </button>
+                      <button type="button" className={`${ui.btn} ${ui.btnSecundario} ${ui.btnPequeno}`} disabled={ocupado}
+                        onClick={() => setEscolhido(({ [eo.id]: _, ...resto }) => resto)}>
+                        Cancelar
+                      </button>
+                    </div>
+                  )}
+                </div>
 
                 <div className={styles.cel}>
                   <span className={styles.rotuloMobile}>Status</span>

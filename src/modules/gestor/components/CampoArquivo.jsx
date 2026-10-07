@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { LIMITE_ASSINATURA_MB, LIMITE_FOTO_MB } from '../constants'
 import { urlArquivo } from '../gestorRepo'
+import { recortarAssinatura } from '../../../lib/assinatura'
 import styles from '../gestor.module.css'
 
 const CONFIG = {
@@ -39,7 +40,17 @@ export default function CampoArquivo({ usuario, tipo, valor, onChange, obrigator
   useEffect(() => {
     let ativo = true
     setUrlAtual(null)
-    if (caminhoAtual) urlArquivo(usuario, tipo).then(u => { if (ativo) setUrlAtual(u) })
+    if (caminhoAtual) {
+      urlArquivo(usuario, tipo).then(async u => {
+        if (!u || tipo !== 'assinatura') { if (ativo) setUrlAtual(u); return }
+        // mostra a assinatura como sai na ficha (margens cortadas)
+        try {
+          const blob = await (await fetch(u)).blob()
+          const r = await recortarAssinatura(blob)
+          if (ativo) setUrlAtual(URL.createObjectURL(r))
+        } catch { if (ativo) setUrlAtual(u) }
+      })
+    }
     return () => { ativo = false }
   }, [caminhoAtual]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -51,13 +62,20 @@ export default function CampoArquivo({ usuario, tipo, valor, onChange, obrigator
     return () => URL.revokeObjectURL(u)
   }, [valor.arquivo])
 
-  function escolher(e) {
+  async function escolher(e) {
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file) return
     setErro('')
     if (!cfg.tipos.includes(file.type)) { setErro(cfg.erroTipo); return }
     if (file.size > cfg.limiteMb * 1024 * 1024) { setErro(`Arquivo maior que ${cfg.limiteMb} MB.`); return }
+    if (tipo === 'assinatura') {
+      // corta as margens em branco: a assinatura fica do tamanho certo nas fichas
+      const recortada = await recortarAssinatura(file)
+      const final = recortada === file ? file : new File([recortada], file.name.replace(/\.\w+$/, '') + '.png', { type: 'image/png' })
+      onChange({ arquivo: final, remover: false })
+      return
+    }
     onChange({ arquivo: file, remover: false })
   }
 

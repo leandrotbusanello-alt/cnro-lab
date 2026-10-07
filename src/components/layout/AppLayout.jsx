@@ -13,6 +13,8 @@ const NAV_ITEMS = [
   { id: 'assistente',  path: '/assistente',   label: 'Assistente',icon: '🧪' },
   { id: 'gestor',      path: '/gestor',       label: 'Gestor',    icon: '⚙️' },
 ]
+// Cadastros (traços, jazidas, pedreiras, fornecedores): Laboratório e Gestor
+const ITEM_CADASTROS = { id: 'cadastros', path: '/cadastros', label: 'Cadastros', icon: '📚' }
 
 export default function AppLayout() {
   const { perfil, logout } = useAuthStore()
@@ -20,7 +22,11 @@ export default function AppLayout() {
   const nav = useNavigate()
 
   const modulos = perfil?.modulos_acesso || []
-  const navItems = [ITEM_INICIO, ...NAV_ITEMS.filter(item => modulos.includes(item.id))]
+  const navItems = [
+    ITEM_INICIO,
+    ...NAV_ITEMS.filter(item => modulos.includes(item.id)),
+    ...(modulos.includes('laboratorio') || modulos.includes('gestor') ? [ITEM_CADASTROS] : []),
+  ]
 
   async function handleLogout() {
     await logout()
