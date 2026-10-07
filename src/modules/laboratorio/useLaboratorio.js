@@ -167,6 +167,7 @@ export function useLaboratorio() {
     ensaiosPorId: indices.ensaiosPorId,
     usuariosPorId: indices.usuariosPorId,
     empresasPorId: indices.empresasPorId,
+    fichasPorId: indices.fichasPorId,
   }), [perfil, meuIdPara, indices])
 
   const acoes = useMemo(() => {

@@ -102,13 +102,21 @@ export function useAssistente() {
     modelosPorId: porId(dados.modelos),
   }), [dados])
 
-  const fila = useMemo(() => ordenarFila(
-    dados.ensaiosOs.filter(eo => ['pendente', 'em_andamento', 'devolvido'].includes(eo.status)
-      && !['concluido', 'cancelado'].includes(indices.pedidosPorId[eo.pedido_id]?.status)),
-  ), [dados.ensaiosOs, indices.pedidosPorId])
-
   // Registro do próprio usuário (assinatura cadastrada?)
   const eu = indices.usuariosPorId[perfil?.id] || perfil
+
+  /** Auxiliar (migração 19): participa do ensaio, mas quem preenche e assina é o executor. */
+  const souAuxiliar = useCallback(eo => {
+    if (!eo || !perfil) return false
+    if (eo.assistente_id === perfil.id) return false
+    if (ehHistorico(indices.pedidosPorId[eo.pedido_id])) return false   // DEV age em nome do executor
+    return (eo.auxiliares_ids || []).includes(perfil.id)
+  }, [perfil, indices.pedidosPorId])
+
+  const abertos = useMemo(() => dados.ensaiosOs.filter(eo => ['pendente', 'em_andamento', 'devolvido'].includes(eo.status)
+    && !['concluido', 'cancelado'].includes(indices.pedidosPorId[eo.pedido_id]?.status)), [dados.ensaiosOs, indices.pedidosPorId])
+  const fila = useMemo(() => ordenarFila(abertos.filter(eo => !souAuxiliar(eo))), [abertos, souAuxiliar])
+  const filaAuxiliar = useMemo(() => ordenarFila(abertos.filter(souAuxiliar)), [abertos, souAuxiliar])
 
   /** Quem executa/assina um ensaio. Lançamento histórico: o assistente atribuído (o DEV age em nome dele). */
   const executorDe = useCallback(eo => {
@@ -130,7 +138,7 @@ export function useAssistente() {
   }, [ctxAcao, carregar, indices])
 
   return {
-    perfil, eu, executorDe, ...dados, ...indices, fila, fonte, loading, erro,
+    perfil, eu, executorDe, souAuxiliar, ...dados, ...indices, fila, filaAuxiliar, fonte, loading, erro,
     recarregar: carregar, acoes,
   }
 }

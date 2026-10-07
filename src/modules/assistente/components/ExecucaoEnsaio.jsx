@@ -101,7 +101,9 @@ export default function ExecucaoEnsaio() {
   useEffect(() => { if (executor?.assinatura_url) urlAssinatura(executor).then(setUrlMinha) }, [executor])
 
   // ── Salvamento automático ────────────────────────────────────────────────
-  const emExecucao = eo?.status === 'em_andamento'
+  // auxiliar (migração 19): só consulta — não inicia, não preenche, não assina
+  const auxiliar = a.souAuxiliar(eo)
+  const emExecucao = eo?.status === 'em_andamento' && !auxiliar
   const alterar = useCallback(novo => { setEstado(novo); sujoServidor.current = true }, [])
   // quadros de foto (ex.: FR-IMOB-27): a foto fica no aparelho e sobe para o servidor assim que possível
   const fotos = useFotosFicha({ ensaioOsId: eo?.id, usuarioId: a.eu?.id, estado, onEstado: alterar })
@@ -265,7 +267,14 @@ export default function ExecucaoEnsaio() {
         <div className={`${ui.aviso} ${aviso.tipo === 'erro' ? ui.avisoErro : ui.avisoOk}`} role="status">{aviso.texto}</div>
       )}
 
-      {!emExecucao && modeloReg && (
+      {auxiliar && (
+        <div className={`${ui.aviso} ${ui.avisoInfo}`}>
+          🤝 <span>Você é <strong>auxiliar</strong> neste ensaio. Quem preenche e assina a ficha é
+          <strong> {a.usuariosPorId[eo.assistente_id]?.nome || 'o executor'}</strong>; o ensaio conta para os dois.</span>
+        </div>
+      )}
+
+      {!emExecucao && !auxiliar && modeloReg && (
         <div className={styles.iniciarCaixa}>
           <div>
             <strong>{eo.status === 'devolvido' ? 'Corrigir a ficha' : 'Pronto para começar?'}</strong>
@@ -294,6 +303,7 @@ export default function ExecucaoEnsaio() {
               podeAssinar={{ executor: emExecucao && !!executor?.assinatura_url }}
               motivoSemAssinatura={!executor?.assinatura_url
                 ? `${historico ? `${nomeExec} não tem` : 'Você ainda não tem'} assinatura cadastrada. Peça ao Gestor para cadastrar.`
+                : auxiliar ? 'Quem assina é o executor do ensaio.'
                 : !emExecucao ? 'Inicie o ensaio para preencher e assinar.' : undefined}
               usuarioNome={executor?.nome}
               onAssinar={() => { setAssinatura({ nome: executor?.nome, em: new Date().toISOString() }); sujoServidor.current = true }}

@@ -45,7 +45,7 @@ async function buscarSituacaoAtualServidor() {
   let ensaiosOs = []
   for (let i = 0; i < idsComOS.length; i += 150) {
     const { data, error: e2 } = await supabase.from('ensaios_os')
-      .select('id, pedido_id, assistente_id, status, ensaio_id, nome_ensaio')
+      .select('id, pedido_id, assistente_id, auxiliares_ids, status, ensaio_id, nome_ensaio')
       .in('pedido_id', idsComOS.slice(i, i + 150))
     if (e2) throw e2
     ensaiosOs.push(...(data || []))
@@ -66,7 +66,7 @@ async function buscarPeriodoServidor(inicio, fim, { comCancelados }) {
       .select('id, solicitante_id, laboratorista_id, finalizado_em')
       .eq('status', 'concluido').gte('finalizado_em', de).lt('finalizado_em', ate),
     supabase.from('ensaios_os')
-      .select('id, pedido_id, assistente_id, ensaio_id, nome_ensaio, aprovado_em')
+      .select('id, pedido_id, assistente_id, auxiliares_ids, ensaio_id, nome_ensaio, aprovado_em')
       .eq('status', 'aprovado').gte('aprovado_em', de).lt('aprovado_em', ate),
   ])
   if (rSolic.error) throw rSolic.error
@@ -223,6 +223,8 @@ export function computarContadores({ situacaoAtual, periodo, catalogoEnsaios }) 
       aFazer:      meus.filter(e => e.status === 'pendente').length,
       emAndamento: meus.filter(e => e.status === 'em_andamento').length,
       devolvidos:  meus.filter(e => e.status === 'devolvido').length,
+      // ensaios em aberto em que participa como auxiliar (migração 19)
+      comoAuxiliar: ensaiosOs.filter(e => participaComoAuxiliar(e, idUsuario) && STATUS_NA_FILA.includes(e.status)).length,
     }
   }
 
@@ -266,7 +268,14 @@ export function computarContadores({ situacaoAtual, periodo, catalogoEnsaios }) 
       solicitadosPorSolicitante: idUsuario => solicitados.filter(p => p.solicitante_id === idUsuario).length,
       finalizadosPorSolicitante: idUsuario => finalizados.filter(p => p.solicitante_id === idUsuario).length,
       finalizadosPorLaboratorista: idUsuario => finalizados.filter(p => p.laboratorista_id === idUsuario).length,
-      aprovadosPorAssistente: idUsuario => aprovados.filter(e => e.assistente_id === idUsuario).length,
+      // o ensaio conta para o executor e para os auxiliares (migração 19)
+      aprovadosPorAssistente: idUsuario => aprovados.filter(e => e.assistente_id === idUsuario || participaComoAuxiliar(e, idUsuario)).length,
+      aprovadosComoAuxiliar: idUsuario => aprovados.filter(e => participaComoAuxiliar(e, idUsuario)).length,
     },
   }
+}
+
+/** Participa do ensaio como auxiliar (não é o executor) — migração 19 */
+function participaComoAuxiliar(e, idUsuario) {
+  return e.assistente_id !== idUsuario && Array.isArray(e.auxiliares_ids) && e.auxiliares_ids.includes(idUsuario)
 }

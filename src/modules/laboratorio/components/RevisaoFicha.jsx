@@ -30,6 +30,7 @@ export default function RevisaoFicha({ pedido, ensaioOs: eo, podeRevisar, ocupad
   const modo = podeAprovar ? 'revisao' : 'leitura'
 
   const assistente = lab.usuariosPorId[eo.assistente_id]
+  const auxiliares = (eo.auxiliares_ids || []).map(id => lab.usuariosPorId[id]?.nome || 'usuário')
   // lançamento histórico: quem assina é o laboratorista do pedido, na data informada
   const historico = ehHistorico(pedido)
   const eu = lab.laboratoristaDe(pedido)
@@ -211,6 +212,7 @@ export default function RevisaoFicha({ pedido, ensaioOs: eo, podeRevisar, ocupad
             <h3>Execução</h3>
             <dl className={styles.kv}>
               <dt>Executor</dt><dd>{assistente?.nome || '—'}</dd>
+              {auxiliares.length > 0 && <><dt>Auxiliar(es)</dt><dd>{auxiliares.join(', ')}</dd></>}
               <dt>Assinada em</dt><dd>{eo.assinatura_executor?.em ? dataHora(eo.assinatura_executor.em) : '—'}</dd>
               <dt>Campos</dt><dd>{ficha.situacao ? `${ficha.situacao.preenchidos} de ${ficha.situacao.total}` : '—'}</dd>
             </dl>

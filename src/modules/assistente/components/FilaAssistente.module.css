@@ -39,3 +39,7 @@
 @media (max-width: 600px) {
   .selos { justify-content: flex-start; }
 }
+
+/* Ensaios em que o usuário é auxiliar (migração 19) */
+.subtitulo { font-size: 16px; color: var(--navy); margin: 28px 0 10px; }
+.subtitulo span { font-size: 13px; font-weight: 400; color: #64748b; }

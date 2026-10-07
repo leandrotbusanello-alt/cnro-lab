@@ -26,6 +26,8 @@
 //   (revisão, decisão de 07/10/2026): substitui a fórmula e entra nos cálculos seguintes e nos resultados.
 //   Cabeçalho: material/procedência/informações complementares (papel 'pedido') podem ser editados
 //   pelo assistente e pelo laboratorista; o valor digitado fica em entradas[endereço] e vale só para a ficha.
+//   cabecalho: { material, procedencia, complemento } — aproveitado de outra ficha quando o laboratorista
+//   troca a ficha do ensaio (migração 19); vale quando a ficha nova ainda não tem o valor em entradas.
 // ─────────────────────────────────────────────────────────────────────────────
 import { Motor, colNum, colStr, ehErro, separarEndereco } from './formulas.js'
 
@@ -138,6 +140,8 @@ export function estadoDosDados(dados) {
     verificacoes: { ...(dados?.verificacoes || {}) },
     fotos: { ...(dados?.fotos || {}) },
     ajustes: { ...(dados?.ajustes || {}) },
+    // cabeçalho aproveitado de outra ficha (troca de ficha pelo laboratorista — migração 19)
+    cabecalho: { ...(dados?.cabecalho || {}) },
   }
 }
 
@@ -159,7 +163,8 @@ export function calcularFicha(indice, estado, pedidoCampos = {}) {
   }
   for (const a of indice.papeis.pedido) {
     const campo = cells[a].role.campo
-    const v = estado?.entradas?.[a] ?? pedidoCampos?.[campo]
+    const aproveitado = CAMPOS_PEDIDO_EDITAVEIS.includes(campo) ? estado?.cabecalho?.[campo] : undefined
+    const v = estado?.entradas?.[a] ?? aproveitado ?? pedidoCampos?.[campo]
     motor.definir(a, v === undefined || v === '' ? null : v)
   }
   for (const a of indice.papeis.escolha) {
@@ -225,6 +230,16 @@ export function montarDados(indice, estado, motor, { modeloId } = {}) {
     const v = motor.valores.get(a)
     if (v !== null && v !== undefined && v !== '') pedido[indice.cells[a].role.campo] = v
   }
+  // cabeçalho digitado na ficha (ou aproveitado de outra): é o que passa para a ficha nova numa troca
+  const cabecalho = {}
+  for (const [c, v] of Object.entries(estado?.cabecalho || {})) {
+    if (CAMPOS_PEDIDO_EDITAVEIS.includes(c) && v !== null && v !== undefined && v !== '') cabecalho[c] = v
+  }
+  for (const a of indice.papeis.pedido) {
+    const c = indice.cells[a].role.campo
+    const v = estado?.entradas?.[a]
+    if (CAMPOS_PEDIDO_EDITAVEIS.includes(c) && v !== null && v !== undefined && v !== '') cabecalho[c] = valorDeEntrada(v)
+  }
   return {
     motor: VERSAO_MOTOR,
     modelo_id: modeloId || null,
@@ -234,6 +249,7 @@ export function montarDados(indice, estado, motor, { modeloId } = {}) {
     ...(indice.papeis.verificacao.length ? { verificacoes } : {}),
     ...(indice.papeis.foto.length ? { fotos } : {}),
     ...(Object.keys(ajustes).length ? { ajustes } : {}),
+    ...(Object.keys(cabecalho).length ? { cabecalho } : {}),
     atualizado_em: new Date().toISOString(),
   }
 }

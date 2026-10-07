@@ -405,24 +405,63 @@ export async function transferirOS(ctx, pedido, paraId, motivo) {
     eventoLocal(ctx, 'O.S. transferida', { para: para?.nome, motivo })))
 }
 
-export async function atualizarAtribuicao(ctx, pedido, ensaioOs, { assistenteId, fichaId }) {
+export async function atualizarAtribuicao(ctx, pedido, ensaioOs, { assistenteId, fichaId, auxiliaresIds }) {
   const dados = {}
   const extra = {}
+  let local = {}
+  let acao = null
   if (assistenteId !== undefined && assistenteId !== ensaioOs.assistente_id) {
     dados.assistente_id = assistenteId || null
     // lançamento histórico: atribuição na data da O.S.
     const quando = ehHistorico(pedido) ? (dataParaISO(pedido.data_validacao) || pedido.created_at) : new Date().toISOString()
     dados.data_atribuicao = assistenteId ? quando : null
     extra.assistente = assistenteId ? ctx.usuariosPorId?.[assistenteId]?.nome : null
+    acao = assistenteId ? (ensaioOs.assistente_id ? 'Executor trocado' : 'Ensaio atribuído') : 'Atribuição removida'
+    // o executor não fica também como auxiliar (o servidor faz o mesmo)
+    if (assistenteId && (ensaioOs.auxiliares_ids || []).includes(assistenteId)) {
+      local.auxiliares_ids = ensaioOs.auxiliares_ids.filter(x => x !== assistenteId)
+    }
   }
   if (fichaId !== undefined && fichaId !== ensaioOs.ficha_ensaio_id) {
     dados.ficha_ensaio_id = fichaId || null
+    acao = 'Ficha do ensaio alterada'
+    const de = ctx.fichasPorId?.[ensaioOs.ficha_ensaio_id]?.codigo || null
+    const para = ctx.fichasPorId?.[fichaId]?.codigo || '(sem ficha)'
+    if (de) extra.de = de
+    extra.para = para
+    // Migração 19: a ficha nova abre do zero (só o cabeçalho é aproveitado) e, se o ensaio
+    // já tinha sido iniciado/enviado, volta ao assistente. O servidor faz isso; aqui é só a cópia local.
+    if (ensaioOs.ficha_ensaio_id) {
+      const cab = {}
+      const antigo = ensaioOs.dados_resultado?.cabecalho || {}
+      for (const c of ['material', 'procedencia', 'complemento']) if (antigo[c]) cab[c] = antigo[c]
+      local = {
+        ...local,
+        ficha_modelo_id: null,
+        dados_resultado: Object.keys(cab).length ? { cabecalho: cab } : {},
+        assinatura_executor: null, assinatura_calculista: null, rascunho_em: null, arquivo_url: null,
+      }
+      if (['em_andamento', 'aguardando_revisao', 'devolvido'].includes(ensaioOs.status)) {
+        Object.assign(local, {
+          status: 'devolvido', devolvido_em: new Date().toISOString(),
+          devolvido_motivo: `Ficha trocada de ${de || '?'} para ${para}.`,
+        })
+      }
+    }
+  }
+  if (auxiliaresIds !== undefined) {
+    const antes = ensaioOs.auxiliares_ids || []
+    const depois = [...new Set(auxiliaresIds.filter(Boolean))].filter(x => x !== (dados.assistente_id ?? ensaioOs.assistente_id))
+    const incluidos = depois.filter(x => !antes.includes(x))
+    const removidos = antes.filter(x => !depois.includes(x))
+    if (incluidos.length || removidos.length) {
+      dados.auxiliares_ids = depois
+      acao = incluidos.length ? 'Auxiliar incluído' : 'Auxiliar removido'
+      extra.auxiliar = [...incluidos, ...removidos].map(id => ctx.usuariosPorId?.[id]?.nome || 'usuário').join(', ')
+    }
   }
   if (Object.keys(dados).length === 0) return { offline: false }
 
-  const acao = 'assistente_id' in dados
-    ? (dados.assistente_id ? 'Ensaio atribuído' : 'Atribuição removida')
-    : 'Ficha do ensaio alterada'
   const evento = { acao, ensaio: ensaioOs.nome_ensaio, ...extra }
 
   return executarSequencia([
@@ -430,7 +469,7 @@ export async function atualizarAtribuicao(ctx, pedido, ensaioOs, { assistenteId,
       op: { tipo: 'update', tabela: 'ensaios_os', id: ensaioOs.id, dados,
             descricao: `${acao}: ${ensaioOs.nome_ensaio}`, pedidoId: pedido.id },
       local: async () => {
-        await patchEnsaioOsLocal(ensaioOs.id, dados)
+        await patchEnsaioOsLocal(ensaioOs.id, { ...local, ...dados })
         await patchPedidoLocal(pedido.id, {}, eventoLocal(ctx, acao, { ensaio: ensaioOs.nome_ensaio, ...extra }))
       },
     },

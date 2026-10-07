@@ -62,11 +62,20 @@ export default function FilaAssistente() {
           {listaFiltrada.map(eo => <CardEnsaio key={eo.id} eo={eo} />)}
         </div>
       )}
+
+      {!a.loading && !statusFiltro && a.filaAuxiliar.length > 0 && (
+        <>
+          <h2 className={styles.subtitulo}>Como auxiliar <span>· só consulta: quem preenche e assina é o executor</span></h2>
+          <div className={styles.lista}>
+            {a.filaAuxiliar.map(eo => <CardEnsaio key={eo.id} eo={eo} auxiliar />)}
+          </div>
+        </>
+      )}
     </>
   )
 }
 
-function CardEnsaio({ eo }) {
+function CardEnsaio({ eo, auxiliar = false }) {
   const a = useAssist()
   const navigate = useNavigate()
   const p = a.pedidosPorId[eo.pedido_id] || {}
@@ -90,6 +99,7 @@ function CardEnsaio({ eo }) {
               📜 Histórico · {a.usuariosPorId[eo.assistente_id]?.nome || 'executor'}
             </Selo>
           )}
+          {auxiliar && <Selo tom="neutro" title="Você é auxiliar: só consulta">🤝 Auxiliar · {a.usuariosPorId[eo.assistente_id]?.nome || 'executor'}</Selo>}
           {eo._alteradoOffline && <Selo tom="offline" title="Alterações ainda não sincronizadas">📶 Offline</Selo>}
           <Selo tom={st.tom}>{st.label}</Selo>
         </div>
@@ -112,7 +122,7 @@ function CardEnsaio({ eo }) {
           ? <span>Devolvido {idade(eo.devolvido_em)}</span>
           : <span title={dataHora(eo.data_atribuicao)}>Atribuído {idade(eo.data_atribuicao || eo.created_at)}</span>}
         {eo.rascunho_em && eo.status === 'em_andamento' && <span>Rascunho salvo {idade(eo.rascunho_em)}</span>}
-        <span className={styles.abrir}>{eo.status === 'pendente' ? 'Abrir e iniciar →' : 'Continuar →'}</span>
+        <span className={styles.abrir}>{auxiliar ? 'Consultar →' : eo.status === 'pendente' ? 'Abrir e iniciar →' : 'Continuar →'}</span>
       </div>
     </button>
   )

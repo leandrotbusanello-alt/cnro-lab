@@ -98,7 +98,18 @@ export default function EnsaiosOS({ pedido, ensaiosOs, podeGerenciar, ocupado, r
                     className={ui.input}
                     value={eo.ficha_ensaio_id || ''}
                     disabled={!podeGerenciar || ocupado || eo.status === 'aprovado'}
-                    onChange={e => rodar(() => acoes.atualizarAtribuicao(pedido, eo, { fichaId: e.target.value || null }), 'Ficha definida.')}
+                    onChange={e => {
+                      const novo = e.target.value || null
+                      const iniciado = eo.ficha_ensaio_id && ['em_andamento', 'aguardando_revisao', 'devolvido'].includes(eo.status)
+                      if (iniciado && !window.confirm(
+                        'Trocar a ficha deste ensaio?\n\nO que o assistente já preencheu na ficha atual sai (só material, procedência e ' +
+                        'informações complementares são aproveitados) e o ensaio volta para ele como "Devolvido", já com a ficha nova.')) {
+                        e.target.value = eo.ficha_ensaio_id || ''
+                        return
+                      }
+                      rodar(() => acoes.atualizarAtribuicao(pedido, eo, { fichaId: novo }),
+                        iniciado ? 'Ficha trocada. O ensaio voltou para o assistente.' : 'Ficha definida.')
+                    }}
                   >
                     <option value="">{fichasOpc.length ? '— Selecionar —' : 'Nenhuma ficha cadastrada'}</option>
                     {todas ? (
@@ -159,6 +170,16 @@ export default function EnsaiosOS({ pedido, ensaiosOs, podeGerenciar, ocupado, r
                         Cancelar
                       </button>
                     </div>
+                  )}
+                  {eo.assistente_id && (
+                    <Auxiliares
+                      eo={eo}
+                      candidatos={[...executores.assistentes, ...executores.laboratoristas]}
+                      usuariosPorId={usuariosPorId}
+                      podeGerenciar={podeGerenciar}
+                      ocupado={ocupado}
+                      onMudar={(lista, msg) => rodar(() => acoes.atualizarAtribuicao(pedido, eo, { auxiliaresIds: lista }), msg)}
+                    />
                   )}
                 </div>
 
@@ -222,5 +243,40 @@ export default function EnsaiosOS({ pedido, ensaiosOs, podeGerenciar, ocupado, r
         </Modal>
       )}
     </section>
+  )
+}
+
+/**
+ * Assistentes auxiliares (migração 19): participam do ensaio (ex.: um mede, outro anota),
+ * mas quem preenche e assina a ficha é o executor. O ensaio conta para todos no Painel.
+ */
+function Auxiliares({ eo, candidatos, usuariosPorId, podeGerenciar, ocupado, onMudar }) {
+  const atuais = eo.auxiliares_ids || []
+  const livres = candidatos.filter(u => u.id !== eo.assistente_id && !atuais.includes(u.id))
+  if (!atuais.length && !podeGerenciar) return null
+  return (
+    <div className={styles.auxiliares}>
+      {atuais.map(id => (
+        <span key={id} className={styles.auxiliar} title="Auxiliar: participa do ensaio, mas não preenche nem assina">
+          🤝 {usuariosPorId[id]?.nome || 'usuário'}
+          {podeGerenciar && (
+            <button type="button" aria-label={`Remover auxiliar ${usuariosPorId[id]?.nome || ''}`} disabled={ocupado}
+              onClick={() => onMudar(atuais.filter(x => x !== id), 'Auxiliar removido.')}>×</button>
+          )}
+        </span>
+      ))}
+      {podeGerenciar && livres.length > 0 && (
+        <select
+          className={`${ui.input} ${styles.auxiliarSelect}`}
+          value=""
+          disabled={ocupado}
+          aria-label="Incluir auxiliar"
+          onChange={e => { if (e.target.value) onMudar([...atuais, e.target.value], 'Auxiliar incluído.') }}
+        >
+          <option value="">+ Auxiliar…</option>
+          {livres.map(u => <option key={u.id} value={u.id}>{rotuloUsuario(u)}</option>)}
+        </select>
+      )}
+    </div>
   )
 }

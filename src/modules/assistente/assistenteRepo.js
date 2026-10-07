@@ -22,8 +22,9 @@ import { ehDev, ehHistorico } from '../../lib/historico'
 const COLUNAS_USUARIOS = '*'
 
 async function buscarServidor(perfil) {
+  // executor ou auxiliar (migração 19: o auxiliar só consulta)
   const { data: meus, error } = await supabase.from('ensaios_os').select('*')
-    .eq('assistente_id', perfil.id).in('status', STATUS_NA_FILA)
+    .or(`assistente_id.eq.${perfil.id},auxiliares_ids.cs.{${perfil.id}}`).in('status', STATUS_NA_FILA)
   if (error) throw error
   let ensaiosOs = meus || []
 
@@ -162,7 +163,10 @@ export function baseDoRascunho(eo) {
 
 export async function lerRascunho(eo) {
   const r = await cacheGet('rascunhos_ficha', eo.id)
-  return r && r.base === baseDoRascunho(eo) ? r : null
+  if (!r || r.base !== baseDoRascunho(eo)) return null
+  // ficha trocada pelo laboratorista: o rascunho do aparelho era de outra ficha
+  if (r.fichaEnsaioId && r.fichaEnsaioId !== eo.ficha_ensaio_id) return null
+  return r
 }
 
 export async function gravarRascunho(eo, { estado, assinatura, enviadoServidorEm }) {
@@ -170,6 +174,7 @@ export async function gravarRascunho(eo, { estado, assinatura, enviadoServidorEm
   await cachePut('rascunhos_ficha', {
     ensaioOsId: eo.id,
     base: baseDoRascunho(eo),
+    fichaEnsaioId: eo.ficha_ensaio_id || null,
     estado,
     assinatura: assinatura || null,
     salvoEm: new Date().toISOString(),
@@ -188,7 +193,7 @@ export async function apagarRascunho(ensaioOsId) {
 
 export async function buscarEnviados(perfil) {
   const { data: ensaiosOs, error } = await supabase.from('ensaios_os').select('*')
-    .eq('assistente_id', perfil.id).in('status', ['aguardando_revisao', 'aprovado'])
+    .or(`assistente_id.eq.${perfil.id},auxiliares_ids.cs.{${perfil.id}}`).in('status', ['aguardando_revisao', 'aprovado'])
     .order('aprovado_em', { ascending: false, nullsFirst: true })
   if (error) throw error
 

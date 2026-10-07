@@ -89,6 +89,7 @@ export default function EnviadosAssistente() {
               <div className={styles.info}>
                 <span>🏢 {nomeEmpresa(indices.pedidosPorId[eo.pedido_id], indices.empresasPorId)}</span>
                 <span>📄 {indices.fichasPorId[eo.ficha_ensaio_id]?.codigo || 'Ficha não definida'}</span>
+                {eo.assistente_id !== perfil?.id && (eo.auxiliares_ids || []).includes(perfil?.id) && <span>🤝 Como auxiliar</span>}
               </div>
               <div className={styles.rodape}>
                 {eo.status === 'aprovado'
