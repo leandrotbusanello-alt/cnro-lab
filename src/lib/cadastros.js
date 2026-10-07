@@ -100,3 +100,32 @@ export function dataBR(iso) {
   const [a, m, d] = String(iso).slice(0, 10).split('-')
   return `${d}/${m}/${a}`
 }
+
+// ── Peneiras (granulometria dos traços) ─────────────────────────────────────
+// Abertura em mm e o nome usado no laboratório (polegadas ou número da peneira).
+export const PENEIRAS = [
+  { mm: 76.2, nome: '3"' }, { mm: 63.5, nome: '2 1/2"' }, { mm: 50.8, nome: '2"' }, { mm: 38.1, nome: '1 1/2"' },
+  { mm: 25.4, nome: '1"' }, { mm: 19.1, nome: '3/4"' }, { mm: 12.7, nome: '1/2"' }, { mm: 9.5, nome: '3/8"' },
+  { mm: 6.3, nome: '1/4"' }, { mm: 4.8, nome: 'nº 4' }, { mm: 2.36, nome: 'nº 8' }, { mm: 2.0, nome: 'nº 10' },
+  { mm: 1.18, nome: 'nº 16' }, { mm: 0.6, nome: 'nº 30' }, { mm: 0.42, nome: 'nº 40' }, { mm: 0.3, nome: 'nº 50' },
+  { mm: 0.18, nome: 'nº 80' }, { mm: 0.15, nome: 'nº 100' }, { mm: 0.075, nome: 'nº 200' },
+]
+/** Séries prontas para começar a tabela (todas editáveis depois) */
+// (o laboratório confere com a norma do traço — DNIT ou DER-SP — e ajusta)
+export const SERIES_PENEIRAS = {
+  'Série da FR-IMOB-54 (DNIT 031/24)': [38.1, 25.4, 19.1, 12.7, 9.5, 6.3, 4.8, 2.36, 1.18, 0.6, 0.3, 0.15, 0.075],
+  'Série com nº 10, 40 e 80': [50.8, 38.1, 25.4, 19.1, 12.7, 9.5, 4.8, 2.0, 0.42, 0.18, 0.075],
+  'Série com nº 8, 16, 30, 50 e 100': [25.4, 19.1, 12.7, 9.5, 4.8, 2.36, 1.18, 0.6, 0.3, 0.15, 0.075],
+}
+
+export function nomePeneira(mm) {
+  const p = PENEIRAS.find(x => Math.abs(x.mm - Number(mm)) < 1e-6)
+  return p ? p.nome : ''
+}
+
+/** "nº 200 (0,075 mm)" · "1/2\" (12,7 mm)" */
+export function rotuloPeneira(mm) {
+  const nome = nomePeneira(mm)
+  const txt = `${String(mm).replace('.', ',')} mm`
+  return nome ? `${nome} (${txt})` : txt
+}

@@ -48,6 +48,13 @@ export default function FichaEnsaio({
     onEstado?.({ ...estado, entradas })
   }
 
+  function mudarAjuste(a, v) {
+    const ajustes = { ...(estado?.ajustes || {}) }
+    if (v === null || v === undefined || v === '') delete ajustes[a]
+    else ajustes[a] = v
+    onEstado?.({ ...estado, ajustes })
+  }
+
   function mudarEscolha(grupo, opcao) {
     const escolhas = { ...(estado?.escolhas || {}) }
     if (opcao) escolhas[grupo] = opcao
@@ -71,8 +78,10 @@ export default function FichaEnsaio({
   const props = {
     indice, estado, modo, bloqueado, assinaturas,
     onEntrada: mudarEntrada, onEscolha: mudarEscolha, onVerificacao: mudarVerificacao, onCliqueAssinatura: cliqueAssinatura,
+    onAjuste: modo === 'revisao' ? mudarAjuste : undefined,
     fotos,
   }
+  const qtdAjustes = Object.keys(estado?.ajustes || {}).length
 
   return (
     <div className={s.ficha}>
@@ -84,6 +93,15 @@ export default function FichaEnsaio({
           Lista
         </button>
         {bloqueado && <span className={s.travada}>🔒 Assinada — remova a assinatura para editar</span>}
+        {modo === 'revisao' && !bloqueado && (
+          <span className={s.avisoAjustes}>
+            {qtdAjustes > 0
+              ? <>✏️ {qtdAjustes} valor(es) calculado(s) corrigido(s) à mão (em laranja)
+                  <button type="button" onClick={() => onEstado?.({ ...estado, ajustes: {} })}>Voltar todos ao cálculo</button></>
+              : 'Você pode corrigir qualquer valor, inclusive os calculados (apague para voltar ao cálculo).'}
+          </span>
+        )}
+        {modo !== 'leitura' && qtdAjustes > 0 && bloqueado && <span className={s.avisoAjustes}>✏️ {qtdAjustes} valor(es) corrigido(s) pelo laboratorista</span>}
         {fotos?.enviando && <span className={s.fotoAviso}>⏫ Enviando foto…</span>}
         {!fotos?.enviando && fotos?.pendentes > 0 && <span className={s.fotoAviso}>⏳ {fotos.pendentes} foto(s) aguardando internet para envio</span>}
         {fotos?.erro && <span className={s.fotoErro} role="alert">{fotos.erro}</span>}

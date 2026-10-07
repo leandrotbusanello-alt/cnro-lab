@@ -12,7 +12,7 @@ function normalizar(s) {
   return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 }
 
-export default function EmpresasView({ empresas, usuarios, online, onSalvo, notificar }) {
+export default function EmpresasView({ empresas, usuarios, online, onSalvo, onExcluido, notificar }) {
   const [busca, setBusca] = useState('')
   const [filtro, setFiltro] = useState('ativas')
   const [modal, setModal] = useState(null) // { empresa } | { nova: true }
@@ -110,7 +110,7 @@ export default function EmpresasView({ empresas, usuarios, online, onSalvo, noti
           empresas={empresas}
           qtdUsuarios={empresaDoModal ? (usuariosPorEmpresa[empresaDoModal.id] || 0) : 0}
           online={online}
-          onSalvo={onSalvo} notificar={notificar}
+          onSalvo={onSalvo} onExcluido={onExcluido} notificar={notificar}
           onFechar={() => setModal(null)}
         />
       )}

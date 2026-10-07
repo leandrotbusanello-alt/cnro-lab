@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import Modal from '../../../components/ui/Modal'
-import { validadePadrao } from '../../../lib/cadastros'
+import { validadePadrao, nomePeneira } from '../../../lib/cadastros'
 import { salvarCadastro, enviarDocumentoTraco } from '../cadastrosRepo'
+import TabelaPeneiras, { ler } from './TabelaPeneiras'
 import ui from '../../laboratorio/components/ui.module.css'
-import styles from '../CadastrosPage.module.css'
 
 /** Cadastro / edição de traço aprovado */
 export default function ModalTraco({ traco, empresas, onFechar, onSalvo }) {
@@ -19,6 +19,8 @@ export default function ModalTraco({ traco, empresas, onFechar, onSalvo }) {
     valido_ate: traco?.valido_ate || '',
     observacoes: traco?.observacoes || '',
     ativo: traco?.ativo !== false,
+    faixa_trabalho: (Array.isArray(traco?.faixa_trabalho) ? traco.faixa_trabalho : [])
+      .map(l => ({ ...l, peneira: l.peneira || nomePeneira(l.peneira_mm) })),
   }))
   const [arquivo, setArquivo] = useState(null)
   const [salvando, setSalvando] = useState(false)
@@ -43,6 +45,9 @@ export default function ModalTraco({ traco, empresas, onFechar, onSalvo }) {
         teor_betume_pct: f.teor_betume_pct === '' ? null : Number(String(f.teor_betume_pct).replace(',', '.')),
         aprovado_em: f.aprovado_em || null,
         valido_ate: f.valido_ate || null,
+        faixa_trabalho: f.faixa_trabalho
+          .map(l => ({ peneira_mm: ler(l.peneira_mm), peneira: (l.peneira || '').trim() || null, min: ler(l.min), max: ler(l.max) }))
+          .filter(l => l.peneira_mm != null || l.min != null || l.max != null),
       }
       let salvo = await salvarCadastro('tracos', dados)
       if (arquivo) {
@@ -56,8 +61,6 @@ export default function ModalTraco({ traco, empresas, onFechar, onSalvo }) {
       setSalvando(false)
     }
   }
-
-  const faixa = Array.isArray(traco?.faixa_trabalho) ? traco.faixa_trabalho : []
 
   return (
     <Modal
@@ -126,18 +129,7 @@ export default function ModalTraco({ traco, empresas, onFechar, onSalvo }) {
           <span>Ativo (aparece nas listas do Campo)</span>
         </label>
 
-        {faixa.length > 0 && (
-          <div>
-            <span className={ui.rotulo}>Faixa de trabalho (% passante)</span>
-            <table className={styles.faixa}>
-              <thead><tr><th>Peneira (mm)</th>{faixa.map(l => <th key={l.peneira_mm}>{String(l.peneira_mm).replace('.', ',')}</th>)}</tr></thead>
-              <tbody>
-                <tr><th>Mín.</th>{faixa.map(l => <td key={l.peneira_mm}>{String(l.min).replace('.', ',')}</td>)}</tr>
-                <tr><th>Máx.</th>{faixa.map(l => <td key={l.peneira_mm}>{String(l.max).replace('.', ',')}</td>)}</tr>
-              </tbody>
-            </table>
-          </div>
-        )}
+        <TabelaPeneiras linhas={f.faixa_trabalho} onChange={v => set('faixa_trabalho', v)} />
 
         {erro && <div className={`${ui.aviso} ${ui.avisoErro}`}>{erro}</div>}
       </div>

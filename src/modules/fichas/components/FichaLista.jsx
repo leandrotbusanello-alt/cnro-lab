@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { gruposDaLista } from '../motor/ficha.js'
+import { gruposDaLista, CAMPOS_PEDIDO_EDITAVEIS } from '../motor/ficha.js'
 import CampoCelula from './CampoCelula'
 import Grafico from './Grafico'
 import FotoCelula from './FotoCelula'
@@ -29,9 +29,31 @@ export default function FichaLista({
   }
 
   const nomeAssinatura = { executor: 'Responsável executor', calculista: 'Responsável calculista' }
+  const cabecalho = podeEntrada
+    ? indice.papeis.pedido.filter(a => CAMPOS_PEDIDO_EDITAVEIS.includes(indice.cells[a].role.campo))
+    : []
+  const ROTULO_PEDIDO = { material: 'Material', procedencia: 'Procedência do material', complemento: 'Informações complementares' }
 
   return (
     <div className={s.lista}>
+      {cabecalho.length > 0 && (
+        <section className={s.grupo}>
+          <h3 className={s.grupoTitulo}>Cabeçalho (vem do pedido — pode ajustar)</h3>
+          <div className={s.grupoItens}>
+            {cabecalho.map(a => {
+              const v = motor.valores.get(a)
+              const rot = ROTULO_PEDIDO[indice.cells[a].role.campo] || a
+              return (
+                <label key={a} className={`${s.item} ${s.itemLargo}`}>
+                  <span className={s.itemRotulo}>{rot}</span>
+                  <CampoCelula id={`${idBase}-${a}`} className={s.itemArea} valor={v == null ? '' : String(v)} dado="texto"
+                    multilinha editavel rotulo={rot} onConfirmar={novo => onEntrada?.(a, novo === null ? '' : novo)} />
+                </label>
+              )
+            })}
+          </div>
+        </section>
+      )}
       {grupos.map((g, gi) => (
         <section key={gi} className={s.grupo}>
           <h3 className={s.grupoTitulo}>{g.titulo}</h3>

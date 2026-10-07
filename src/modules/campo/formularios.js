@@ -46,7 +46,7 @@ const SOLO_GRANULAR_GERAL = [
   proctor,
 ]
 const SOLO_GRANULAR_AMOSTRA = [
-  { nome: 'identificacao', rotulo: 'Identificação da amostra', tipo: 'texto', herda: false, obrigatorio: true },
+  { nome: 'identificacao', rotulo: 'Identificação da amostra', tipo: 'texto', incrementa: true, obrigatorio: true },
   { nome: 'quantidade_kg', rotulo: 'Quantidade de material (kg)', tipo: 'numero' },
   { nome: 'tipo_material', rotulo: 'Tipo de material', tipo: 'texto' },
 ]
@@ -67,7 +67,7 @@ export const FORMULARIOS = {
       proctor,
     ],
     amostra: [
-      { nome: 'identificacao', rotulo: 'Identificação da amostra', tipo: 'texto', herda: false, obrigatorio: true },
+      { nome: 'identificacao', rotulo: 'Identificação da amostra', tipo: 'texto', incrementa: true, obrigatorio: true },
       { nome: 'profundidade', rotulo: 'Profundidade', tipo: 'texto', placeholder: 'Ex.: 0,60 m' },
     ],
   },
@@ -82,7 +82,7 @@ export const FORMULARIOS = {
       { nome: 'teor_cimento', rotulo: 'Teor de cimento (%)', tipo: 'numero' },
     ],
     amostra: [
-      { nome: 'identificacao_cp', rotulo: 'Identificação do CP', tipo: 'texto', herda: false, obrigatorio: true },
+      { nome: 'identificacao_cp', rotulo: 'Identificação do CP', tipo: 'texto', incrementa: true, obrigatorio: true },
       { nome: 'km_coleta', rotulo: 'Estaca/Km da coleta', tipo: 'km' },
       { nome: 'lado', rotulo: 'Lado', tipo: 'lista', opcoes: LADOS },
       idade, ruptura,
@@ -111,15 +111,17 @@ export const FORMULARIOS = {
       { ...projeto, visivel: g => !!g.material_aplicado },
       { nome: 'teor_ligante', rotulo: 'Teor de ligante (%)', tipo: 'numero', visivel: g => !!g.material_aplicado },
       { nome: 'temp_usinagem', rotulo: 'Temperatura de usinagem (°C)', tipo: 'numero', visivel: g => !!g.material_aplicado },
+      { ...kmIni, visivel: aplicado },
+      { ...kmFim, visivel: aplicado },
       { nome: 'camada', rotulo: 'Camada', tipo: 'lista', opcoes: CAMADAS_ASFALTO, visivel: naoAplicado },
     ],
     amostra: g => (aplicado(g) ? [
-      { nome: 'identificacao_caminhao', rotulo: 'Identificação do caminhão', tipo: 'texto', herda: false },
+      { nome: 'identificacao_caminhao', rotulo: 'Identificação do caminhão', tipo: 'texto' },
       { nome: 'temp_aplicacao', rotulo: 'Temperatura de aplicação (°C)', tipo: 'numero' },
       pista,
       { nome: 'faixa', rotulo: 'Faixa', tipo: 'lista', opcoes: FAIXAS },
       { nome: 'camada', rotulo: 'Camada', tipo: 'lista', opcoes: CAMADAS_ASFALTO },
-      kmIni, kmFim,
+      { nome: 'km_extracao', rotulo: 'Estaca/Km de extração', tipo: 'km' },
     ] : null),
   },
   cps_extraidos_pista: {
@@ -132,11 +134,10 @@ export const FORMULARIOS = {
       projeto, kmIni, kmFim,
     ],
     amostra: [
-      { nome: 'identificacao_cp', rotulo: 'Identificação / número do CP', tipo: 'texto', herda: false, obrigatorio: true },
+      { nome: 'identificacao_cp', rotulo: 'Identificação / número do CP', tipo: 'texto', incrementa: true, obrigatorio: true },
       { nome: 'camada', rotulo: 'Camada', tipo: 'lista', opcoes: CAMADAS_ASFALTO },
       { nome: 'lado', rotulo: 'Lado', tipo: 'lista', opcoes: LADOS },
-      { nome: 'km_extracao', rotulo: 'Estaca/Km de extração', tipo: 'km', herda: false },
-      idade, ruptura,
+      { nome: 'km_extracao', rotulo: 'Estaca/Km de extração', tipo: 'km' },
     ],
   },
   ligante_asfaltico: {
@@ -163,7 +164,7 @@ export const FORMULARIOS = {
       { nome: 'responsavel_moldagem', rotulo: 'Executante / responsável pela moldagem', tipo: 'lista', opcoes: RESP_MOLDAGEM },
     ],
     amostra: [
-      { nome: 'identificacao_cp', rotulo: 'Identificação / número do CP', tipo: 'texto', herda: false, obrigatorio: true },
+      { nome: 'identificacao_cp', rotulo: 'Identificação / número do CP', tipo: 'texto', incrementa: true, obrigatorio: true },
       { nome: 'identificacao_caminhao', rotulo: 'Caminhão / romaneio', tipo: 'texto' },
       { nome: 'temp_concreto', rotulo: 'Temperatura do concreto (°C)', tipo: 'numero' },
       { nome: 'slump_obtido', rotulo: 'Slump obtido (mm)', tipo: 'numero' },
@@ -218,13 +219,24 @@ export function geralInicial(subcategoria, hojeISO) {
   return g
 }
 
-/** Nova amostra herdando da anterior (menos os campos de identificação) */
+/** "101" → "102" · "CP-09" → "CP-10" · "A1" → "A2" (sem número no fim: repete) */
+export function proximaIdentificacao(v) {
+  const m = String(v ?? '').match(/^(.*?)(\d+)(\D*)$/)
+  if (!m) return v
+  const n = String(Number(m[2]) + 1).padStart(m[2].length, '0')
+  return `${m[1]}${n}${m[3]}`
+}
+
+/**
+ * Nova amostra herdando TODOS os campos da anterior (decisão de 07/10/2026).
+ * Identificação da amostra/CP já vem com o número seguinte; o resto é só ajustar.
+ */
 export function herdarAmostra(subcategoria, geral, anterior = {}) {
   const campos = camposAmostra(subcategoria, geral) || []
   const nova = {}
   for (const c of campos) {
-    if (c.herda === false) continue
-    if (anterior[c.nome] !== undefined && anterior[c.nome] !== '') nova[c.nome] = anterior[c.nome]
+    const v = anterior[c.nome]
+    if (v !== undefined && v !== '') nova[c.nome] = c.incrementa ? proximaIdentificacao(v) : v
     if (c.outroCampo && anterior[c.outroCampo]) nova[c.outroCampo] = anterior[c.outroCampo]
   }
   return nova

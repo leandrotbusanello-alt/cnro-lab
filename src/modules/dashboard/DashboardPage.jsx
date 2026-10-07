@@ -19,6 +19,7 @@ export default function DashboardPage() {
   if (!d.perfil) return null
 
   const temBloco = d.modulos.length > 0
+  const soGestor = String(d.perfil.perfil || '').toUpperCase() === 'GESTOR'
 
   return (
     <div className={styles.wrapper}>
@@ -61,9 +62,10 @@ export default function DashboardPage() {
         <div className={styles.carregando}><div className="spinner" /></div>
       ) : !d.dados ? null : (
         <div className={styles.blocos}>
-          {d.modulos.includes('campo') && <BlocoCampo perfil={d.perfil} dados={d.dados} />}
-          {d.modulos.includes('laboratorio') && <BlocoLaboratorio perfil={d.perfil} dados={d.dados} />}
-          {d.modulos.includes('assistente') && <BlocoAssistente perfil={d.perfil} dados={d.dados} />}
+          {/* Perfil Gestor: só o painel do Gestor (07/10/2026). DEV continua vendo todos. */}
+          {!soGestor && d.modulos.includes('campo') && <BlocoCampo perfil={d.perfil} dados={d.dados} />}
+          {!soGestor && d.modulos.includes('laboratorio') && <BlocoLaboratorio perfil={d.perfil} dados={d.dados} />}
+          {!soGestor && d.modulos.includes('assistente') && <BlocoAssistente perfil={d.perfil} dados={d.dados} />}
           {d.ehGestor && <BlocoGestor dados={d.dados} />}
         </div>
       )}

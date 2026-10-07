@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Modal from '../../../components/ui/Modal'
-import { salvarEmpresa } from '../gestorRepo'
+import { salvarEmpresa, excluirEmpresa } from '../gestorRepo'
 import styles from '../gestor.module.css'
 
 function chave(nome, lote) {
@@ -8,7 +8,7 @@ function chave(nome, lote) {
 }
 
 /** Cadastro / edição de empresa (uma linha por empresa + lote). */
-export default function ModalEmpresa({ empresa, empresas, qtdUsuarios, online, onSalvo, notificar, onFechar }) {
+export default function ModalEmpresa({ empresa, empresas, qtdUsuarios, online, onSalvo, onExcluido, notificar, onFechar }) {
   const nova = !empresa
   const [form, setForm] = useState({
     nome: empresa?.nome || '',
@@ -44,12 +44,32 @@ export default function ModalEmpresa({ empresa, empresas, qtdUsuarios, online, o
     }
   }
 
+  async function excluir() {
+    if (!window.confirm(`Excluir a empresa "${empresa.nome}"? Esta ação não pode ser desfeita.`)) return
+    setSalvando(true); setErro('')
+    try {
+      await excluirEmpresa(empresa.id)
+      onExcluido?.(empresa)
+      notificar('Empresa excluída.')
+      onFechar()
+    } catch (err) {
+      setErro(err.message || 'Não foi possível excluir.')
+      setSalvando(false)
+    }
+  }
+
   return (
     <Modal
       titulo={nova ? 'Nova empresa' : 'Editar empresa'}
       subtitulo={nova ? 'Uma linha por empresa/consórcio e lote' : empresa.nome}
       onFechar={salvando ? undefined : onFechar}
       rodape={<>
+        {!nova && onExcluido && (
+          <button type="button" className={`${styles.btn} ${styles.btnPerigo || styles.btnSecundario}`} onClick={excluir}
+            disabled={salvando || !online} style={{ marginRight: 'auto' }}>
+            🗑 Excluir
+          </button>
+        )}
         <button type="button" className={`${styles.btn} ${styles.btnSecundario}`} onClick={onFechar} disabled={salvando}>
           Cancelar
         </button>

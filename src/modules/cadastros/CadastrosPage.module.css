@@ -49,3 +49,7 @@
   .barra { flex-direction: column; }
   .header { flex-direction: column; }
 }
+.peneiras { display: flex; flex-direction: column; gap: 8px; }
+.peneirasBarra { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.peneiras .faixa td { padding: 3px; }
+.peneiras .faixa input, .peneiras .faixa select { padding: 5px 6px; font-size: 13px; min-width: 0; width: 100%; }

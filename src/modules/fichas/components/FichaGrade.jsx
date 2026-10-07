@@ -4,6 +4,7 @@ import { formatar } from '../motor/formatacao.js'
 import CampoCelula from './CampoCelula'
 import Grafico from './Grafico'
 import FotoCelula from './FotoCelula'
+import { CAMPOS_PEDIDO_EDITAVEIS } from '../motor/ficha.js'
 import s from './Ficha.module.css'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -162,6 +163,7 @@ function MarcaAssinatura({ assinatura, linhasTexto }) {
  *   escala      número fixo (impressão); sem ele, ajusta à largura disponível
  *   idBase      prefixo dos ids dos campos (navegação com Enter)
  *   onEntrada(endereco, valor) · onEscolha(grupo, opcao) · onVerificacao(endereco, marcado)
+ *   onAjuste(endereco, valor|null)  laboratorista corrige uma célula calculada (revisão); null = volta ao cálculo
  *   onCliqueAssinatura(quem, elemento)
  *   fotos       useFotosFicha(…) — quadros de foto editáveis (sem ele, as fotos só aparecem)
  * Endereços passados para fora (estado, motor, callbacks) são os completos: 'B7' ou 'VERSO!B7'.
@@ -169,7 +171,7 @@ function MarcaAssinatura({ assinatura, linhasTexto }) {
 export default function FichaGrade({
   indice, folha: folhaProp, motor, estado, modo = 'leitura', destacar = false, bloqueado = false, assinaturas = {},
   escala: escalaFixa, idBase = 'ficha', soImpressao = false, onEntrada, onEscolha, onVerificacao, onCliqueAssinatura,
-  fotos,
+  onAjuste, fotos,
 }) {
   const folha = folhaProp || indice.folhas?.[0] || indice
   const pre = folha.prefixo || ''
@@ -265,6 +267,51 @@ export default function FichaGrade({
       )
     } else if (d.rt) {
       return <div className={`${s.cc} ${d.w ? s.quebra : ''} ${d.rot === 90 ? s.vertical : ''}`} style={{ height: cel.h, justifyContent: jc(cel), textAlign: cel.alinhamento || undefined }}><span><Trechos rt={d.rt} /></span></div>
+    } else if (papel === 'pedido' && podeEntrada && CAMPOS_PEDIDO_EDITAVEIS.includes(d.role.campo)) {
+      // cabeçalho vindo do pedido, editável na ficha (assistente e laboratorista)
+      const v = motor.valores.get(a)
+      const campo = (
+        <CampoCelula
+          id={`${idBase}-${a}`}
+          className={d.w ? s.areaCelula : s.campoCelula}
+          style={{ height: cel.h, textAlign: cel.alinhamento || 'left' }}
+          valor={v == null ? '' : String(v)}
+          dado="texto"
+          multilinha={!!d.w}
+          editavel
+          rotulo={d.role.prefixo || ROTULO_CABECALHO[d.role.campo] || d.role.campo}
+          onConfirmar={novo => onEntrada?.(a, novo === null ? '' : novo)}
+        />
+      )
+      if (!d.role.prefixo) return campo
+      return (
+        <div className={`${s.comPrefixo} ${d.w ? s.comPrefixoMl : ''}`} style={{ height: cel.h }}>
+          <span className={s.prefixo}>{d.role.prefixo}</span>
+          {campo}
+        </div>
+      )
+    } else if (d.fx && podeRevisao && onAjuste && !cel.oculta) {
+      // revisão: o laboratorista pode corrigir o valor calculado (apagar = volta ao cálculo)
+      const v = motor.valores.get(a)
+      const ajustado = estado?.ajustes?.[a] !== undefined
+      const erro = v && typeof v === 'object' && 'err' in v
+      return (
+        <CampoCelula
+          id={`${idBase}-${a}`}
+          className={`${s.campoCelula} ${ajustado ? s.ajustadoCampo : ''}`}
+          style={{ height: cel.h, textAlign: cel.alinhamento || (typeof v === 'number' ? 'right' : 'center') }}
+          valor={erro ? v.err : v ?? null}
+          dado={typeof v === 'number' ? 'numero' : 'texto'}
+          nf={d.nf}
+          editavel
+          rotulo={`Valor calculado ${a}${ajustado ? ' (alterado manualmente)' : ''}`}
+          onConfirmar={novo => {
+            if (novo === null || novo === '') { if (ajustado) onAjuste(a, null); return }
+            if (!ajustado && mesmoValor(novo, v)) return
+            onAjuste(a, novo)
+          }}
+        />
+      )
     } else if (d.fx || papel === 'pedido') {
       const v = motor.valores.get(a)
       numero = typeof v === 'number'
@@ -297,10 +344,11 @@ export default function FichaGrade({
     const p = cel.papel
     if (destacar) {
       if (p === 'entrada') out.push(podeEntrada ? s.dEntrada : s.dEntradaFixa)
-      if (p === 'pedido') out.push(s.dPedido)
+      if (p === 'pedido') out.push(podeEntrada && CAMPOS_PEDIDO_EDITAVEIS.includes(cel.d.role?.campo) ? s.dEntrada : s.dPedido)
       if (p === 'revisao' && modo === 'revisao') out.push(podeRevisao ? s.dRevisao : s.dEntradaFixa)
       if (p === 'escolha' || p === 'verificacao' || p === 'foto') out.push(podeEntrada ? s.dEntrada : s.dEntradaFixa)
       if (p === 'assinatura') out.push(s.dAssinatura)
+      if (estado?.ajustes?.[pre + cel.a] !== undefined && modo !== 'leitura') out.push(s.dAjustado)
     }
     if ((p === 'escolha' || p === 'verificacao') && podeEntrada) out.push(s.clicavel)
     if (p === 'assinatura' && modo !== 'leitura') out.push(s.clicavel)
@@ -384,6 +432,16 @@ export default function FichaGrade({
       </div>
     </div>
   )
+}
+
+const ROTULO_CABECALHO = { material: 'Material', procedencia: 'Procedência do material', complemento: 'Informações complementares' }
+
+/** Mesmo valor (sem diferença de arredondamento ao editar) */
+function mesmoValor(novo, atual) {
+  if (typeof novo === 'number' && typeof atual === 'number') {
+    return Math.abs(novo - atual) <= 1e-9 * Math.max(1, Math.abs(atual))
+  }
+  return String(novo ?? '') === String(atual ?? '')
 }
 
 function jc(cel) {

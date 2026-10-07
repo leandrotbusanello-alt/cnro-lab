@@ -8,11 +8,13 @@ import ModalTraco from './components/ModalTraco'
 import ModalRevalidar from './components/ModalRevalidar'
 import ModalHistorico from './components/ModalHistorico'
 import ModalSimples from './components/ModalSimples'
+import EmpresasCadastro from './components/EmpresasCadastro'
 import Toast from '../../components/ui/Toast'
 import ui from '../laboratorio/components/ui.module.css'
 import styles from './CadastrosPage.module.css'
 
-const ABAS = ['tracos', 'jazidas', 'pedreiras', 'fornecedores']
+const ABAS = ['empresas', 'tracos', 'jazidas', 'pedreiras', 'fornecedores']
+const TITULO_ABA = { empresas: 'Empresas' }
 
 const FILTROS_TRACO = [
   { id: 'ativos', rotulo: 'Ativos' },
@@ -76,12 +78,15 @@ export default function CadastrosPage() {
       <nav className={styles.abas}>
         {ABAS.map(a => (
           <button key={a} type="button" className={`${styles.aba} ${aba === a ? styles.abaAtiva : ''}`} onClick={() => trocarAba(a)}>
-            {TIPOS_CADASTRO[a].titulo}
+            {TITULO_ABA[a] || TIPOS_CADASTRO[a].titulo}
             {a === 'tracos' && contagem.alerta > 0 && <span className={styles.bolinha}>{contagem.alerta}</span>}
           </button>
         ))}
       </nav>
 
+      {aba === 'empresas' ? (
+        <EmpresasCadastro notificar={msg => setToast({ type: 'success', message: msg })} />
+      ) : (<>
       <div className={styles.barra}>
         <input className={ui.input} placeholder="Buscar pelo nome…" value={busca} onChange={e => setBusca(e.target.value)} />
         <button className={`${ui.btn} ${ui.btnPrimario}`} onClick={() => setModal({ tipo: aba === 'tracos' ? 'traco' : 'simples', item: null })}>
@@ -114,6 +119,8 @@ export default function CadastrosPage() {
           onEditar={i => setModal({ tipo: 'simples', item: i })}
         />
       )}
+
+      </>)}
 
       {modal?.tipo === 'traco' && (
         <ModalTraco traco={modal.item} empresas={empresas} onFechar={() => setModal(null)}
@@ -176,6 +183,7 @@ function ListaTracos({ tracos, empresasPorId, onEditar, onRevalidar, onHistorico
               {t.teor_betume_pct != null && <span>Teor de ligante: {String(t.teor_betume_pct).replace('.', ',')}%</span>}
               <span>✔ Aprovado em {dataBR(t.aprovado_em)}{t.aprovado_por ? ` por ${t.aprovado_por}` : ''}</span>
               <span>📅 Válido até {dataBR(t.valido_ate)}</span>
+              <span>⚖️ Granulometria: {Array.isArray(t.faixa_trabalho) && t.faixa_trabalho.length ? `${t.faixa_trabalho.length} peneiras` : 'não preenchida'}</span>
             </div>
             <div className={styles.acoes}>
               <button className={`${ui.btn} ${ui.btnSecundario} ${ui.btnPequeno}`} onClick={() => onEditar(t)}>✏️ Editar</button>

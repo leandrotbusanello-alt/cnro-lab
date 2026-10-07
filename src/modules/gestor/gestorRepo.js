@@ -92,7 +92,7 @@ export async function urlsFotos(usuarios) {
   return mapa
 }
 
-// ─── Empresas (direto no banco; RLS: só Gestor/DEV) ────────────────────────
+// ─── Empresas (direto no banco; RLS: Laboratório e Gestor/DEV — migração 18) ─
 export async function salvarEmpresa(empresa) {
   const dados = {
     nome: empresa.nome.trim(),
@@ -106,4 +106,15 @@ export async function salvarEmpresa(empresa) {
   const { data, error } = await q.select('*').single()
   if (error) throw error
   return data
+}
+
+/** Exclui a empresa. Se já houver pedidos, usuários ou traços ligados a ela, o banco recusa. */
+export async function excluirEmpresa(id) {
+  const { error } = await supabase.from('empresas').delete().eq('id', id)
+  if (error) {
+    if (error.code === '23503' || /foreign key/i.test(error.message || '')) {
+      throw new Error('Esta empresa já tem pedidos, usuários ou traços ligados a ela. Desative em vez de excluir.')
+    }
+    throw error
+  }
 }

@@ -22,6 +22,10 @@
 //   { entradas: {D18: 65.13, 'VERSO!F7': 'BAL-01', …}, escolhas: {grupo: 'Sim'}, verificacoes: {'VERSO!B10': true},
 //     fotos: { B15: { caminho: '<usuario>/fichas/<ensaio>/B15-….jpg', local?: 'fotoficha:…' } } }
 //   (local = cópia guardada no aparelho; sem caminho = ainda não enviada ao servidor)
+//   ajustes: { 'N20': 48.5 } — valor digitado pelo laboratorista por cima de uma célula calculada
+//   (revisão, decisão de 07/10/2026): substitui a fórmula e entra nos cálculos seguintes e nos resultados.
+//   Cabeçalho: material/procedência/informações complementares (papel 'pedido') podem ser editados
+//   pelo assistente e pelo laboratorista; o valor digitado fica em entradas[endereço] e vale só para a ficha.
 // ─────────────────────────────────────────────────────────────────────────────
 import { Motor, colNum, colStr, ehErro, separarEndereco } from './formulas.js'
 
@@ -119,8 +123,11 @@ export function indexarModelo(modelo) {
   }
 }
 
+/** Campos do cabeçalho (papel 'pedido') que podem ser editados na ficha */
+export const CAMPOS_PEDIDO_EDITAVEIS = ['material', 'procedencia', 'complemento']
+
 export function estadoVazio() {
-  return { entradas: {}, escolhas: {}, verificacoes: {}, fotos: {} }
+  return { entradas: {}, escolhas: {}, verificacoes: {}, fotos: {}, ajustes: {} }
 }
 
 /** Estado a partir de dados_resultado salvos (aceita dados antigos/vazios). */
@@ -130,6 +137,7 @@ export function estadoDosDados(dados) {
     escolhas: { ...(dados?.escolhas || {}) },
     verificacoes: { ...(dados?.verificacoes || {}) },
     fotos: { ...(dados?.fotos || {}) },
+    ajustes: { ...(dados?.ajustes || {}) },
   }
 }
 
@@ -159,7 +167,18 @@ export function calcularFicha(indice, estado, pedidoCampos = {}) {
     // marca ("X"): a célula só tem valor quando a opção está marcada; senão, o texto fixo da opção
     motor.definir(a, r.marca ? (estado?.escolhas?.[r.grupo] === r.opcao ? r.marca : null) : r.texto)
   }
-  motor.definirFormulas(indice.formulas, { apelidos: indice.apelidos })
+  // valores corrigidos pelo laboratorista substituem a fórmula da célula
+  let formulas = indice.formulas
+  const ajustes = estado?.ajustes || {}
+  if (Object.keys(ajustes).length) {
+    formulas = { ...indice.formulas }
+    for (const [a, v] of Object.entries(ajustes)) {
+      if (!(a in formulas)) continue
+      delete formulas[a]
+      motor.definir(a, valorDeEntrada(v))
+    }
+  }
+  motor.definirFormulas(formulas, { apelidos: indice.apelidos })
   motor.recalcular()
   return motor
 }
@@ -192,6 +211,10 @@ export function montarDados(indice, estado, motor, { modeloId } = {}) {
   for (const [a, f] of Object.entries(estado?.fotos || {})) {
     if (f && (f.caminho || f.local)) fotos[a] = { ...(f.caminho ? { caminho: f.caminho } : {}), ...(f.local ? { local: f.local } : {}), ...(f.em ? { em: f.em } : {}) }
   }
+  const ajustes = {}
+  for (const [a, v] of Object.entries(estado?.ajustes || {})) {
+    if (v !== null && v !== undefined && v !== '' && a in indice.formulas) ajustes[a] = valorDeEntrada(v)
+  }
   const calculados = {}
   for (const a of Object.keys(indice.formulas)) {
     const v = normalizarSaida(motor.valores.get(a))
@@ -210,6 +233,7 @@ export function montarDados(indice, estado, motor, { modeloId } = {}) {
     entradas, escolhas, pedido, calculados,
     ...(indice.papeis.verificacao.length ? { verificacoes } : {}),
     ...(indice.papeis.foto.length ? { fotos } : {}),
+    ...(Object.keys(ajustes).length ? { ajustes } : {}),
     atualizado_em: new Date().toISOString(),
   }
 }

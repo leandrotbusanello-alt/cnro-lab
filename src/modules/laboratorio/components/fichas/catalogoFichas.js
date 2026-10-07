@@ -52,6 +52,7 @@ export const ENSAIOS_ASFALTO = [
   { campo: 'ens_modulo_resiliencia',   rotulo: 'Ensaio de módulo de resiliência', termos: ['resiliencia'] },
   { campo: 'ens_fadiga',               rotulo: 'Ensaio de fadiga', termos: ['fadiga'] },
   { campo: 'ens_deformacao_perm',      rotulo: 'Ensaio de deformação permanente', termos: ['deformacao permanente', 'flow number'] },
+  { campo: 'ens_caract_material_asfaltico', rotulo: 'Caracterização de material asfáltico', termos: ['caracterizacao de material asfaltico'] },
 ]
 
 export const ENSAIOS_SOLOS = [

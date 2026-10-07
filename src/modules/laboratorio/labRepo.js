@@ -31,9 +31,10 @@ const SELECT_PEDIDO_COMPLETO =
 async function buscarPedidos({ ehDev = false } = {}) {
   const desde = new Date(Date.now() - DIAS_CONCLUIDAS * 86400000).toISOString()
   // DEV: também todos os lançamentos históricos (finalizados com datas antigas)
+  // e os pedidos cancelados (para poder excluí-los)
   const filtro =
     `status.in.(aguardando_lab,em_analise,em_andamento,aguardando_revisao,devolvido_campo),` +
-    `finalizado_em.gte.${desde}` + (ehDev ? ',lancamento_historico.is.true' : '')
+    `finalizado_em.gte.${desde}` + (ehDev ? ',lancamento_historico.is.true,status.eq.cancelado' : '')
 
   let r = await supabase.from('pedidos_ensaio').select(SELECT_PEDIDO_COMPLETO)
     .or(filtro).order('created_at', { ascending: true }).limit(1000)

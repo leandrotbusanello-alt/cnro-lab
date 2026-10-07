@@ -1,15 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import Toast from '../../components/ui/Toast'
 import { listarEmpresas, listarUsuarios } from './gestorRepo'
 import UsuariosView from './components/UsuariosView'
-import EmpresasView from './components/EmpresasView'
 import styles from './gestor.module.css'
 
+// Empresas foram para Cadastros (07/10/2026): o Laboratório também cadastra.
 const ABAS = [
   { id: 'usuarios', rotulo: 'Usuários' },
-  { id: 'empresas', rotulo: 'Empresas' },
 ]
 
 function useOnline() {
@@ -72,17 +71,6 @@ export default function GestorPage() {
     })
   }, [])
 
-  const aplicarEmpresa = useCallback(emp => {
-    if (!emp) return
-    setEmpresas(l => {
-      const i = l.findIndex(x => x.id === emp.id)
-      const nova = i >= 0 ? l.map(x => (x.id === emp.id ? emp : x)) : [...l, emp]
-      return nova.sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR') || String(a.lote || '').localeCompare(String(b.lote || ''), 'pt-BR', { numeric: true }))
-    })
-    // nome/lote da empresa é copiado para os usuários vinculados (trigger no banco)
-    setUsuarios(l => l.map(u => (u.empresa_id === emp.id ? { ...u, empresa: emp.nome, lote: emp.lote } : u)))
-  }, [])
-
   const contagem = useMemo(() => ({
     usuarios: usuarios.filter(u => (u.status || 'Ativo') === 'Ativo').length,
     empresas: empresas.filter(e => e.ativo !== false).length,
@@ -101,7 +89,7 @@ export default function GestorPage() {
       <div className={styles.cabecalho}>
         <div>
           <h1 className={styles.titulo}>Gestor</h1>
-          <p className={styles.subtitulo}>Cadastro de usuários e empresas</p>
+          <p className={styles.subtitulo}>Cadastro de usuários · empresas ficam em <Link to="/cadastros?aba=empresas">Cadastros</Link></p>
         </div>
         <button type="button" className={`${styles.btn} ${styles.btnSecundario} ${styles.btnPequeno}`}
           onClick={() => { setLoading(true); carregar() }} disabled={!online || loading}>
@@ -130,15 +118,10 @@ export default function GestorPage() {
 
       {loading ? (
         <div className={styles.carregando}>Carregando...</div>
-      ) : aba === 'usuarios' ? (
+      ) : (
         <UsuariosView
           usuarios={usuarios} empresas={empresas} eu={perfil} online={online}
           onSalvo={aplicarUsuario} notificar={notificar}
-        />
-      ) : (
-        <EmpresasView
-          empresas={empresas} usuarios={usuarios} online={online}
-          onSalvo={aplicarEmpresa} notificar={notificar}
         />
       )}
 

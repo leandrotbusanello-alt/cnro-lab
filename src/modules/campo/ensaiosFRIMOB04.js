@@ -43,6 +43,7 @@ export const ENSAIOS_ASFALTO = [
   { codigo: 'ens_modulo_resiliencia',   nome: 'Ensaio de módulo de resiliência' },
   { codigo: 'ens_fadiga',               nome: 'Ensaio de fadiga' },
   { codigo: 'ens_deformacao_perm',      nome: 'Ensaio de deformação permanente' },
+  { codigo: 'ens_caract_material_asfaltico', nome: 'Caracterização de material asfáltico' },
 ]
 
 export const ENSAIOS_SOLOS = [
