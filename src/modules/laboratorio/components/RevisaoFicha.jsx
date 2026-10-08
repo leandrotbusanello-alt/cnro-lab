@@ -12,6 +12,7 @@ import { useFicha } from '../../fichas/useFicha'
 import { useFotosFicha } from '../../fichas/fotosFicha'
 import { CONFORMIDADES, MODULOS_QUE_IMPRIMEM } from '../../fichas/constants'
 import FichaEnsaio from '../../fichas/components/FichaEnsaio'
+import { useTracosDaFicha } from '../../fichas/useTracosDaFicha'
 import ImpressaoFicha from '../../fichas/components/ImpressaoFicha'
 import styles from './RevisaoFicha.module.css'
 import ui from './ui.module.css'
@@ -73,6 +74,7 @@ export default function RevisaoFicha({ pedido, ensaioOs: eo, podeRevisar, ocupad
 
   const pedidoCampos = useMemo(() => camposDoPedido(pedido, { empresasPorId: lab.empresasPorId }), [pedido, lab.empresasPorId])
   const ficha = useFicha(modeloReg, estado, pedidoCampos)
+  const tracos = useTracosDaFicha(ficha.indice, pedido)   // FR-IMOB-21/54: traço de projeto do Cadastro
 
   // ── Imagens das assinaturas ──────────────────────────────────────────────
   const [urls, setUrls] = useState({})
@@ -184,6 +186,7 @@ export default function RevisaoFicha({ pedido, ensaioOs: eo, podeRevisar, ocupad
           {!modeloReg && !erroModelo && <div className={styles.carregando}><div className="spinner" /></div>}
           {modeloReg && ficha.indice && (
             <FichaEnsaio
+              tracos={tracos}
               indice={ficha.indice}
               motor={ficha.motor}
               estado={estado}

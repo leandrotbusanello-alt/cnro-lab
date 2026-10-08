@@ -1,9 +1,9 @@
 {
   "codigo": "FR-IMOB-21",
-  "versao": "Rev01",
+  "versao": "Rev01.1",
   "nome": "Concreto asfáltico — Análise granulométrica da mistura",
   "arquivo": "FR-IMOB-21_Rev01.xlsx",
-  "_nota": "Planilha 'Rev01 - Dersa' enviada em 25/09 (o cabeçalho interno ainda diz Versão 00). Duas listas suspensas: M19 = faixa normativa (limites M/N) e M17 = traço de projeto (faixa de trabalho O/P). As tabelas de faixas e traços (colunas R…AY, fora da área) entram como células auxiliares. Massa inicial, retidos, fundo e massa total são digitados. Conferido com o exemplo real da Rev00 (O.S. 2026.03.31.02.140, PDF). Gráfico: aparece na ficha (desenhado pelo sistema a partir dos valores calculados, com a formatação do Excel). Sem resultado_* (granulometria de mistura ainda sem tabela).",
+  "_nota": "Planilha 'Rev01 - Dersa' enviada em 25/09 (o cabeçalho interno ainda diz Versão 00). Duas listas suspensas: M19 = faixa normativa (limites M/N) e M17 = traço de projeto (faixa de trabalho O/P). As tabelas de faixas e traços (colunas R…AY, fora da área) entram como células auxiliares. Massa inicial, retidos, fundo e massa total são digitados. Conferido com o exemplo real da Rev00 (O.S. 2026.03.31.02.140, PDF). Gráfico: aparece na ficha (desenhado pelo sistema a partir dos valores calculados, com a formatação do Excel). Sem resultado_* (granulometria de mistura ainda sem tabela). | Rev01.1 (08/10/2026): lista de faixas só com as normas atuais (DNIT 031/2006 B e C · DER-SP ET-DE-P00/027 DER 25/19/12,5/9,5/4,75 · CCR ES-E-002-R12 BN25-D, EGL 25, EGL 16 19, EGL 19, EGL 12,5, EGL 9,5), valores conferidos com as tabelas das normas enviadas pelo usuário; mesmas 9 peneiras (sem 5/8\"); acima do tamanho máximo = 100, como a planilha. Traço de projeto (M17) vem do Cadastro (traco_cadastro): faixa de trabalho gravada em BG/BH (mín/máx) ao escolher; O/P = faixa do traço limitada à faixa da norma; peneira que o traço não tem = \"-\".",
   "pedido": {
     "C7": "os",
     "C8": "material",
@@ -20,8 +20,7 @@
     },
     {
       "celulas": [
-        "M17",
-        "M19"
+        "M17"
       ],
       "tipo": "texto"
     },
@@ -35,6 +34,27 @@
         "21-31"
       ],
       "tipo": "numero"
+    },
+    {
+      "celulas": [
+        "M19"
+      ],
+      "tipo": "texto",
+      "opcoes": [
+        "FAIXA \"B\" DNIT 031/2006",
+        "FAIXA \"C\" DNIT 031/2006",
+        "DER 25 - DER-SP ET-DE-P00/027",
+        "DER 19 - DER-SP ET-DE-P00/027",
+        "DER 12,5 - DER-SP ET-DE-P00/027",
+        "DER 9,5 - DER-SP ET-DE-P00/027",
+        "DER 4,75 - DER-SP ET-DE-P00/027",
+        "BN25-D - CCR ES-E-002-R12",
+        "EGL 25 - CCR ES-E-002-R12",
+        "EGL 16 19 - CCR ES-E-002-R12",
+        "EGL 19 - CCR ES-E-002-R12",
+        "EGL 12,5 - CCR ES-E-002-R12",
+        "EGL 9,5 - CCR ES-E-002-R12"
+      ]
     }
   ],
   "assinaturas": {
@@ -68,7 +88,7 @@
   "rotulos": {
     "I7": "Data do ensaio",
     "M19": "Faixa granulométrica (norma)",
-    "M17": "Traço de projeto (faixa de trabalho)",
+    "M17": "Traço de projeto (Cadastro)",
     "D20": "Massa inicial (g)",
     "H20": "Massa inicial (g)",
     "D30": "Fundo (g)",
@@ -95,5 +115,775 @@
     "H29": "Massa retida — peneira nº 200 (g)"
   },
   "resultados": [],
-  "pedido_exemplo": {}
+  "pedido_exemplo": {},
+  "celulas_extras": {
+    "AX22": {
+      "v": "FAIXA \"B\" DNIT 031/2006"
+    },
+    "S21": {
+      "v": 95
+    },
+    "T21": {
+      "v": 100
+    },
+    "S22": {
+      "v": 80
+    },
+    "T22": {
+      "v": 100
+    },
+    "S23": {
+      "v": null
+    },
+    "T23": {
+      "v": null
+    },
+    "S24": {
+      "v": 45
+    },
+    "T24": {
+      "v": 80
+    },
+    "S25": {
+      "v": 28
+    },
+    "T25": {
+      "v": 60
+    },
+    "S26": {
+      "v": 20
+    },
+    "T26": {
+      "v": 45
+    },
+    "S27": {
+      "v": 10
+    },
+    "T27": {
+      "v": 32
+    },
+    "S28": {
+      "v": 8
+    },
+    "T28": {
+      "v": 20
+    },
+    "S29": {
+      "v": 3
+    },
+    "T29": {
+      "v": 8
+    },
+    "AX23": {
+      "v": "FAIXA \"C\" DNIT 031/2006"
+    },
+    "U21": {
+      "v": 100
+    },
+    "V21": {
+      "v": 100
+    },
+    "U22": {
+      "v": 100
+    },
+    "V22": {
+      "v": 100
+    },
+    "U23": {
+      "v": 80
+    },
+    "V23": {
+      "v": 100
+    },
+    "U24": {
+      "v": 70
+    },
+    "V24": {
+      "v": 90
+    },
+    "U25": {
+      "v": 44
+    },
+    "V25": {
+      "v": 72
+    },
+    "U26": {
+      "v": 22
+    },
+    "V26": {
+      "v": 50
+    },
+    "U27": {
+      "v": 8
+    },
+    "V27": {
+      "v": 26
+    },
+    "U28": {
+      "v": 4
+    },
+    "V28": {
+      "v": 16
+    },
+    "U29": {
+      "v": 2
+    },
+    "V29": {
+      "v": 10
+    },
+    "AX24": {
+      "v": "DER 25 - DER-SP ET-DE-P00/027"
+    },
+    "W21": {
+      "v": 90
+    },
+    "X21": {
+      "v": 100
+    },
+    "W22": {
+      "v": 70
+    },
+    "X22": {
+      "v": 90
+    },
+    "W23": {
+      "v": 45
+    },
+    "X23": {
+      "v": 75
+    },
+    "W24": {
+      "v": 35
+    },
+    "X24": {
+      "v": 65
+    },
+    "W25": {
+      "v": 25
+    },
+    "X25": {
+      "v": 50
+    },
+    "W26": {
+      "v": 15
+    },
+    "X26": {
+      "v": 40
+    },
+    "W27": {
+      "v": 7
+    },
+    "X27": {
+      "v": 20
+    },
+    "W28": {
+      "v": 5
+    },
+    "X28": {
+      "v": 15
+    },
+    "W29": {
+      "v": 2
+    },
+    "X29": {
+      "v": 8
+    },
+    "AX25": {
+      "v": "DER 19 - DER-SP ET-DE-P00/027"
+    },
+    "Y21": {
+      "v": 100
+    },
+    "Z21": {
+      "v": 100
+    },
+    "Y22": {
+      "v": 90
+    },
+    "Z22": {
+      "v": 100
+    },
+    "Y23": {
+      "v": 70
+    },
+    "Z23": {
+      "v": 90
+    },
+    "Y24": {
+      "v": 60
+    },
+    "Z24": {
+      "v": 80
+    },
+    "Y25": {
+      "v": 35
+    },
+    "Z25": {
+      "v": 55
+    },
+    "Y26": {
+      "v": 20
+    },
+    "Z26": {
+      "v": 40
+    },
+    "Y27": {
+      "v": 10
+    },
+    "Z27": {
+      "v": 20
+    },
+    "Y28": {
+      "v": 5
+    },
+    "Z28": {
+      "v": 15
+    },
+    "Y29": {
+      "v": 2
+    },
+    "Z29": {
+      "v": 8
+    },
+    "AX26": {
+      "v": "DER 12,5 - DER-SP ET-DE-P00/027"
+    },
+    "AA21": {
+      "v": 100
+    },
+    "AB21": {
+      "v": 100
+    },
+    "AA22": {
+      "v": 100
+    },
+    "AB22": {
+      "v": 100
+    },
+    "AA23": {
+      "v": 90
+    },
+    "AB23": {
+      "v": 100
+    },
+    "AA24": {
+      "v": 70
+    },
+    "AB24": {
+      "v": 90
+    },
+    "AA25": {
+      "v": 45
+    },
+    "AB25": {
+      "v": 70
+    },
+    "AA26": {
+      "v": 25
+    },
+    "AB26": {
+      "v": 50
+    },
+    "AA27": {
+      "v": 10
+    },
+    "AB27": {
+      "v": 25
+    },
+    "AA28": {
+      "v": 5
+    },
+    "AB28": {
+      "v": 15
+    },
+    "AA29": {
+      "v": 2
+    },
+    "AB29": {
+      "v": 10
+    },
+    "AX27": {
+      "v": "DER 9,5 - DER-SP ET-DE-P00/027"
+    },
+    "AC21": {
+      "v": 100
+    },
+    "AD21": {
+      "v": 100
+    },
+    "AC22": {
+      "v": 100
+    },
+    "AD22": {
+      "v": 100
+    },
+    "AC23": {
+      "v": 100
+    },
+    "AD23": {
+      "v": 100
+    },
+    "AC24": {
+      "v": 90
+    },
+    "AD24": {
+      "v": 100
+    },
+    "AC25": {
+      "v": 50
+    },
+    "AD25": {
+      "v": 70
+    },
+    "AC26": {
+      "v": 25
+    },
+    "AD26": {
+      "v": 45
+    },
+    "AC27": {
+      "v": 12
+    },
+    "AD27": {
+      "v": 25
+    },
+    "AC28": {
+      "v": 8
+    },
+    "AD28": {
+      "v": 17
+    },
+    "AC29": {
+      "v": 4
+    },
+    "AD29": {
+      "v": 10
+    },
+    "AX28": {
+      "v": "DER 4,75 - DER-SP ET-DE-P00/027"
+    },
+    "AE21": {
+      "v": 100
+    },
+    "AF21": {
+      "v": 100
+    },
+    "AE22": {
+      "v": 100
+    },
+    "AF22": {
+      "v": 100
+    },
+    "AE23": {
+      "v": 100
+    },
+    "AF23": {
+      "v": 100
+    },
+    "AE24": {
+      "v": 100
+    },
+    "AF24": {
+      "v": 100
+    },
+    "AE25": {
+      "v": 80
+    },
+    "AF25": {
+      "v": 100
+    },
+    "AE26": {
+      "v": 50
+    },
+    "AF26": {
+      "v": 90
+    },
+    "AE27": {
+      "v": 20
+    },
+    "AF27": {
+      "v": 50
+    },
+    "AE28": {
+      "v": 7
+    },
+    "AF28": {
+      "v": 28
+    },
+    "AE29": {
+      "v": 3
+    },
+    "AF29": {
+      "v": 10
+    },
+    "AX29": {
+      "v": "BN25-D - CCR ES-E-002-R12"
+    },
+    "AG21": {
+      "v": 70
+    },
+    "AH21": {
+      "v": 90
+    },
+    "AG22": {
+      "v": 50
+    },
+    "AH22": {
+      "v": 80
+    },
+    "AG23": {
+      "v": 40
+    },
+    "AH23": {
+      "v": 70
+    },
+    "AG24": {
+      "v": 35
+    },
+    "AH24": {
+      "v": 60
+    },
+    "AG25": {
+      "v": 25
+    },
+    "AH25": {
+      "v": 50
+    },
+    "AG26": {
+      "v": 15
+    },
+    "AH26": {
+      "v": 40
+    },
+    "AG27": {
+      "v": 7
+    },
+    "AH27": {
+      "v": 20
+    },
+    "AG28": {
+      "v": 5
+    },
+    "AH28": {
+      "v": 15
+    },
+    "AG29": {
+      "v": 2
+    },
+    "AH29": {
+      "v": 10
+    },
+    "AX30": {
+      "v": "EGL 25 - CCR ES-E-002-R12"
+    },
+    "AI21": {
+      "v": 90
+    },
+    "AJ21": {
+      "v": 100
+    },
+    "AI22": {
+      "v": 65
+    },
+    "AJ22": {
+      "v": 90
+    },
+    "AI23": {
+      "v": 40
+    },
+    "AJ23": {
+      "v": 70
+    },
+    "AI24": {
+      "v": 35
+    },
+    "AJ24": {
+      "v": 60
+    },
+    "AI25": {
+      "v": 20
+    },
+    "AJ25": {
+      "v": 40
+    },
+    "AI26": {
+      "v": 15
+    },
+    "AJ26": {
+      "v": 30
+    },
+    "AI27": {
+      "v": 8
+    },
+    "AJ27": {
+      "v": 20
+    },
+    "AI28": {
+      "v": 5
+    },
+    "AJ28": {
+      "v": 15
+    },
+    "AI29": {
+      "v": 1
+    },
+    "AJ29": {
+      "v": 10
+    },
+    "AX31": {
+      "v": "EGL 16 19 - CCR ES-E-002-R12"
+    },
+    "AK21": {
+      "v": 100
+    },
+    "AL21": {
+      "v": 100
+    },
+    "AK22": {
+      "v": 96
+    },
+    "AL22": {
+      "v": 100
+    },
+    "AK23": {
+      "v": 80
+    },
+    "AL23": {
+      "v": 95
+    },
+    "AK24": {
+      "v": 66
+    },
+    "AL24": {
+      "v": 85
+    },
+    "AK25": {
+      "v": 42
+    },
+    "AL25": {
+      "v": 64
+    },
+    "AK26": {
+      "v": 28
+    },
+    "AL26": {
+      "v": 48
+    },
+    "AK27": {
+      "v": 8
+    },
+    "AL27": {
+      "v": 21
+    },
+    "AK28": {
+      "v": 4
+    },
+    "AL28": {
+      "v": 14
+    },
+    "AK29": {
+      "v": 2
+    },
+    "AL29": {
+      "v": 10
+    },
+    "AX32": {
+      "v": "EGL 19 - CCR ES-E-002-R12"
+    },
+    "AM21": {
+      "v": 100
+    },
+    "AN21": {
+      "v": 100
+    },
+    "AM22": {
+      "v": 90
+    },
+    "AN22": {
+      "v": 100
+    },
+    "AM23": {
+      "v": 70
+    },
+    "AN23": {
+      "v": 90
+    },
+    "AM24": {
+      "v": 60
+    },
+    "AN24": {
+      "v": 80
+    },
+    "AM25": {
+      "v": 35
+    },
+    "AN25": {
+      "v": 55
+    },
+    "AM26": {
+      "v": 20
+    },
+    "AN26": {
+      "v": 35
+    },
+    "AM27": {
+      "v": 10
+    },
+    "AN27": {
+      "v": 18
+    },
+    "AM28": {
+      "v": 5
+    },
+    "AN28": {
+      "v": 12
+    },
+    "AM29": {
+      "v": 2
+    },
+    "AN29": {
+      "v": 8
+    },
+    "AX33": {
+      "v": "EGL 12,5 - CCR ES-E-002-R12"
+    },
+    "AO21": {
+      "v": 100
+    },
+    "AP21": {
+      "v": 100
+    },
+    "AO22": {
+      "v": 100
+    },
+    "AP22": {
+      "v": 100
+    },
+    "AO23": {
+      "v": 90
+    },
+    "AP23": {
+      "v": 100
+    },
+    "AO24": {
+      "v": 80
+    },
+    "AP24": {
+      "v": 95
+    },
+    "AO25": {
+      "v": 40
+    },
+    "AP25": {
+      "v": 60
+    },
+    "AO26": {
+      "v": 25
+    },
+    "AP26": {
+      "v": 40
+    },
+    "AO27": {
+      "v": 10
+    },
+    "AP27": {
+      "v": 20
+    },
+    "AO28": {
+      "v": 5
+    },
+    "AP28": {
+      "v": 15
+    },
+    "AO29": {
+      "v": 2
+    },
+    "AP29": {
+      "v": 10
+    },
+    "AX34": {
+      "v": "EGL 9,5 - CCR ES-E-002-R12"
+    },
+    "AQ21": {
+      "v": 100
+    },
+    "AR21": {
+      "v": 100
+    },
+    "AQ22": {
+      "v": 100
+    },
+    "AR22": {
+      "v": 100
+    },
+    "AQ23": {
+      "v": 100
+    },
+    "AR23": {
+      "v": 100
+    },
+    "AQ24": {
+      "v": 90
+    },
+    "AR24": {
+      "v": 100
+    },
+    "AQ25": {
+      "v": 40
+    },
+    "AR25": {
+      "v": 65
+    },
+    "AQ26": {
+      "v": 25
+    },
+    "AR26": {
+      "v": 45
+    },
+    "AQ27": {
+      "v": 13
+    },
+    "AR27": {
+      "v": 24
+    },
+    "AQ28": {
+      "v": 8
+    },
+    "AR28": {
+      "v": 17
+    },
+    "AQ29": {
+      "v": 4
+    },
+    "AR29": {
+      "v": 10
+    }
+  },
+  "formulas": {
+    "O21": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG21),IF(AND(ISNUMBER(M21),ISNUMBER(N21),N21>0),MAX(BG21,M21),BG21),\"-\")))",
+    "P21": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH21),IF(AND(ISNUMBER(M21),ISNUMBER(N21),N21>0),MIN(BH21,N21),BH21),\"-\")))",
+    "O22": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG22),IF(AND(ISNUMBER(M22),ISNUMBER(N22),N22>0),MAX(BG22,M22),BG22),\"-\")))",
+    "P22": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH22),IF(AND(ISNUMBER(M22),ISNUMBER(N22),N22>0),MIN(BH22,N22),BH22),\"-\")))",
+    "O23": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG23),IF(AND(ISNUMBER(M23),ISNUMBER(N23),N23>0),MAX(BG23,M23),BG23),\"-\")))",
+    "P23": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH23),IF(AND(ISNUMBER(M23),ISNUMBER(N23),N23>0),MIN(BH23,N23),BH23),\"-\")))",
+    "O24": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG24),IF(AND(ISNUMBER(M24),ISNUMBER(N24),N24>0),MAX(BG24,M24),BG24),\"-\")))",
+    "P24": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH24),IF(AND(ISNUMBER(M24),ISNUMBER(N24),N24>0),MIN(BH24,N24),BH24),\"-\")))",
+    "O25": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG25),IF(AND(ISNUMBER(M25),ISNUMBER(N25),N25>0),MAX(BG25,M25),BG25),\"-\")))",
+    "P25": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH25),IF(AND(ISNUMBER(M25),ISNUMBER(N25),N25>0),MIN(BH25,N25),BH25),\"-\")))",
+    "O26": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG26),IF(AND(ISNUMBER(M26),ISNUMBER(N26),N26>0),MAX(BG26,M26),BG26),\"-\")))",
+    "P26": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH26),IF(AND(ISNUMBER(M26),ISNUMBER(N26),N26>0),MIN(BH26,N26),BH26),\"-\")))",
+    "O27": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG27),IF(AND(ISNUMBER(M27),ISNUMBER(N27),N27>0),MAX(BG27,M27),BG27),\"-\")))",
+    "P27": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH27),IF(AND(ISNUMBER(M27),ISNUMBER(N27),N27>0),MIN(BH27,N27),BH27),\"-\")))",
+    "O28": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG28),IF(AND(ISNUMBER(M28),ISNUMBER(N28),N28>0),MAX(BG28,M28),BG28),\"-\")))",
+    "P28": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH28),IF(AND(ISNUMBER(M28),ISNUMBER(N28),N28>0),MIN(BH28,N28),BH28),\"-\")))",
+    "O29": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG29),IF(AND(ISNUMBER(M29),ISNUMBER(N29),N29>0),MAX(BG29,M29),BG29),\"-\")))",
+    "P29": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH29),IF(AND(ISNUMBER(M29),ISNUMBER(N29),N29>0),MIN(BH29,N29),BH29),\"-\")))"
+  },
+  "traco_cadastro": {
+    "celula": "M17",
+    "linhas": "21-29",
+    "mm": "C",
+    "min": "BG",
+    "max": "BH"
+  }
 }

@@ -22,8 +22,8 @@ def blocos():
     s = SQL13B.read_text(encoding='utf-8')
     corpo = s.split('begin;', 1)[1].rsplit('commit;', 1)[0]
     out = {}
-    for b in re.split(r'\n(?=-- FR-[A-Z]+-\d+ Rev\d+ — )', corpo):
-        m = re.match(r'-- (FR-[A-Z]+-\d+) (Rev\d+) — ', b.strip())
+    for b in re.split(r'\n(?=-- FR-[A-Z]+-\d+ Rev[\d.]+ — )', corpo):
+        m = re.match(r'-- (FR-[A-Z]+-\d+) (Rev[\d.]+) — ', b.strip())
         if m:
             out[m.group(1)] = (m.group(2), b.strip())
     return out

@@ -117,9 +117,21 @@ export function indexarModelo(modelo) {
     ;(gruposEscolha[r.grupo] ||= []).push({ endereco: a, opcao: r.opcao })
   }
 
+  // traço de projeto do Cadastro (FR-IMOB-21/54): faixa de trabalho por peneira gravada em entradas[min/max + linha]
+  const traco = modelo.traco
+    ? { ...modelo.traco, linhas: Object.keys(modelo.traco.mm).map(Number).sort((a, b) => a - b) }
+    : null
+
+  // marcação com clique (role.marca): grupos exclusivos (p.ex. BE/EX/BD de um CP)
+  const gruposMarca = {}
+  for (const a of papeis.entrada) {
+    const g = cells[a].role.grupoMarca
+    if (g) (gruposMarca[g] ||= []).push(a)
+  }
+
   return {
     ...folhas[0],
-    modelo, folhas, cells, formulas, estaticos, papeis, gruposEscolha,
+    modelo, folhas, cells, formulas, estaticos, papeis, gruposEscolha, gruposMarca, traco,
     apelidos: modelo.apelidos || {},
     ordemDigitacao: folhas.flatMap(f => f.ordemDigitacao),
   }
@@ -160,6 +172,12 @@ export function calcularFicha(indice, estado, pedidoCampos = {}) {
   const cells = indice.cells
   for (const a of [...indice.papeis.entrada, ...indice.papeis.revisao]) {
     motor.definir(a, valorDeEntrada(estado?.entradas?.[a]))
+  }
+  for (const r of indice.traco?.linhas || []) {
+    for (const col of [indice.traco.min, indice.traco.max]) {
+      const v = estado?.entradas?.[col + r]
+      motor.definir(col + r, typeof v === 'number' ? v : null)
+    }
   }
   for (const a of indice.papeis.pedido) {
     const campo = cells[a].role.campo
@@ -465,3 +483,30 @@ export function gruposDaLista(indice, { incluirRevisao = false } = {}) {
 }
 
 export { colNum, colStr, separarEndereco }
+
+// ── Traço de projeto do Cadastro (FR-IMOB-21/54 — 08/10/2026) ─────────────────
+
+/** Mesma peneira? Aberturas nominais variam entre normas (12,5 × 12,7; 4,75 × 4,8; 25 × 25,4…). */
+function mesmaPeneira(a, b) {
+  return Math.abs(a - b) <= 0.05 * Math.max(a, b)
+}
+
+/**
+ * Entradas que a escolha de um traço grava na ficha: o nome na célula da lista e, por peneira,
+ * a faixa de trabalho (mín/máx) do traço. Peneira que o traço não tem fica vazia ("-" na ficha).
+ * Os valores ficam guardados na ficha: revalidar o traço depois não altera ensaios já feitos.
+ *   traco = { nome_traco, faixa_trabalho: [{ peneira_mm, min, max }] } · null = limpar
+ */
+export function entradasDoTraco(indice, traco) {
+  const t = indice?.traco
+  if (!t) return {}
+  const out = { [t.celula]: traco ? traco.nome_traco : null }
+  const faixa = Array.isArray(traco?.faixa_trabalho) ? traco.faixa_trabalho : []
+  for (const r of t.linhas) {
+    const mm = t.mm[String(r)]
+    const l = traco ? faixa.find(x => typeof x?.peneira_mm === 'number' && mesmaPeneira(x.peneira_mm, mm)) : null
+    out[t.min + r] = typeof l?.min === 'number' ? l.min : null
+    out[t.max + r] = typeof l?.max === 'number' ? l.max : null
+  }
+  return out
+}

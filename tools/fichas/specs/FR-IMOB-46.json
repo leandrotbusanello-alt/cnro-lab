@@ -4,7 +4,7 @@
   "nome": "Concreto asfáltico — densidade aparente e grau de compactação",
   "arquivo": "FR-IMOB-46_Rev01.xlsx",
   "titulo_aba": "Frente",
-  "_nota": "Planilha-mestre Rev01 (lote 8, 28/09) + 2 exemplos reais (O.S. 2026.09.18.03.557 e .558, planilhas e PDFs). 21 CPs (linhas 19–39); as 7 primeiras vinham com dados de exemplo (viram campos). Fórmulas das linhas 19–25 estendidas às linhas 26–39: na mestre, a tração diametral (W) dessas linhas calculava o grau de compactação (Q/R%) e a calibração da prensa (Z) multiplicava por #REF!. RT = 2·F/(π·100·h), F = (0,9905·leitura + 4,7547)·9,80665 N (calibração da prensa, fixa na fórmula como na mestre); leitura da prensa (Y) e contas (Z, AA) ficam fora da área, só na tela. Nº de amostras e coeficiente k (tabela N×k×α fora da área) contados pelo grau de compactação (V), como nos exemplos — a mestre contava pela RT, que costuma não ser feita (k ficava errado). CP nº (B) digitado (os exemplos usam códigos como Y312; a mestre numerava 1, 2, 3…). A coluna de RT fica visível (os exemplos a ocultavam quando não havia RT). Verso oculto na planilha: não entra. Resultado: 1 linha por CP em resultado_densidade_cbuq (alimenta o quadro FR-IMOB-41).",
+  "_nota": "Planilha-mestre Rev01 (lote 8, 28/09) + 2 exemplos reais (O.S. 2026.09.18.03.557 e .558, planilhas e PDFs). 21 CPs (linhas 19–39); as 7 primeiras vinham com dados de exemplo (viram campos). Fórmulas das linhas 19–25 estendidas às linhas 26–39: na mestre, a tração diametral (W) dessas linhas calculava o grau de compactação (Q/R%) e a calibração da prensa (Z) multiplicava por #REF!. RT = 2·F/(π·100·h), F = (0,9905·leitura + 4,7547)·9,80665 N (calibração da prensa, fixa na fórmula como na mestre); leitura da prensa (Y) e contas (Z, AA) ficam fora da área, só na tela. Nº de amostras e coeficiente k (tabela N×k×α fora da área) contados pelo grau de compactação (V), como nos exemplos — a mestre contava pela RT, que costuma não ser feita (k ficava errado). CP nº (B) digitado (os exemplos usam códigos como Y312; a mestre numerava 1, 2, 3…). A coluna de RT fica visível (os exemplos a ocultavam quando não havia RT). Verso oculto na planilha: não entra. Resultado: 1 linha por CP em resultado_densidade_cbuq (alimenta o quadro FR-IMOB-41). | Ajuste 08/10/2026 (sem mudar a versão): BE/EX/BD (J/K/L) por clique — a célula mostra \"X\", uma só por CP (antes, lista suspensa X/x); a leitura da prensa (Y) aparece numa caixa separada à direita, com título, e continua fora da impressão.",
   "pedido": {
     "C7": "os",
     "D8": "material",
@@ -25,7 +25,15 @@
         "C",
         "F",
         "G",
-        "H",
+        "H"
+      ],
+      "linhas": [
+        "19-39"
+      ],
+      "tipo": "texto"
+    },
+    {
+      "colunas": [
         "J",
         "K",
         "L"
@@ -33,7 +41,9 @@
       "linhas": [
         "19-39"
       ],
-      "tipo": "texto"
+      "tipo": "texto",
+      "marca": "X",
+      "exclusivo": "linha"
     },
     {
       "colunas": [
@@ -1015,5 +1025,11 @@
       }
     }
   ],
-  "pedido_exemplo": {}
+  "pedido_exemplo": {},
+  "celulas_extras": {
+    "Y17": {
+      "v": "Leitura da prensa (kgf)",
+      "estilo_de": "W17"
+    }
+  }
 }

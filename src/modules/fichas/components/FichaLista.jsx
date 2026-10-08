@@ -12,6 +12,7 @@ import s from './Ficha.module.css'
 export default function FichaLista({
   indice, motor, estado, modo = 'preencher', bloqueado = false, idBase = 'lista',
   assinaturas = {}, podeAssinar = {}, onEntrada, onEscolha, onVerificacao, onCliqueAssinatura, fotos,
+  onTraco, onMarcar, tracoOpcoes,
 }) {
   const grupos = useMemo(() => gruposDaLista(indice, { incluirRevisao: modo === 'revisao' }), [indice, modo])
   const ordem = useMemo(() => grupos.flatMap(g => g.itens.filter(i => i.endereco).map(i => i.endereco)), [grupos])
@@ -113,6 +114,20 @@ export default function FichaLista({
               }
               const d = (indice.cells || indice.modelo.cells)[item.endereco]
               const editavel = item.tipo === 'revisao' ? podeRevisao : podeEntrada
+              if (d?.role?.marca) {
+                const valor = estado?.entradas?.[item.endereco] || ''
+                return (
+                  <div key={item.endereco} className={s.item}>
+                    <span className={s.itemRotulo}>{item.rotulo}</span>
+                    <button type="button" id={`${idBase}-${item.endereco}`} className={`${s.itemCampo} ${s.marcaLista}`}
+                      disabled={!editavel} aria-pressed={!!valor} aria-label={item.rotulo}
+                      onClick={() => onMarcar?.(item.endereco)}>
+                      {valor || '—'}
+                    </button>
+                  </div>
+                )
+              }
+              const ehTraco = indice.traco?.celula === item.endereco
               return (
                 <label key={item.endereco} className={`${s.item} ${item.multilinha ? s.itemLargo : ''}`}>
                   <span className={s.itemRotulo}>{item.rotulo}</span>
@@ -123,10 +138,10 @@ export default function FichaLista({
                     dado={item.dado}
                     nf={d?.nf}
                     multilinha={item.multilinha}
-                    opcoes={d?.role?.opcoes}
+                    opcoes={ehTraco ? tracoOpcoes : d?.role?.opcoes}
                     editavel={editavel}
                     rotulo={item.rotulo}
-                    onConfirmar={v => onEntrada?.(item.endereco, v)}
+                    onConfirmar={v => (ehTraco ? onTraco?.(v) : onEntrada?.(item.endereco, v))}
                     onNavegar={p => navegar(item.endereco, p)}
                   />
                 </label>

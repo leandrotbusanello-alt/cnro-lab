@@ -13,8 +13,13 @@ function carregarImagem(src) {
   })
 }
 
-/** Blob (PNG/JPG) → Blob PNG recortado. Se não der para recortar, devolve o original. */
-export async function recortarAssinatura(blob, { margem = 6, limiar = 235 } = {}) {
+/**
+ * Blob (PNG/JPG) → Blob PNG recortado. Se não der para recortar, devolve o original.
+ * Fundo detectado pelos cantos da imagem (branco, quase branco, cinza claro de escaneamento ou
+ * transparente); "tinta" é o que se distancia do fundo. Pontos soltos (sujeira do scan) não contam:
+ * a linha/coluna precisa ter alguns pixels de tinta (apontamento de 08/10/2026 — assinatura pequena).
+ */
+export async function recortarAssinatura(blob, { margem = 6, distancia = 60 } = {}) {
   if (!blob || typeof document === 'undefined') return blob
   const url = URL.createObjectURL(blob)
   try {
@@ -26,20 +31,44 @@ export async function recortarAssinatura(blob, { margem = 6, limiar = 235 } = {}
     const ctx = canvas.getContext('2d', { willReadFrequently: true })
     ctx.drawImage(img, 0, 0)
     const { data } = ctx.getImageData(0, 0, w, h)
-    let x0 = w, y0 = h, x1 = -1, y1 = -1
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const i = (y * w + x) * 4
-        const a = data[i + 3]
-        // pixel de tinta: visível e não (quase) branco
-        if (a > 24 && !(data[i] > limiar && data[i + 1] > limiar && data[i + 2] > limiar)) {
-          if (x < x0) x0 = x
-          if (x > x1) x1 = x
-          if (y < y0) y0 = y
-          if (y > y1) y1 = y
+    // fundo = média dos 4 cantos (5×5 px)
+    let fr = 0, fg = 0, fb = 0, fa = 0, n = 0
+    for (const [cx, cy] of [[0, 0], [w - 5, 0], [0, h - 5], [w - 5, h - 5]]) {
+      for (let y = Math.max(0, cy); y < Math.min(h, cy + 5); y++) {
+        for (let x = Math.max(0, cx); x < Math.min(w, cx + 5); x++) {
+          const i = (y * w + x) * 4
+          fr += data[i]; fg += data[i + 1]; fb += data[i + 2]; fa += data[i + 3]; n++
         }
       }
     }
+    fr /= n; fg /= n; fb /= n; fa /= n
+    const fundoTransparente = fa < 128
+    const tinta = i => {
+      const a = data[i + 3]
+      if (a <= 24) return false
+      if (fundoTransparente) return true
+      const d = Math.abs(data[i] - fr) + Math.abs(data[i + 1] - fg) + Math.abs(data[i + 2] - fb)
+      return d > distancia
+    }
+    // tinta em cada pixel (uma vez só)
+    const marca = new Uint8Array(w * h)
+    for (let k = 0; k < w * h; k++) marca[k] = tinta(k * 4) ? 1 : 0
+    // limites em passadas alternadas: linhas (dentro das colunas atuais), depois colunas (dentro das linhas atuais).
+    // Sujeira isolada longe da assinatura cai fora numa das passadas.
+    const minimo = 2      // pixels de tinta para a linha/coluna contar
+    let x0 = 0, x1 = w - 1, y0 = 0, y1 = h - 1
+    for (let passada = 0; passada < 3 && x1 >= x0 && y1 >= y0; passada++) {
+      const porLinha = new Uint32Array(h)
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) porLinha[y] += marca[y * w + x]
+      while (y0 <= y1 && porLinha[y0] < minimo) y0++
+      while (y1 >= y0 && porLinha[y1] < minimo) y1--
+      if (y1 < y0) break
+      const porColuna = new Uint32Array(w)
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) porColuna[x] += marca[y * w + x]
+      while (x0 <= x1 && porColuna[x0] < minimo) x0++
+      while (x1 >= x0 && porColuna[x1] < minimo) x1--
+    }
+    if (x1 < x0 || y1 < y0) x1 = -1
     if (x1 < 0) return blob
     x0 = Math.max(0, x0 - margem); y0 = Math.max(0, y0 - margem)
     x1 = Math.min(w - 1, x1 + margem); y1 = Math.min(h - 1, y1 + margem)

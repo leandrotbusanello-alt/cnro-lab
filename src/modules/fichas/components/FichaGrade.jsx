@@ -110,7 +110,9 @@ function montarEstrutura(folha, soImpressao, folga = 1) {
       const a = colStr(c) + r
       if (cobertas.has(a)) return
       const d = modelo.cells[a] || {}
-      const rs = d.rs || 1, cs = Math.min(d.cs || 1, nCols - ci)
+      // célula da ficha não invade as colunas "só de tela" (elas ficam numa caixa separada, à direita)
+      const limite = ci < folha.colsImpressao ? folha.colsImpressao : nCols
+      const rs = d.rs || 1, cs = Math.min(d.cs || 1, limite - ci)
       let h = 0
       for (let k = 0; k < rs; k++) h += modelo.rows[ri + k] || 0
       const vizinha = modelo.cells[colStr(c + cs) + r]
@@ -119,6 +121,7 @@ function montarEstrutura(folha, soImpressao, folga = 1) {
         // coluna oculta, ou célula com conteúdo numa linha oculta do Excel (FR-IMOB-53: peneira 5/8")
         a, d, rs, cs, h: Math.max(0, h - folga),
         oculta: largura === 0 || (altura === 0 && rs === 1 && (d.v !== undefined || !!d.fx || !!d.role || !!d.rt)),
+        ci,
         soTela: ci >= folha.colsImpressao,
         estilo: estiloTd(d), alinhamento: alinhamento(d), recortar,
         papel: d.role?.tipo || null,
@@ -141,10 +144,26 @@ function Trechos({ rt }) {
   })
 }
 
-function MarcaAssinatura({ assinatura, linhasTexto }) {
+/**
+ * Assinatura sobre o campo "Responsável …" (apontamento de 08/10/2026): todas do mesmo jeito —
+ * ocupa o espaço livre ACIMA do texto da célula (a linha "____" e o "Responsável …"), nunca por cima dele,
+ * com altura padrão e largura limitada à célula. O texto é medido pela fonte da própria célula.
+ */
+function MarcaAssinatura({ assinatura, texto, altura, fontePt, alinhamentoV }) {
   if (!assinatura) return null
+  const h = altura || 80
+  const linhas = String(texto || '').split('\n').filter(l => l.trim())
+  const linhaPx = (fontePt || 10) * (96 / 72) * 1.25
+  const alturaTexto = linhas.length * linhaPx
+  // topo do texto, medido a partir da base da célula (conforme o alinhamento vertical do Excel)
+  const topoTexto = alinhamentoV === 'center' ? (h + alturaTexto) / 2 : alinhamentoV === 'top' ? h : alturaTexto
+  // se a 1ª linha é o traço "_____", a assinatura assenta sobre ele (como no papel), sem descer no "Responsável …"
+  const sobreTraco = linhas.length > 1 && /^_{5,}$/.test(linhas[0].trim())
+  const base = Math.max(0, topoTexto - (sobreTraco ? linhaPx * 0.55 : 0))
+  // altura padrão; se a célula for baixa, a assinatura sobe para o espaço acima dela
+  const alt = Math.round(Math.max(36, Math.min(60, h - base - 2)))
   return (
-    <div className={s.marcaAssinatura} style={{ bottom: `${linhasTexto * 13 + 2}px` }}>
+    <div className={s.marcaAssinatura} style={{ bottom: `${Math.round(base)}px`, height: `${alt}px` }}>
       {assinatura.url
         ? <img src={assinatura.url} alt={`Assinatura de ${assinatura.nome}`} />
         : <span className={s.assinaturaNome}>{assinatura.nome}</span>}
@@ -171,7 +190,7 @@ function MarcaAssinatura({ assinatura, linhasTexto }) {
 export default function FichaGrade({
   indice, folha: folhaProp, motor, estado, modo = 'leitura', destacar = false, bloqueado = false, assinaturas = {},
   escala: escalaFixa, idBase = 'ficha', soImpressao = false, onEntrada, onEscolha, onVerificacao, onCliqueAssinatura,
-  onAjuste, fotos,
+  onAjuste, onTraco, onMarcar, tracoOpcoes, fotos,
 }) {
   const folha = folhaProp || indice.folhas?.[0] || indice
   const pre = folha.prefixo || ''
@@ -180,7 +199,10 @@ export default function FichaGrade({
   // Excel — senão a tabela cresce e o que é posicionado por cima (logo, gráficos) sai do lugar.
   const folga = escalaFixa && escalaFixa < 1 ? Math.min(4, 1.05 / escalaFixa + 0.3) : 1
   const estrutura = useMemo(() => montarEstrutura(folha, soImpressao, folga), [folha, soImpressao, folga])
-  const largura = soImpressao ? folha.larguraImpressao : folha.largura
+  // colunas "só de tela" (p.ex. leitura da prensa da FR-IMOB-46): caixa separada da ficha por um espaço
+  const temTela = !soImpressao && folha.modelo.cols.length > folha.colsImpressao
+  const ESPACO_TELA = 18
+  const largura = soImpressao ? folha.larguraImpressao : folha.largura + (temTela ? ESPACO_TELA : 0)
   const caixa = useRef(null)
   const [escalaAuto, setEscalaAuto] = useState(1)
 
@@ -215,6 +237,25 @@ export default function FichaGrade({
     const a = pre + cel.a
     if (papel === 'entrada' || papel === 'revisao') {
       const editavel = papel === 'entrada' ? podeEntrada : podeRevisao
+      if (d.role.marca) {
+        // marcação com clique ("X"), sem lista suspensa — FR-IMOB-46 BE/EX/BD
+        const valor = estado?.entradas?.[a] || ''
+        return (
+          <button
+            type="button"
+            id={`${idBase}-${a}`}
+            className={`${s.marcaCelula} ${editavel ? s.clicavel : ''}`}
+            style={{ height: cel.h }}
+            disabled={!editavel}
+            aria-pressed={!!valor}
+            aria-label={d.role.rot || d.role.rc || d.role.rl || a}
+            onClick={() => onMarcar?.(a)}
+          >
+            {valor}
+          </button>
+        )
+      }
+      const ehTraco = indice.traco?.celula === a
       const campo = (
         <CampoCelula
           id={`${idBase}-${a}`}
@@ -224,10 +265,10 @@ export default function FichaGrade({
           dado={d.role.dado}
           nf={d.nf}
           multilinha={!!d.role.ml}
-          opcoes={d.role.opcoes}
+          opcoes={ehTraco ? tracoOpcoes : d.role.opcoes}
           editavel={editavel}
           rotulo={d.role.rot || d.role.rl || a}
-          onConfirmar={v => onEntrada?.(a, v)}
+          onConfirmar={v => (ehTraco ? onTraco?.(v) : onEntrada?.(a, v))}
           onNavegar={p => navegar(a, p)}
         />
       )
@@ -340,7 +381,11 @@ export default function FichaGrade({
   function classes(cel) {
     const out = []
     if (cel.oculta) out.push(s.oculta)
-    if (cel.soTela && destacar) out.push(s.soTela)
+    if (cel.soTela) {
+      const d = cel.d
+      const temConteudo = !!(d.role || d.fx || d.rt || (d.v !== undefined && d.v !== null && d.v !== ''))
+      out.push(temConteudo ? s.soTela : s.soTelaVazia)
+    }
     const p = cel.papel
     if (destacar) {
       if (p === 'entrada') out.push(podeEntrada ? s.dEntrada : s.dEntradaFixa)
@@ -374,6 +419,36 @@ export default function FichaGrade({
     }
   }
 
+  function celula(cel) {
+    const interativa = ((cel.papel === 'escolha' || cel.papel === 'verificacao') && podeEntrada) || (cel.papel === 'assinatura' && modo !== 'leitura')
+    return (
+      <td
+        key={cel.a}
+        rowSpan={cel.rs > 1 ? cel.rs : undefined}
+        colSpan={cel.cs > 1 ? cel.cs : undefined}
+        className={classes(cel)}
+        style={cel.d.cf ? { ...cel.estilo, ...estiloCondicional(cel.d, cel.a, pre, motor, estado) } : cel.estilo}
+        title={cel.d.fx && modo !== 'leitura' ? `=${cel.d.fx}` : undefined}
+        onClick={interativa ? e => aoClicar(cel, e) : undefined}
+        onKeyDown={interativa ? e => aoTeclar(cel, e) : undefined}
+        tabIndex={interativa ? 0 : undefined}
+        role={interativa ? (cel.papel === 'verificacao' ? 'checkbox' : 'button') : undefined}
+        aria-checked={cel.papel === 'verificacao' ? !!estado?.verificacoes?.[pre + cel.a] : undefined}
+      >
+        {conteudo(cel)}
+        {cel.papel === 'assinatura' && (
+          <MarcaAssinatura
+            assinatura={assinaturas[cel.d.role.quem]}
+            texto={cel.d.v}
+            altura={cel.h}
+            fontePt={cel.d.f?.s}
+            alinhamentoV={cel.d.vt}
+          />
+        )}
+      </td>
+    )
+  }
+
   return (
     <div ref={caixa} className={s.caixaGrade} style={escalaFixa ? { width: largura * escala } : undefined}>
       <div className={s.escalaGrade} style={{ width: largura * escala, height: folha.altura * escala }}>
@@ -386,36 +461,21 @@ export default function FichaGrade({
             : { width: largura, height: folha.altura, transform: `scale(${escala})` }}
         >
           <table className={s.grade} style={{ width: largura }}>
-            <colgroup>{folha.modelo.cols.slice(0, soImpressao ? folha.colsImpressao : undefined).map((w, i) => <col key={i} style={{ width: w }} />)}</colgroup>
+            <colgroup>
+              {folha.modelo.cols.slice(0, soImpressao ? folha.colsImpressao : undefined).map((w, i) => [
+                temTela && i === folha.colsImpressao ? <col key="espaco" style={{ width: ESPACO_TELA }} /> : null,
+                <col key={i} style={{ width: w }} />,
+              ])}
+            </colgroup>
             <tbody>
               {estrutura.map(linha => (
                 <tr key={linha.r} style={{ height: linha.altura }}>
-                  {linha.celulas.map(cel => {
-                    const interativa = ((cel.papel === 'escolha' || cel.papel === 'verificacao') && podeEntrada) || (cel.papel === 'assinatura' && modo !== 'leitura')
-                    return (
-                      <td
-                        key={cel.a}
-                        rowSpan={cel.rs > 1 ? cel.rs : undefined}
-                        colSpan={cel.cs > 1 ? cel.cs : undefined}
-                        className={classes(cel)}
-                        style={cel.d.cf ? { ...cel.estilo, ...estiloCondicional(cel.d, cel.a, pre, motor, estado) } : cel.estilo}
-                        title={cel.d.fx && modo !== 'leitura' ? `=${cel.d.fx}` : undefined}
-                        onClick={interativa ? e => aoClicar(cel, e) : undefined}
-                        onKeyDown={interativa ? e => aoTeclar(cel, e) : undefined}
-                        tabIndex={interativa ? 0 : undefined}
-                        role={interativa ? (cel.papel === 'verificacao' ? 'checkbox' : 'button') : undefined}
-                        aria-checked={cel.papel === 'verificacao' ? !!estado?.verificacoes?.[pre + cel.a] : undefined}
-                      >
-                        {conteudo(cel)}
-                        {cel.papel === 'assinatura' && (
-                          <MarcaAssinatura
-                            assinatura={assinaturas[cel.d.role.quem]}
-                            linhasTexto={String(cel.d.v || '').split('\n').length}
-                          />
-                        )}
-                      </td>
-                    )
+                  {linha.celulas.flatMap((cel, k) => {
+                    const espaco = temTela && cel.ci >= folha.colsImpressao && (k === 0 || linha.celulas[k - 1].ci < folha.colsImpressao)
+                      ? [<td key="espaco" className={s.espacoTela} aria-hidden="true" />] : []
+                    return [...espaco, celula(cel)]
                   })}
+                  {temTela && !linha.celulas.some(c => c.ci >= folha.colsImpressao) && <td className={s.espacoTela} aria-hidden="true" />}
                 </tr>
               ))}
             </tbody>

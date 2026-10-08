@@ -1,9 +1,9 @@
 {
   "codigo": "FR-IMOB-54",
-  "versao": "Rev01",
+  "versao": "Rev01.1",
   "nome": "Concreto asfáltico — Análise granulométrica da mistura (DNIT 031)",
   "arquivo": "FR-IMOB-54_Rev01.xlsx",
-  "_nota": "Planilha Rev01 (o cabeçalho interno diz Versão 00), no padrão da FR-21 Rev01. Listas suspensas: M19 = faixa DNIT 031 A–D (limites M/N) e M17 = traço de projeto (faixa de trabalho O/P); as tabelas de faixas e traços (colunas R…AJ, fora da área) entram como células auxiliares. Massa inicial, retidos e fundo digitados; massa total = soma. Decisão do usuário (29/09): % retida acumulada das DUAS amostras sobre a massa total (a planilha usava a massa total na Amostra 01 e a massa inicial na Amostra 02, J21:J33 → $H$35). Área A1:P64 (as linhas 66–92, ocultas, têm uma cópia da tabela de faixas). Conferido com o exemplo real Rev01 (O.S. 2026.09.11.03.547) e o da Rev00 (O.S. 2026.07.21.02.401). Sem resultado_* (como a FR-21); as peneiras 1\", 3/4\", 1/2\", 3/8\", nº 4 e nº 200 (média, coluna L) alimentam os quadros FR-41/42.",
+  "_nota": "Planilha Rev01 (o cabeçalho interno diz Versão 00), no padrão da FR-21 Rev01. Listas suspensas: M19 = faixa DNIT 031 A–D (limites M/N) e M17 = traço de projeto (faixa de trabalho O/P); as tabelas de faixas e traços (colunas R…AJ, fora da área) entram como células auxiliares. Massa inicial, retidos e fundo digitados; massa total = soma. Decisão do usuário (29/09): % retida acumulada das DUAS amostras sobre a massa total (a planilha usava a massa total na Amostra 01 e a massa inicial na Amostra 02, J21:J33 → $H$35). Área A1:P64 (as linhas 66–92, ocultas, têm uma cópia da tabela de faixas). Conferido com o exemplo real Rev01 (O.S. 2026.09.11.03.547) e o da Rev00 (O.S. 2026.07.21.02.401). Sem resultado_* (como a FR-21); as peneiras 1\", 3/4\", 1/2\", 3/8\", nº 4 e nº 200 (média, coluna L) alimentam os quadros FR-41/42. | Rev01.1 (08/10/2026): traço de projeto (M17) vem do Cadastro (traco_cadastro), faixa de trabalho gravada em BG/BH ao escolher; O/P = faixa do traço limitada à faixa DNIT 031/2024 escolhida; peneira que o traço não tem = \"-\". Faixas A–D conferidas com a Tabela 1 da norma (iguais).",
   "pedido": {
     "C7": "os",
     "C8": "material",
@@ -50,7 +50,33 @@
     "J30": "=IF(H30=\"\",\"\",(I30/$H$35)*100)",
     "J31": "=IF(H31=\"\",\"\",(I31/$H$35)*100)",
     "J32": "=IF(H32=\"\",\"\",(I32/$H$35)*100)",
-    "J33": "=IF(H33=\"\",\"\",(I33/$H$35)*100)"
+    "J33": "=IF(H33=\"\",\"\",(I33/$H$35)*100)",
+    "O21": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG21),IF(AND(ISNUMBER(M21),ISNUMBER(N21),N21>0),MAX(BG21,M21),BG21),\"-\")),\"\")",
+    "P21": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH21),IF(AND(ISNUMBER(M21),ISNUMBER(N21),N21>0),MIN(BH21,N21),BH21),\"-\")),\"\")",
+    "O22": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG22),IF(AND(ISNUMBER(M22),ISNUMBER(N22),N22>0),MAX(BG22,M22),BG22),\"-\")),\"\")",
+    "P22": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH22),IF(AND(ISNUMBER(M22),ISNUMBER(N22),N22>0),MIN(BH22,N22),BH22),\"-\")),\"\")",
+    "O23": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG23),IF(AND(ISNUMBER(M23),ISNUMBER(N23),N23>0),MAX(BG23,M23),BG23),\"-\")),\"\")",
+    "P23": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH23),IF(AND(ISNUMBER(M23),ISNUMBER(N23),N23>0),MIN(BH23,N23),BH23),\"-\")),\"\")",
+    "O24": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG24),IF(AND(ISNUMBER(M24),ISNUMBER(N24),N24>0),MAX(BG24,M24),BG24),\"-\")),\"\")",
+    "P24": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH24),IF(AND(ISNUMBER(M24),ISNUMBER(N24),N24>0),MIN(BH24,N24),BH24),\"-\")),\"\")",
+    "O25": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG25),IF(AND(ISNUMBER(M25),ISNUMBER(N25),N25>0),MAX(BG25,M25),BG25),\"-\")),\"\")",
+    "P25": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH25),IF(AND(ISNUMBER(M25),ISNUMBER(N25),N25>0),MIN(BH25,N25),BH25),\"-\")),\"\")",
+    "O26": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG26),IF(AND(ISNUMBER(M26),ISNUMBER(N26),N26>0),MAX(BG26,M26),BG26),\"-\")),\"\")",
+    "P26": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH26),IF(AND(ISNUMBER(M26),ISNUMBER(N26),N26>0),MIN(BH26,N26),BH26),\"-\")),\"\")",
+    "O27": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG27),IF(AND(ISNUMBER(M27),ISNUMBER(N27),N27>0),MAX(BG27,M27),BG27),\"-\")),\"\")",
+    "P27": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH27),IF(AND(ISNUMBER(M27),ISNUMBER(N27),N27>0),MIN(BH27,N27),BH27),\"-\")),\"\")",
+    "O28": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG28),IF(AND(ISNUMBER(M28),ISNUMBER(N28),N28>0),MAX(BG28,M28),BG28),\"-\")),\"\")",
+    "P28": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH28),IF(AND(ISNUMBER(M28),ISNUMBER(N28),N28>0),MIN(BH28,N28),BH28),\"-\")),\"\")",
+    "O29": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG29),IF(AND(ISNUMBER(M29),ISNUMBER(N29),N29>0),MAX(BG29,M29),BG29),\"-\")),\"\")",
+    "P29": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH29),IF(AND(ISNUMBER(M29),ISNUMBER(N29),N29>0),MIN(BH29,N29),BH29),\"-\")),\"\")",
+    "O30": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG30),IF(AND(ISNUMBER(M30),ISNUMBER(N30),N30>0),MAX(BG30,M30),BG30),\"-\")),\"\")",
+    "P30": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH30),IF(AND(ISNUMBER(M30),ISNUMBER(N30),N30>0),MIN(BH30,N30),BH30),\"-\")),\"\")",
+    "O31": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG31),IF(AND(ISNUMBER(M31),ISNUMBER(N31),N31>0),MAX(BG31,M31),BG31),\"-\")),\"\")",
+    "P31": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH31),IF(AND(ISNUMBER(M31),ISNUMBER(N31),N31>0),MIN(BH31,N31),BH31),\"-\")),\"\")",
+    "O32": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG32),IF(AND(ISNUMBER(M32),ISNUMBER(N32),N32>0),MAX(BG32,M32),BG32),\"-\")),\"\")",
+    "P32": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH32),IF(AND(ISNUMBER(M32),ISNUMBER(N32),N32>0),MIN(BH32,N32),BH32),\"-\")),\"\")",
+    "O33": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG33),IF(AND(ISNUMBER(M33),ISNUMBER(N33),N33>0),MAX(BG33,M33),BG33),\"-\")),\"\")",
+    "P33": "=IF($D$20<>\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH33),IF(AND(ISNUMBER(M33),ISNUMBER(N33),N33>0),MIN(BH33,N33),BH33),\"-\")),\"\")"
   },
   "area_impressao": "A1:P64",
   "assinaturas": {
@@ -84,7 +110,7 @@
   "rotulos": {
     "I7": "Data do ensaio",
     "M19": "Faixa granulométrica (DNIT 031)",
-    "M17": "Traço de projeto (faixa de trabalho)",
+    "M17": "Traço de projeto (Cadastro)",
     "D20": "Massa inicial (g)",
     "D34": "Fundo (g)",
     "D21": "Massa retida — peneira 1 1/2\" (g)",
@@ -117,5 +143,12 @@
     "H33": "Massa retida — peneira nº 200 (g)"
   },
   "resultados": [],
-  "pedido_exemplo": {}
+  "pedido_exemplo": {},
+  "traco_cadastro": {
+    "celula": "M17",
+    "linhas": "21-33",
+    "mm": "C",
+    "min": "BG",
+    "max": "BH"
+  }
 }

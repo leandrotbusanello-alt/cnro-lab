@@ -13,6 +13,7 @@ import { useFicha } from '../../fichas/useFicha'
 import { useFotosFicha } from '../../fichas/fotosFicha'
 import { INTERVALO_RASCUNHO_SERVIDOR } from '../../fichas/constants'
 import FichaEnsaio from '../../fichas/components/FichaEnsaio'
+import { useTracosDaFicha } from '../../fichas/useTracosDaFicha'
 import FotoApoio from '../../fichas/components/FotoApoio'
 import { urlAssinatura } from '../../laboratorio/labRepo'
 import { numeroOS, numeroPE, dataHora, hojeISO } from '../../laboratorio/utils'
@@ -95,6 +96,7 @@ export default function ExecucaoEnsaio() {
   }, [eo, base])
 
   const ficha = useFicha(modeloReg, estado || { entradas: {}, escolhas: {} }, pedidoCampos)
+  const tracos = useTracosDaFicha(ficha.indice, pedido)   // FR-IMOB-21/54: traço de projeto do Cadastro
 
   // URL da imagem da assinatura do usuário (funciona offline depois do 1º download)
   const [urlMinha, setUrlMinha] = useState(null)
@@ -294,6 +296,7 @@ export default function ExecucaoEnsaio() {
         <div className={`${styles.area} ${fotoAberta ? styles.comFoto : ''}`}>
           <div className={styles.areaFicha}>
             <FichaEnsaio
+              tracos={tracos}
               indice={ficha.indice}
               motor={ficha.motor}
               estado={estado}

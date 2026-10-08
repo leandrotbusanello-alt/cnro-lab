@@ -201,9 +201,15 @@ def papeis_da_spec(spec):
                 p[a]['ml'] = 1
             if g.get('manter_texto'):
                 p[a]['_manter'] = True
-            if g.get('opcoes'):         # lista suspensa definida na spec (quando a planilha não tem validação)
+            if g.get('opcoes'):         # lista suspensa definida na spec (prevalece sobre a validação da planilha)
                 p[a]['opcoes'] = list(g['opcoes'])
                 p[a]['dado'] = 'texto'
+                p[a]['_opcoes_spec'] = True
+            if g.get('marca'):          # marcação com clique: a célula mostra a marca ("X") ou fica vazia
+                p[a]['marca'] = g['marca']
+                p[a]['dado'] = 'texto'
+                if g.get('exclusivo') == 'linha':     # só uma marcada por linha (p.ex. BE/EX/BD de um CP)
+                    p[a]['grupoMarca'] = 'L' + re.match(r'[A-Z]+(\d+)$', a).group(1)
     for g in spec.get('revisao', []):
         for a in celulas_do_grupo(g):
             p[a] = {'tipo': 'revisao', 'dado': g.get('tipo', 'texto')}
@@ -580,7 +586,11 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
             ca, ra, cb, rb = range_boundaries(rng)
             for rr in range(ra, rb + 1):
                 for cc in range(ca, cb + 1):
-                    d = cells.get(endereco(cc, rr))
+                    a_dv = endereco(cc, rr)
+                    d = cells.get(a_dv)
+                    pp = papeis.get(a_dv, {})
+                    if pp.get('_opcoes_spec') or pp.get('marca') or a_dv == (spec.get('traco_cadastro') or {}).get('celula'):
+                        continue        # a spec define a lista (ou é marcação com clique / traço do Cadastro)
                     if d and d.get('role', {}).get('tipo') in ('entrada', 'revisao'):
                         d['role']['opcoes'] = opcoes
                         d['role']['dado'] = 'texto'
@@ -643,6 +653,29 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
         **({'aux': aux} if aux else {}),
         **({'graficos': graficos} if graficos else {}),
     }
+    # traço de projeto vindo do Cadastro (FR-IMOB-21/54, 08/10/2026): a célula da lista recebe os traços
+    # da empresa do pedido; ao escolher, a faixa de trabalho de cada peneira é gravada nas colunas min/max
+    # (fora da área), de onde as fórmulas da ficha leem. Peneira identificada pela abertura (coluna mm).
+    tc = spec.get('traco_cadastro')
+    if tc:
+        linhas = []
+        for g in (tc['linhas'] if isinstance(tc['linhas'], list) else [tc['linhas']]):
+            if isinstance(g, str) and '-' in g:
+                x, y = g.split('-'); linhas += list(range(int(x), int(y) + 1))
+            else:
+                linhas.append(int(g))
+        mm = {}
+        for rr in linhas:
+            v = wsv[f"{tc['mm']}{rr}"].value
+            if not isinstance(v, (int, float)):
+                alertas.append(f"traço do Cadastro: {tc['mm']}{rr} sem abertura numérica ({v!r})")
+                continue
+            mm[str(rr)] = float(v)
+        if tc['celula'] not in cells:
+            alertas.append(f"traço do Cadastro: célula {tc['celula']} fora da área")
+        else:
+            cells[tc['celula']].get('role', {}).pop('opcoes', None)
+        folha['traco'] = {'celula': tc['celula'], 'min': tc['min'], 'max': tc['max'], 'mm': mm}
     for a in spec.get('pedido', {}):
         if a not in cells:
             alertas.append(f'{a}: célula de pedido fora da área de impressão ou coberta por mescla.')

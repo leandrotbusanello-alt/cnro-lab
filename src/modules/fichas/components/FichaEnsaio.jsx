@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { LARGURA_VISAO_LISTA } from '../constants'
 import FichaGrade from './FichaGrade'
 import FichaLista from './FichaLista'
+import { entradasDoTraco } from '../motor/ficha.js'
 import s from './Ficha.module.css'
 
 const NOME = { executor: 'Responsável executor', calculista: 'Responsável calculista' }
@@ -23,7 +24,7 @@ const NOME = { executor: 'Responsável executor', calculista: 'Responsável calc
 export default function FichaEnsaio({
   indice, motor, estado, onEstado, modo = 'leitura',
   assinaturas = {}, podeAssinar = {}, motivoSemAssinatura, usuarioNome,
-  onAssinar, onRemoverAssinatura, idBase = 'ficha', fotos,
+  onAssinar, onRemoverAssinatura, idBase = 'ficha', fotos, tracos,
 }) {
   const [vista, setVista] = useState(() => (window.innerWidth < LARGURA_VISAO_LISTA ? 'lista' : 'grade'))
   const [confirmacao, setConfirmacao] = useState(null)   // { quem, rect }
@@ -45,6 +46,32 @@ export default function FichaEnsaio({
     const entradas = { ...(estado?.entradas || {}) }
     if (v === null || v === undefined || v === '') delete entradas[a]
     else entradas[a] = v
+    onEstado?.({ ...estado, entradas })
+  }
+
+  // Traço de projeto do Cadastro (FR-IMOB-21/54): grava o nome e a faixa de trabalho de cada peneira
+  function mudarTraco(nome) {
+    const t = nome ? (tracos || []).find(x => x.nome_traco === nome) : null
+    const novos = !nome ? entradasDoTraco(indice, null)
+      : t ? entradasDoTraco(indice, t)
+      : { [indice.traco.celula]: nome }       // nome antigo que não está mais no Cadastro: mantém os valores
+    const entradas = { ...(estado?.entradas || {}) }
+    for (const [a, v] of Object.entries(novos)) {
+      if (v === null || v === undefined || v === '') delete entradas[a]
+      else entradas[a] = v
+    }
+    onEstado?.({ ...estado, entradas })
+  }
+
+  // Marcação com clique ("X"): clicar marca/desmarca; no grupo exclusivo (BE/EX/BD de um CP) só uma fica marcada
+  function marcar(a) {
+    const role = indice.cells[a]?.role || {}
+    const entradas = { ...(estado?.entradas || {}) }
+    if (entradas[a]) delete entradas[a]
+    else {
+      for (const b of indice.gruposMarca?.[role.grupoMarca] || []) delete entradas[b]
+      entradas[a] = role.marca || 'X'
+    }
     onEstado?.({ ...estado, entradas })
   }
 
@@ -79,6 +106,8 @@ export default function FichaEnsaio({
     indice, estado, modo, bloqueado, assinaturas,
     onEntrada: mudarEntrada, onEscolha: mudarEscolha, onVerificacao: mudarVerificacao, onCliqueAssinatura: cliqueAssinatura,
     onAjuste: modo === 'revisao' ? mudarAjuste : undefined,
+    onTraco: mudarTraco, onMarcar: marcar,
+    tracoOpcoes: indice.traco && tracos ? tracos.map(t => t.nome_traco) : undefined,
     fotos,
   }
   const qtdAjustes = Object.keys(estado?.ajustes || {}).length

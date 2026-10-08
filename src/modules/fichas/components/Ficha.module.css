@@ -55,6 +55,15 @@ select.campoCelula {
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23475569'/%3E%3C/svg%3E") no-repeat right 3px center;
 }
 select.itemCampo { cursor: pointer; }
+/* marcação com clique ("X") — FR-IMOB-46 BE/EX/BD: a célula inteira é o botão, sem setinha */
+.marcaCelula {
+  all: unset; box-sizing: border-box; display: flex; align-items: center; justify-content: center;
+  width: 100%; font: inherit; color: inherit; text-align: center;
+}
+.marcaCelula:focus-visible { outline: 2px solid #2563eb; outline-offset: -2px; }
+.marcaCelula:disabled { cursor: default; }
+.marcaLista { text-align: center; font-weight: 700; cursor: pointer; }
+.marcaLista:disabled { cursor: default; }
 .campoCelula:focus, .areaCelula:focus { outline: 2px solid #2563eb; outline-offset: -2px; background: #fff; }
 .campoCelula[aria-invalid], .areaCelula[aria-invalid] { background: #fee2e2; outline: 2px solid #dc2626; outline-offset: -2px; }
 
@@ -66,10 +75,10 @@ select.itemCampo { cursor: pointer; }
 .dAssinatura { box-shadow: inset 0 0 0 2px #2f6fd6; }
 
 .marcaAssinatura {
-  position: absolute; left: 0; right: 0; display: flex; justify-content: center;
+  position: absolute; left: 0; right: 0; display: flex; justify-content: center; align-items: flex-end;
   pointer-events: none;
 }
-.marcaAssinatura img { max-height: 58px; max-width: 70%; object-fit: contain; }
+.marcaAssinatura img { height: 100%; max-width: 88%; object-fit: contain; object-position: center bottom; }
 .assinaturaNome { font-family: 'Brush Script MT', 'Segoe Script', cursive; font-size: 24px; color: #1d3f8f; }
 
 /* ── Visão em lista ── */
@@ -173,7 +182,11 @@ select.itemCampo { cursor: pointer; }
 .valorPedido { color: #0000cc; font-weight: 700; }
 
 /* ── Colunas fora da área de impressão (só aparecem na tela) ── */
-.soTela { background-image: repeating-linear-gradient(135deg, rgba(13, 148, 136, .07) 0 6px, transparent 6px 12px); }
+/* Caixa ao lado da ficha (p.ex. leitura da prensa da FR-IMOB-46): separada por um espaço, sem fundo listrado;
+   as células vazias dessas colunas não aparecem (a caixa é só o cabeçalho e os campos). */
+.soTela { background-color: #f0fdfa; }
+.soTelaVazia { background: transparent !important; border-color: transparent !important; }
+.espacoTela { background: transparent; border: none !important; padding: 0; }
 
 /* Pontos de verificação (caixas de seleção do Excel) */
 .verificacao { font-size: 1.25em; line-height: 1; }
