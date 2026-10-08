@@ -10,9 +10,8 @@ Os apontamentos estão no documento do projeto `CNRO_Lab_Apontamentos_Lancamento
 2. **App.** Extraia o zip na pasta do projeto, substituindo os arquivos, e rode `git add -A` → `git commit` → `git push`.
    - Mensagem do commit: `feat: fichas FR-21/54 (traço do Cadastro) + FR-46 + assinaturas (entrega 20)`.
    - Se a 18/19 ainda não tinham subido, inclua isso na mensagem.
-3. **Depois do deploy na Vercel,** rode no SQL Editor, nesta ordem, os dois SQL das fichas novas:
-   - `supabase/migrations/20a_fichas_0810_parte1.sql` (FR-IMOB-21 e FR-IMOB-54);
-   - `supabase/migrations/20b_fichas_0810_parte2.sql` (FR-IMOB-46).
+3. **Depois do deploy na Vercel,** rode no SQL Editor, nesta ordem, os quatro SQL das fichas (um por vez, cada um numa aba):
+   - `20a_FR-IMOB-21.sql` · `20b_FR-IMOB-54.sql` · `20c_FR-IMOB-46_parte1.sql` · `20d_FR-IMOB-46_parte2.sql` (o 20d só funciona depois do 20c);
 
    Esses rodam **depois** do deploy porque as fichas novas usam recursos do app novo. Podem ser rodados de novo sem problema.
 

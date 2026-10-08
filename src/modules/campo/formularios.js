@@ -9,6 +9,8 @@
 // O Laboratório, as fichas e a observação da FR-IMOB-04/05 leem esses nomes.
 //
 // Tipos de campo: texto · numero · data · hora · km · lista · opcoes (botões) ·
+//                 multipla (botões, várias marcadas — grava "1ª Faixa, 2ª Faixa e Acostamento") ·
+//                 total (calculado, só leitura) ·
 //                 cadastro (jazidas/pedreiras/fornecedores/tracos) · arquivo (certificado)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -114,12 +116,18 @@ export const FORMULARIOS = {
       { ...kmIni, visivel: aplicado },
       { ...kmFim, visivel: aplicado },
       { nome: 'camada', rotulo: 'Camada', tipo: 'lista', opcoes: CAMADAS_ASFALTO, visivel: naoAplicado },
+      // material em sacos (10, 20 kg…) — aplicado ou não (08/10/2026)
+      { nome: 'qtd_sacos', rotulo: 'Quantidade de sacos', tipo: 'numero', visivel: g => !!g.material_aplicado },
+      { nome: 'peso_saco_kg', rotulo: 'Peso por saco (kg)', tipo: 'numero', visivel: g => !!g.material_aplicado },
+      { nome: 'quantidade_kg', rotulo: 'Quantidade de material (kg)', tipo: 'total', visivel: g => !!g.material_aplicado,
+        calcular: g => produto(g.qtd_sacos, g.peso_saco_kg) },
     ],
     amostra: g => (aplicado(g) ? [
       { nome: 'identificacao_caminhao', rotulo: 'Identificação do caminhão', tipo: 'texto' },
       { nome: 'temp_aplicacao', rotulo: 'Temperatura de aplicação (°C)', tipo: 'numero' },
       pista,
-      { nome: 'faixa', rotulo: 'Faixa', tipo: 'lista', opcoes: FAIXAS },
+      // a massa de uma amostra pode ter ido para mais de uma faixa (08/10/2026)
+      { nome: 'faixa', rotulo: 'Faixa(s)', tipo: 'multipla', opcoes: FAIXAS },
       { nome: 'camada', rotulo: 'Camada', tipo: 'lista', opcoes: CAMADAS_ASFALTO },
       { nome: 'km_extracao', rotulo: 'Estaca/Km de extração', tipo: 'km' },
     ] : null),
@@ -129,12 +137,13 @@ export const FORMULARIOS = {
       { nome: 'data_aplicacao', rotulo: 'Data de aplicação da massa asfáltica', tipo: 'data', obrigatorio: true },
       { nome: 'data_extracao', rotulo: 'Data de extração', tipo: 'data' },
       pista,
-      { nome: 'faixa', rotulo: 'Faixa', tipo: 'lista', opcoes: FAIXAS },
       { nome: 'espessura_projeto', rotulo: 'Espessura de projeto (cm)', tipo: 'numero' },
       projeto, kmIni, kmFim,
     ],
     amostra: [
       { nome: 'identificacao_cp', rotulo: 'Identificação / número do CP', tipo: 'texto', incrementa: true, obrigatorio: true },
+      // faixa por CP (08/10/2026): a massa pode ter sido aplicada em várias faixas; cada CP diz a sua
+      { nome: 'faixa', rotulo: 'Faixa', tipo: 'lista', opcoes: FAIXAS },
       { nome: 'camada', rotulo: 'Camada', tipo: 'lista', opcoes: CAMADAS_ASFALTO },
       { nome: 'lado', rotulo: 'Lado', tipo: 'lista', opcoes: LADOS },
       { nome: 'km_extracao', rotulo: 'Estaca/Km de extração', tipo: 'km' },
@@ -244,6 +253,26 @@ export function herdarAmostra(subcategoria, geral, anterior = {}) {
 
 const vazio = v => v === undefined || v === null || String(v).trim() === ''
 
+/** Seleção múltipla gravada como texto: ["1ª Faixa","Acostamento"] ⇄ "1ª Faixa e Acostamento" */
+export function juntarLista(itens) {
+  const l = (itens || []).filter(Boolean)
+  return l.length <= 1 ? (l[0] || '') : `${l.slice(0, -1).join(', ')} e ${l[l.length - 1]}`
+}
+export function separarLista(texto) {
+  return String(texto || '').split(/, | e /).map(t => t.trim()).filter(Boolean)
+}
+
+function numeroBR(v) {
+  if (vazio(v)) return null
+  const n = Number(String(v).replace(',', '.'))
+  return Number.isFinite(n) ? n : null
+}
+/** qtd × peso (total em kg); vazio se faltar um dos dois */
+function produto(a, b) {
+  const x = numeroBR(a), y = numeroBR(b)
+  return x == null || y == null ? '' : String(+(x * y).toFixed(3))
+}
+
 /** Campos obrigatórios em branco → mensagem (ou null) */
 export function validarFormulario(subcategoria, geral, amostras) {
   if (!formularioDe(subcategoria)) return null
@@ -277,6 +306,9 @@ export function montarDadosAmostra(subcategoria, geral, amostras) {
   const g = limpar(geral)
   const visiveisG = camposGerais(subcategoria, geral)
   for (const c of visiveisG) if (c.tipo === 'fixo') g[c.nome] = c.valor
+  for (const c of visiveisG) {
+    if (c.tipo === 'total') { const v = c.calcular(geral || {}); if (vazio(v)) delete g[c.nome]; else g[c.nome] = v }
+  }
   const ocultosG = new Set(nomesDe(f?.geral).filter(n => !nomesDe(visiveisG).includes(n)))
   const gFinal = Object.fromEntries(Object.entries(g).filter(([k]) => !ocultosG.has(k)))
 
@@ -305,11 +337,16 @@ export function separarDadosAmostra(subcategoria, dados) {
       }
     }
   }
+  // campo que era geral e passou para a amostra (faixa dos CPs extraídos, 08/10/2026): volta em cada amostra
+  const nomesGerais = new Set(nomesDe(formularioDe(subcategoria)?.geral))
+  const daAmostra = nomesDe(camposAmostra(subcategoria, geral)).filter(k => !nomesGerais.has(k) && !vazio(geral[k]))
   const amostras = lista.map(a => {
     const { info_geral: _ig, ...resto } = a // eslint-disable-line no-unused-vars
-    for (const k of Object.keys(geral)) if (resto[k] === geral[k]) delete resto[k]
+    for (const k of Object.keys(geral)) if (resto[k] === geral[k] && !daAmostra.includes(k)) delete resto[k]
+    for (const k of daAmostra) if (vazio(resto[k])) resto[k] = geral[k]
     return resto
   })
+  for (const k of daAmostra) delete geral[k]
   return { geral, amostras: amostras.length ? amostras : [{}] }
 }
 

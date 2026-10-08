@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { normalizarKm } from '../../../lib/km'
 import { statusTraco, tracosDaEmpresa } from '../../../lib/cadastros'
+import { juntarLista, separarLista } from '../formularios'
 import styles from './subcategorias/Subcategoria.module.css'
 import extra from './CamposFormulario.module.css'
 
@@ -58,6 +59,39 @@ function Campo({ campo: c, valores, onChange, cadastros, empresaId, onArquivo })
           ))}
         </div>
       </div>
+    )
+  }
+
+  if (c.tipo === 'multipla') {
+    // várias opções marcadas (p.ex. faixas onde a massa foi aplicada)
+    const marcadas = separarLista(valor)
+    const alternar = o => {
+      const nova = marcadas.includes(o) ? marcadas.filter(x => x !== o) : [...marcadas, o]
+      set(juntarLista(c.opcoes.filter(x => nova.includes(x)).concat(nova.filter(x => !c.opcoes.includes(x)))))
+    }
+    return (
+      <div className={`${styles.field} ${extra.largo}`}>
+        <Rotulo campo={c} />
+        <div className={extra.opcoes} role="group" aria-label={c.rotulo}>
+          {c.opcoes.map(o => (
+            <button key={o} type="button" aria-pressed={marcadas.includes(o)}
+              className={`${extra.opcao} ${marcadas.includes(o) ? extra.opcaoAtiva : ''}`} onClick={() => alternar(o)}>
+              {marcadas.includes(o) ? '✓ ' : ''}{o}
+            </button>
+          ))}
+        </div>
+        <span className={extra.dica}>Pode marcar mais de uma.</span>
+      </div>
+    )
+  }
+
+  if (c.tipo === 'total') {
+    const v = c.calcular(valores || {})
+    return (
+      <label className={styles.field}>
+        <Rotulo campo={c} />
+        <input className={styles.input} value={v === '' ? '' : String(v).replace('.', ',')} placeholder="Sacos × peso por saco" disabled />
+      </label>
     )
   }
 
