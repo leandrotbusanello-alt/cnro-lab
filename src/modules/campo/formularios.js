@@ -16,7 +16,7 @@
 
 export const PISTAS          = ['Norte', 'Sul', 'Marginal Norte', 'Marginal Sul']
 export const CAMADAS_SOLO    = ['Corpo de Aterro', '1ª CFT', '2ª CFT', '3ª CFT', 'Subleito', 'Reforço do Subleito',
-                                'Sub-base', 'Sub-base Melhorada', 'Base', 'Base Melhorada']
+                                'Sub-base', 'Sub-base Melhorada', 'Base', 'Base Melhorada', 'Base Reciclada']
 export const CAMADAS_ASFALTO = ['1ª Camada', '2ª Camada', 'Camada Única']
 export const CAMADAS_ESPECIAL = ['Subleito', 'Sub-base', 'Base', 'CBUQ 1ª Camada', 'CBUQ 2ª Camada', 'CBUQ Camada Única']
 export const PROCTOR         = ['Normal', 'Intermediário', 'Modificado']

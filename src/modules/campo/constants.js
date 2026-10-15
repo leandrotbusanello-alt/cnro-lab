@@ -44,7 +44,7 @@ export const SUBCATEGORIAS_ANTIGAS = [
 export const OPCOES_CAMADA_SOLO = [
   'Corpo de Aterro', '1ª CFT', '2ª CFT', '3ª CFT',
   'Subleito', 'Reforço do Subleito', 'Sub-base', 'Sub-base Melhorada',
-  'Base', 'Base Melhorada',
+  'Base', 'Base Melhorada', 'Base Reciclada',
 ]
 
 export const OPCOES_CAMADA_ASFALTO = [
