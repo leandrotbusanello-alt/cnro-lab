@@ -9,12 +9,13 @@ import ModalRevalidar from './components/ModalRevalidar'
 import ModalHistorico from './components/ModalHistorico'
 import ModalSimples from './components/ModalSimples'
 import EmpresasCadastro from './components/EmpresasCadastro'
+import EquipamentosCadastro from './components/EquipamentosCadastro'
 import Toast from '../../components/ui/Toast'
 import ui from '../laboratorio/components/ui.module.css'
 import styles from './CadastrosPage.module.css'
 
-const ABAS = ['empresas', 'tracos', 'jazidas', 'pedreiras', 'fornecedores']
-const TITULO_ABA = { empresas: 'Empresas' }
+const ABAS = ['empresas', 'tracos', 'jazidas', 'pedreiras', 'fornecedores', 'equipamentos']
+const TITULO_ABA = { empresas: 'Empresas', equipamentos: 'Equipamentos' }
 
 const FILTROS_TRACO = [
   { id: 'ativos', rotulo: 'Ativos' },
@@ -86,6 +87,13 @@ export default function CadastrosPage() {
 
       {aba === 'empresas' ? (
         <EmpresasCadastro notificar={msg => setToast({ type: 'success', message: msg })} />
+      ) : aba === 'equipamentos' ? (
+        <>
+          <div className={styles.barra}>
+            <input className={ui.input} placeholder="Buscar pelo número ou observação…" value={busca} onChange={e => setBusca(e.target.value)} />
+          </div>
+          <EquipamentosCadastro equipamentos={cad.equipamentos} termo={termo} onSalvo={aposSalvar} />
+        </>
       ) : (<>
       <div className={styles.barra}>
         <input className={ui.input} placeholder="Buscar pelo nome…" value={busca} onChange={e => setBusca(e.target.value)} />

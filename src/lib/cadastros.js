@@ -1,5 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Cadastros (migração 17): traços aprovados, jazidas, pedreiras e fornecedores de ligante.
+// Equipamentos (migração 24): taras de cápsulas e cilindros, que as fichas buscam pelo nº.
 // Lidos por todos (o Campo escolhe nas listas); alterados pelo Laboratório e Gestor/DEV.
 // A última leitura fica guardada no aparelho (dashboard_cache, chave "cadastros")
 // para o Campo preencher pedidos sem internet.
@@ -16,9 +17,15 @@ export const TIPOS_CADASTRO = {
   jazidas:      { tabela: 'jazidas',              titulo: 'Jazidas',                 singular: 'jazida' },
   pedreiras:    { tabela: 'pedreiras',            titulo: 'Pedreiras',               singular: 'pedreira' },
   fornecedores: { tabela: 'fornecedores_ligante', titulo: 'Fornecedores de ligante', singular: 'fornecedor' },
+  equipamentos: { tabela: 'equipamentos_tara',    titulo: 'Equipamentos (taras)',    singular: 'equipamento' },
 }
 
-const VAZIO = { tracos: [], jazidas: [], pedreiras: [], fornecedores: [] }
+export const TIPOS_EQUIPAMENTO = {
+  capsula:  { titulo: 'Cápsulas', singular: 'cápsula' },
+  cilindro: { titulo: 'Cilindros', singular: 'cilindro' },
+}
+
+const VAZIO = { tracos: [], jazidas: [], pedreiras: [], fornecedores: [], equipamentos: [] }
 
 export async function carregarCadastros() {
   if (!navigator.onLine) {
@@ -27,10 +34,12 @@ export async function carregarCadastros() {
   }
   const ler = (tabela, ordem) => supabase.from(tabela).select('*').order(ordem)
     .then(r => { if (r.error) throw r.error; return r.data || [] })
-  const [tracos, jazidas, pedreiras, fornecedores] = await Promise.all([
+  const [tracos, jazidas, pedreiras, fornecedores, equipamentos] = await Promise.all([
     ler('tracos_aprovados', 'nome_traco'), ler('jazidas', 'nome'), ler('pedreiras', 'nome'), ler('fornecedores_ligante', 'nome'),
+    // migração 24 ainda não rodada: segue sem o cadastro de equipamentos (as fichas usam a tabela delas)
+    ler('equipamentos_tara', 'numero').catch(() => []),
   ])
-  const dados = { tracos, jazidas, pedreiras, fornecedores }
+  const dados = { tracos, jazidas, pedreiras, fornecedores, equipamentos }
   await cachePut('dashboard_cache', { chave: CHAVE_CACHE, dados, em: new Date().toISOString() }).catch(() => {})
   return dados
 }

@@ -39,6 +39,13 @@
 //     Ex.: compactação "Simples" → só a página 1.
 //   modelo.lancamento = { secoes: [...] }: aba "Lançamento" (formulário compacto, como a aba de
 //     digitação da planilha) — ver components/FichaLancamento.jsx.
+//
+// Taras do cadastro de equipamentos (migração 24 — 15/10/2026):
+//   modelo.taras = { capsula: { colunas: {FB:'numero', FC:'peso_g', FD:'peso_g'}, de: 6, ate: 214 },
+//                    cilindro: { colunas: {FE:'numero', FF:'peso_g', FG:'volume_cm3', FH:'altura_mm'}, de: 6, ate: 159 } }
+//   estado.taras = { capsula: [{numero, peso_g}], cilindro: [{numero, peso_g, volume_cm3, altura_mm}], em }
+//     cópia do cadastro tirada quando o ensaio é preenchido (fica gravada na ficha: recalibrar depois não
+//     muda o ensaio). Sem cópia (ensaios antigos), vale a tabela que veio na ficha.
 // ─────────────────────────────────────────────────────────────────────────────
 import { Motor, colNum, colStr, ehErro, separarEndereco } from './formulas.js'
 
@@ -151,6 +158,7 @@ export function indexarModelo(modelo) {
     modelo, folhas, cells, formulas, estaticos, papeis, gruposEscolha, gruposMarca, traco,
     alternadas, ocultar,
     lancamento: modelo.lancamento || null,
+    taras: modelo.taras || null,
     apelidos: modelo.apelidos || {},
     ordemDigitacao: folhas.flatMap(f => f.ordemDigitacao),
   }
@@ -232,6 +240,34 @@ export function estadoDosDados(dados) {
     ajustes: { ...(dados?.ajustes || {}) },
     // cabeçalho aproveitado de outra ficha (troca de ficha pelo laboratorista — migração 19)
     cabecalho: { ...(dados?.cabecalho || {}) },
+    // cópia das taras do cadastro de equipamentos (migração 24)
+    ...(dados?.taras ? { taras: dados.taras } : {}),
+  }
+}
+
+/** Cópia das taras ativas do cadastro (equipamentos_tara) para gravar na ficha; null se o cadastro está vazio. */
+export function tarasDoCadastro(equipamentos) {
+  const ativos = (equipamentos || []).filter(e => e.ativo !== false && Number.isFinite(Number(e.numero)))
+  if (!ativos.length) return null
+  const num = v => (v === null || v === undefined || v === '' ? null : Number(v))
+  const de = tipo => ativos.filter(e => e.tipo === tipo).sort((a, b) => a.numero - b.numero)
+    .map(e => ({ numero: Number(e.numero), peso_g: num(e.peso_g), volume_cm3: num(e.volume_cm3), altura_mm: num(e.altura_mm) }))
+  return { capsula: de('capsula'), cilindro: de('cilindro'), em: new Date().toISOString() }
+}
+
+/** Escreve a cópia das taras nas células da tabela de taras da ficha (as que sobram ficam vazias). */
+function aplicarTaras(motor, cfg, snap) {
+  for (const [tipo, c] of Object.entries(cfg || {})) {
+    const lista = snap?.[tipo]
+    if (!Array.isArray(lista)) continue
+    const cols = Object.entries(c.colunas || {})
+    for (let r = c.de, i = 0; r <= c.ate; r++, i++) {
+      const eq = lista[i]
+      for (const [col, campo] of cols) {
+        const v = eq ? eq[campo] : null
+        motor.definir(col + r, v === undefined ? null : v)
+      }
+    }
   }
 }
 
@@ -247,6 +283,7 @@ function valorDeEntrada(v) {
 export function calcularFicha(indice, estado, pedidoCampos = {}) {
   const motor = new Motor()
   for (const [a, v] of Object.entries(indice.estaticos)) motor.definir(a, v)
+  if (indice.taras && estado?.taras) aplicarTaras(motor, indice.taras, estado.taras)
   const cells = indice.cells
   const { entradas: efetivas, formulasDesligadas } = entradasEfetivas(indice, estado)
   for (const [a, v] of Object.entries(efetivas)) motor.definir(a, v)
@@ -350,6 +387,7 @@ export function montarDados(indice, estado, motor, { modeloId } = {}) {
     ...(indice.papeis.foto.length ? { fotos } : {}),
     ...(Object.keys(ajustes).length ? { ajustes } : {}),
     ...(Object.keys(cabecalho).length ? { cabecalho } : {}),
+    ...(estado?.taras ? { taras: estado.taras } : {}),
     atualizado_em: new Date().toISOString(),
   }
 }

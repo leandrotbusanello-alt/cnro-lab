@@ -8,6 +8,7 @@ function exigirOnline() {
 
 function erroAmigavel(error) {
   const m = error?.message || ''
+  if (/equipamentos_tara_tipo_numero_uq/i.test(m)) return 'Já existe um equipamento com esse número.'
   if (/duplicate key|_nome_uq|unique/i.test(m)) return 'Já existe um cadastro com esse nome.'
   if (/row-level security|permission/i.test(m)) return 'Somente o Laboratório e o Gestor podem alterar os cadastros.'
   return m || 'Não foi possível salvar.'
@@ -49,6 +50,14 @@ export async function abrirDocumento(caminho) {
 export async function historicoTraco(tracoId) {
   const { data, error } = await supabase.from('tracos_validacoes')
     .select('*').eq('traco_id', tracoId).order('registrado_em', { ascending: false })
+  if (error) throw new Error(erroAmigavel(error))
+  return data || []
+}
+
+/** Histórico de um equipamento (cadastro e alterações de peso/volume/altura) */
+export async function historicoEquipamento(equipamentoId) {
+  const { data, error } = await supabase.from('equipamentos_tara_historico')
+    .select('*').eq('equipamento_id', equipamentoId).order('registrado_em', { ascending: false })
   if (error) throw new Error(erroAmigavel(error))
   return data || []
 }

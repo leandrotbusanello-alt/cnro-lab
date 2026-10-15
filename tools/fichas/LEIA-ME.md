@@ -197,6 +197,14 @@ O laboratorista (revisão) corrige nas duas.
   (aba de digitação → entradas); os resultados batem com os valores que o Excel calculou na ficha (umidade ótima, densidade máxima, ISC,
   expansão, LL, LP, IP, IG, HRB). Exceções conhecidas: umidade da moldagem ótima (decisão do lote 10) e datas da página 2 (digitadas).
 
+### Taras do cadastro de equipamentos (migração 24 — FR-IMOB-55, FR-IMOB-34)
+- `"taras": {"capsula": {"colunas": {"FB": "numero", "FC": "peso_g", "FD": "peso_g"}, "linhas": "6-214"},
+  "cilindro": {"colunas": {"FE": "numero", "FF": "peso_g", "FG": "volume_cm3", "FH": "altura_mm"}, "linhas": "6-159"}}`:
+  a tabela de apoio da ficha (auxiliar, com `VLOOKUP` pelo nº) é trocada pela **cópia do cadastro** `equipamentos_tara` gravada no ensaio
+  (`estado.taras` / `dados_resultado.taras`, tirada quando o assistente preenche — `ExecucaoEnsaio`). Linhas que sobram ficam vazias.
+- Sem cópia (ensaios antigos, cadastro vazio), vale a tabela da própria ficha (`celulas_extras`), então o teste com LibreOffice não muda.
+- Código: `tarasDoCadastro` e `aplicarTaras` em `motor/ficha.js`.
+
 ### Quebra de página (impressão)
 - **Quebras fixas** (`"quebras": [74, 153]` na spec, última linha de cada página): a folha sai em páginas cortadas nessas linhas, todas na
   mesma escala (a da página mais alta) — FR-IMOB-55, 3 páginas como no Excel.

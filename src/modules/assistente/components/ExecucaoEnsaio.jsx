@@ -8,7 +8,8 @@ import {
 } from '../assistenteRepo'
 import { obterModelo } from '../../fichas/fichasRepo'
 import { camposDoPedido } from '../../fichas/camposPedido'
-import { estadoDosDados } from '../../fichas/motor/ficha.js'
+import { estadoDosDados, tarasDoCadastro } from '../../fichas/motor/ficha.js'
+import { carregarCadastros } from '../../../lib/cadastros'
 import { useFicha } from '../../fichas/useFicha'
 import { useFotosFicha } from '../../fichas/fotosFicha'
 import { INTERVALO_RASCUNHO_SERVIDOR } from '../../fichas/constants'
@@ -109,6 +110,24 @@ export default function ExecucaoEnsaio() {
   const alterar = useCallback(novo => { setEstado(novo); sujoServidor.current = true }, [])
   // quadros de foto (ex.: FR-IMOB-27): a foto fica no aparelho e sobe para o servidor assim que possível
   const fotos = useFotosFicha({ ensaioOsId: eo?.id, usuarioId: a.eu?.id, estado, onEstado: alterar })
+
+  // Taras do cadastro de equipamentos (FR-IMOB-55, FR-IMOB-34 — migração 24): ao preencher, a ficha guarda uma
+  // cópia do cadastro; recalibrar uma cápsula depois não muda este ensaio. Sem cadastro, vale a tabela da ficha.
+  const temTaras = !!ficha.indice?.taras
+  const semCopiaTaras = !!estado && !estado.taras
+  useEffect(() => {
+    if (!temTaras || !semCopiaTaras || !emExecucao) return undefined
+    let ativo = true
+    carregarCadastros()
+      .then(c => {
+        const copia = tarasDoCadastro(c.equipamentos)
+        if (!ativo || !copia) return
+        setEstado(e => (e && !e.taras ? { ...e, taras: copia } : e))
+        sujoServidor.current = true
+      })
+      .catch(() => {})
+    return () => { ativo = false }
+  }, [temTaras, semCopiaTaras, emExecucao])
 
   useEffect(() => {
     if (!eo || !estado || !emExecucao) return undefined

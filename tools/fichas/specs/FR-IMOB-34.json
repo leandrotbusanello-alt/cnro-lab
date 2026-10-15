@@ -1,239 +1,716 @@
 {
-  "codigo": "FR-IMOB-34",
-  "versao": "Rev00",
-  "nome": "Granulometria por peneiramento",
-  "arquivo": "FR-IMOB-34_Rev00.xlsx",
-  "titulo_aba": "Frente",
-  "_nota": "Planilha-mestre Rev00 sem alterações (sem exemplo preenchido; modelada em 28/09, lote 6). A mestre calcula umidade, amostra total/parcial, K1 = 100/Ms e K2 = %passante nº10 / Ms parcial, mas não tem as colunas \"peso que passa\" e \"% passa\". Fórmulas acrescentadas por decisão do usuário (28/09): amostra total (2\" a nº 10): peso que passa = Ms seca − retidos acumulados, % passa = peso que passa × K1; amostra parcial (nº 40 e nº 200): peso que passa = Ms parcial seca − retidos acumulados, % passa = peso que passa × K2 (DNER-ME 080). Peneira em branco conta como zero quando há peneira preenchida abaixo. L31 (K2) protegida contra \"% nº 10\" vazio. Faixa (K35): a mestre repetia fixo o \"A\" da tabela DNIT 141 (fora da ficha); virou lista A–F (só registro). Linhas 37–70: quadro vazio da mestre (provável lugar da curva, sem gráfico) — mantido. Tara das cápsulas digitada (cadastro de taras pendente). Resultado: 1 linha em resultado_granulometria (% passante por peneira).",
-  "pedido": {
-    "C7": "os",
-    "C8": "material",
-    "J8": "registro",
-    "D9": "procedencia",
-    "D10": "complemento"
+ "codigo": "FR-IMOB-34",
+ "versao": "Rev00.1",
+ "nome": "Granulometria por peneiramento",
+ "arquivo": "FR-IMOB-34_Rev00.xlsx",
+ "titulo_aba": "Frente",
+ "_nota": "Planilha-mestre Rev00 sem alterações (sem exemplo preenchido; modelada em 28/09, lote 6). A mestre calcula umidade, amostra total/parcial, K1 = 100/Ms e K2 = %passante nº10 / Ms parcial, mas não tem as colunas \"peso que passa\" e \"% passa\". Fórmulas acrescentadas por decisão do usuário (28/09): amostra total (2\" a nº 10): peso que passa = Ms seca − retidos acumulados, % passa = peso que passa × K1; amostra parcial (nº 40 e nº 200): peso que passa = Ms parcial seca − retidos acumulados, % passa = peso que passa × K2 (DNER-ME 080). Peneira em branco conta como zero quando há peneira preenchida abaixo. L31 (K2) protegida contra \"% nº 10\" vazio. Faixa (K35): a mestre repetia fixo o \"A\" da tabela DNIT 141 (fora da ficha); virou lista A–F (só registro). Linhas 37–70: quadro vazio da mestre (provável lugar da curva, sem gráfico) — mantido. Tara das cápsulas digitada (cadastro de taras pendente). Resultado: 1 linha em resultado_granulometria (% passante por peneira). Rev00.1 (15/10/2026): peso da cápsula (D20/E20) deixa de ser digitado — vem pelo nº da cápsula, do cadastro de equipamentos (migração 24; cópia gravada no ensaio). Tabela de apoio AA:AB (cápsulas 1–77 da FR-IMOB-55) para quando não há cópia. Cápsula fora do cadastro dá #N/D, como na FR-IMOB-55.",
+ "pedido": {
+  "C7": "os",
+  "C8": "material",
+  "J8": "registro",
+  "D9": "procedencia",
+  "D10": "complemento"
+ },
+ "entradas": [
+  {
+   "celulas": [
+    "J7"
+   ],
+   "tipo": "data"
   },
-  "entradas": [
-    {
-      "celulas": [
-        "J7"
-      ],
-      "tipo": "data"
-    },
-    {
-      "celulas": [
-        "D17",
-        "E17",
-        "I17",
-        "K17"
-      ],
-      "tipo": "texto"
-    },
-    {
-      "celulas": [
-        "D18",
-        "E18",
-        "D19",
-        "E19",
-        "D20",
-        "E20",
-        "I18",
-        "K18",
-        "I19",
-        "K19"
-      ],
-      "tipo": "numero"
-    },
-    {
-      "colunas": [
-        "E"
-      ],
-      "linhas": [
-        "30-36"
-      ],
-      "tipo": "numero"
-    },
-    {
-      "celulas": [
-        "K35"
-      ],
-      "tipo": "texto",
-      "opcoes": [
-        "A",
-        "B",
-        "C",
-        "D",
-        "E",
-        "F"
-      ]
-    }
-  ],
-  "formulas": {
-    "F30": "=IF(OR($I$23=\"\",COUNT(E30:$E$34)=0),\"\",$I$23-SUM($E$30:E30))",
-    "G30": "=IF(OR(F30=\"\",$L$29=\"\"),\"\",F30*$L$29)",
-    "F31": "=IF(OR($I$23=\"\",COUNT(E31:$E$34)=0),\"\",$I$23-SUM($E$30:E31))",
-    "G31": "=IF(OR(F31=\"\",$L$29=\"\"),\"\",F31*$L$29)",
-    "F32": "=IF(OR($I$23=\"\",COUNT(E32:$E$34)=0),\"\",$I$23-SUM($E$30:E32))",
-    "G32": "=IF(OR(F32=\"\",$L$29=\"\"),\"\",F32*$L$29)",
-    "F33": "=IF(OR($I$23=\"\",COUNT(E33:$E$34)=0),\"\",$I$23-SUM($E$30:E33))",
-    "G33": "=IF(OR(F33=\"\",$L$29=\"\"),\"\",F33*$L$29)",
-    "F34": "=IF(OR($I$23=\"\",COUNT(E34:$E$34)=0),\"\",$I$23-SUM($E$30:E34))",
-    "G34": "=IF(OR(F34=\"\",$L$29=\"\"),\"\",F34*$L$29)",
-    "F35": "=IF(OR($K$23=\"\",COUNT(E35:$E$36)=0),\"\",$K$23-SUM($E$35:E35))",
-    "G35": "=IF(OR(F35=\"\",$L$31=\"\"),\"\",F35*$L$31)",
-    "F36": "=IF(OR($K$23=\"\",COUNT(E36:$E$36)=0),\"\",$K$23-SUM($E$35:E36))",
-    "G36": "=IF(OR(F36=\"\",$L$31=\"\"),\"\",F36*$L$31)",
-    "L31": "=IF(OR(K23=\"\",G34=\"\"),\"\",G34/K23)"
+  {
+   "celulas": [
+    "D17",
+    "E17",
+    "I17",
+    "K17"
+   ],
+   "tipo": "texto"
   },
-  "assinaturas": {
-    "executor": "B73",
-    "calculista": "H73"
+  {
+   "celulas": [
+    "D18",
+    "E18",
+    "D19",
+    "E19",
+    "I18",
+    "K18",
+    "I19",
+    "K19"
+   ],
+   "tipo": "numero"
   },
-  "lista": {
-    "grupos": [
-      {
-        "titulo": "Identificação",
-        "celulas": [
-          "J7"
-        ]
-      },
-      {
-        "titulo": "Umidade",
-        "celulas": [
-          "D17",
-          "D18",
-          "D19",
-          "D20",
-          "E17",
-          "E18",
-          "E19",
-          "E20"
-        ]
-      },
-      {
-        "titulo": "Amostra",
-        "celulas": [
-          "I17",
-          "I18",
-          "I19",
-          "K17",
-          "K18",
-          "K19"
-        ]
-      },
-      {
-        "titulo": "Peneiramento",
-        "celulas": [
-          "E30",
-          "E31",
-          "E32",
-          "E33",
-          "E34",
-          "E35",
-          "E36",
-          "K35"
-        ]
-      }
+  {
+   "colunas": [
+    "E"
+   ],
+   "linhas": [
+    "30-36"
+   ],
+   "tipo": "numero"
+  },
+  {
+   "celulas": [
+    "K35"
+   ],
+   "tipo": "texto",
+   "opcoes": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F"
+   ]
+  }
+ ],
+ "formulas": {
+  "F30": "=IF(OR($I$23=\"\",COUNT(E30:$E$34)=0),\"\",$I$23-SUM($E$30:E30))",
+  "G30": "=IF(OR(F30=\"\",$L$29=\"\"),\"\",F30*$L$29)",
+  "F31": "=IF(OR($I$23=\"\",COUNT(E31:$E$34)=0),\"\",$I$23-SUM($E$30:E31))",
+  "G31": "=IF(OR(F31=\"\",$L$29=\"\"),\"\",F31*$L$29)",
+  "F32": "=IF(OR($I$23=\"\",COUNT(E32:$E$34)=0),\"\",$I$23-SUM($E$30:E32))",
+  "G32": "=IF(OR(F32=\"\",$L$29=\"\"),\"\",F32*$L$29)",
+  "F33": "=IF(OR($I$23=\"\",COUNT(E33:$E$34)=0),\"\",$I$23-SUM($E$30:E33))",
+  "G33": "=IF(OR(F33=\"\",$L$29=\"\"),\"\",F33*$L$29)",
+  "F34": "=IF(OR($I$23=\"\",COUNT(E34:$E$34)=0),\"\",$I$23-SUM($E$30:E34))",
+  "G34": "=IF(OR(F34=\"\",$L$29=\"\"),\"\",F34*$L$29)",
+  "F35": "=IF(OR($K$23=\"\",COUNT(E35:$E$36)=0),\"\",$K$23-SUM($E$35:E35))",
+  "G35": "=IF(OR(F35=\"\",$L$31=\"\"),\"\",F35*$L$31)",
+  "F36": "=IF(OR($K$23=\"\",COUNT(E36:$E$36)=0),\"\",$K$23-SUM($E$35:E36))",
+  "G36": "=IF(OR(F36=\"\",$L$31=\"\"),\"\",F36*$L$31)",
+  "L31": "=IF(OR(K23=\"\",G34=\"\"),\"\",G34/K23)",
+  "D20": "=IF(D17<>\"\",VLOOKUP(D17,$AA$6:$AB$205,2,FALSE),\"\")",
+  "E20": "=IF(E17<>\"\",VLOOKUP(E17,$AA$6:$AB$205,2,FALSE),\"\")"
+ },
+ "assinaturas": {
+  "executor": "B73",
+  "calculista": "H73"
+ },
+ "lista": {
+  "grupos": [
+   {
+    "titulo": "Identificação",
+    "celulas": [
+     "J7"
     ]
-  },
-  "rotulos": {
-    "J7": "Data do ensaio",
-    "D17": "Umidade 1 — cápsula nº",
-    "E17": "Umidade 2 — cápsula nº",
-    "D18": "Umidade 1 — peso bruto úmido (g)",
-    "E18": "Umidade 2 — peso bruto úmido (g)",
-    "D19": "Umidade 1 — peso bruto seco (g)",
-    "E19": "Umidade 2 — peso bruto seco (g)",
-    "D20": "Umidade 1 — peso da cápsula (g)",
-    "E20": "Umidade 2 — peso da cápsula (g)",
-    "I17": "Amostra total — cápsula nº",
-    "K17": "Amostra parcial — cápsula nº",
-    "I18": "Amostra total — peso úmido (g) (linha 18)",
-    "K18": "Amostra parcial — peso úmido (g) (linha 18)",
-    "I19": "Amostra total — peso úmido (g)",
-    "K19": "Amostra parcial — peso úmido (g)",
-    "K35": "Faixa (DNIT 141-ES)",
-    "E30": "Peso retido parcial na peneira 2\" (g)",
-    "E31": "Peso retido parcial na peneira 1\" (g)",
-    "E32": "Peso retido parcial na peneira 3/8\" (g)",
-    "E33": "Peso retido parcial na peneira nº 4 (g)",
-    "E34": "Peso retido parcial na peneira nº 10 (g)",
-    "E35": "Peso retido parcial na peneira nº 40 (g)",
-    "E36": "Peso retido parcial na peneira nº 200 (g)"
-  },
-  "abas_extras": [
+   },
+   {
+    "titulo": "Umidade",
+    "celulas": [
+     "D17",
+     "D18",
+     "D19",
+     "D20",
+     "E17",
+     "E18",
+     "E19",
+     "E20"
+    ]
+   },
+   {
+    "titulo": "Amostra",
+    "celulas": [
+     "I17",
+     "I18",
+     "I19",
+     "K17",
+     "K18",
+     "K19"
+    ]
+   },
+   {
+    "titulo": "Peneiramento",
+    "celulas": [
+     "E30",
+     "E31",
+     "E32",
+     "E33",
+     "E34",
+     "E35",
+     "E36",
+     "K35"
+    ]
+   }
+  ]
+ },
+ "rotulos": {
+  "J7": "Data do ensaio",
+  "D17": "Umidade 1 — cápsula nº",
+  "E17": "Umidade 2 — cápsula nº",
+  "D18": "Umidade 1 — peso bruto úmido (g)",
+  "E18": "Umidade 2 — peso bruto úmido (g)",
+  "D19": "Umidade 1 — peso bruto seco (g)",
+  "E19": "Umidade 2 — peso bruto seco (g)",
+  "I17": "Amostra total — cápsula nº",
+  "K17": "Amostra parcial — cápsula nº",
+  "I18": "Amostra total — peso úmido (g) (linha 18)",
+  "K18": "Amostra parcial — peso úmido (g) (linha 18)",
+  "I19": "Amostra total — peso úmido (g)",
+  "K19": "Amostra parcial — peso úmido (g)",
+  "K35": "Faixa (DNIT 141-ES)",
+  "E30": "Peso retido parcial na peneira 2\" (g)",
+  "E31": "Peso retido parcial na peneira 1\" (g)",
+  "E32": "Peso retido parcial na peneira 3/8\" (g)",
+  "E33": "Peso retido parcial na peneira nº 4 (g)",
+  "E34": "Peso retido parcial na peneira nº 10 (g)",
+  "E35": "Peso retido parcial na peneira nº 40 (g)",
+  "E36": "Peso retido parcial na peneira nº 200 (g)"
+ },
+ "abas_extras": [
+  {
+   "id": "VERSO",
+   "aba": "Granulometria Peneiramento VERS",
+   "titulo": "Verso",
+   "entradas": [
     {
-      "id": "VERSO",
-      "aba": "Granulometria Peneiramento VERS",
-      "titulo": "Verso",
-      "entradas": [
-        {
-          "celulas": [
-            "E6",
-            "E7",
-            "E8",
-            "E9",
-            "E10",
-            "E11",
-            "E12",
-            "E13",
-            "E14"
-          ],
-          "tipo": "texto"
-        }
-      ],
-      "rotulos": {
-        "E6": "Balança — identificação",
-        "E7": "Estufa — identificação",
-        "E8": "Peneira 2\" — identificação",
-        "E9": "Peneira 1\" — identificação",
-        "E10": "Peneira 3/8\" — identificação",
-        "E11": "Peneira nº 4 — identificação",
-        "E12": "Peneira nº 10 — identificação",
-        "E13": "Peneira nº 40 — identificação",
-        "E14": "Peneira nº 200 — identificação"
-      },
-      "lista": {
-        "grupos": [
-          {
-            "titulo": "Equipamentos utilizados",
-            "celulas": [
-              "E6",
-              "E7",
-              "E8",
-              "E9",
-              "E10",
-              "E11",
-              "E12",
-              "E13",
-              "E14"
-            ]
-          },
-          {
-            "titulo": "Pontos de verificação",
-            "linhas": "16-19"
-          }
-        ]
-      }
+     "celulas": [
+      "E6",
+      "E7",
+      "E8",
+      "E9",
+      "E10",
+      "E11",
+      "E12",
+      "E13",
+      "E14"
+     ],
+     "tipo": "texto"
     }
-  ],
-  "resultados": [
-    {
-      "tabela": "resultado_granulometria",
-      "linhas": [
-        {
-          "quando": "=COUNT(G30:G36)>0",
-          "campos": {
-            "p_2pol_pct": "=G30",
-            "p_1pol_pct": "=G31",
-            "p_38pol_pct": "=G32",
-            "p_4_pct": "=G33",
-            "p_10_pct": "=G34",
-            "p_40_pct": "=G35",
-            "p_200_pct": "=G36"
-          }
-        }
+   ],
+   "rotulos": {
+    "E6": "Balança — identificação",
+    "E7": "Estufa — identificação",
+    "E8": "Peneira 2\" — identificação",
+    "E9": "Peneira 1\" — identificação",
+    "E10": "Peneira 3/8\" — identificação",
+    "E11": "Peneira nº 4 — identificação",
+    "E12": "Peneira nº 10 — identificação",
+    "E13": "Peneira nº 40 — identificação",
+    "E14": "Peneira nº 200 — identificação"
+   },
+   "lista": {
+    "grupos": [
+     {
+      "titulo": "Equipamentos utilizados",
+      "celulas": [
+       "E6",
+       "E7",
+       "E8",
+       "E9",
+       "E10",
+       "E11",
+       "E12",
+       "E13",
+       "E14"
       ]
+     },
+     {
+      "titulo": "Pontos de verificação",
+      "linhas": "16-19"
+     }
+    ]
+   }
+  }
+ ],
+ "resultados": [
+  {
+   "tabela": "resultado_granulometria",
+   "linhas": [
+    {
+     "quando": "=COUNT(G30:G36)>0",
+     "campos": {
+      "p_2pol_pct": "=G30",
+      "p_1pol_pct": "=G31",
+      "p_38pol_pct": "=G32",
+      "p_4_pct": "=G33",
+      "p_10_pct": "=G34",
+      "p_40_pct": "=G35",
+      "p_200_pct": "=G36"
+     }
     }
-  ],
-  "pedido_exemplo": {}
+   ]
+  }
+ ],
+ "pedido_exemplo": {},
+ "celulas_extras": {
+  "AA5": {
+   "v": "Cápsula nº"
+  },
+  "AB5": {
+   "v": "Peso (g)"
+  },
+  "AA6": {
+   "v": 1
+  },
+  "AB6": {
+   "v": 90.2
+  },
+  "AA7": {
+   "v": 2
+  },
+  "AB7": {
+   "v": 86.4
+  },
+  "AA8": {
+   "v": 3
+  },
+  "AB8": {
+   "v": 93.4
+  },
+  "AA9": {
+   "v": 4
+  },
+  "AB9": {
+   "v": 90.2
+  },
+  "AA10": {
+   "v": 5
+  },
+  "AB10": {
+   "v": 93.3
+  },
+  "AA11": {
+   "v": 6
+  },
+  "AB11": {
+   "v": 93.5
+  },
+  "AA12": {
+   "v": 7
+  },
+  "AB12": {
+   "v": 34.9
+  },
+  "AA13": {
+   "v": 8
+  },
+  "AB13": {
+   "v": 36.4
+  },
+  "AA14": {
+   "v": 9
+  },
+  "AB14": {
+   "v": 36
+  },
+  "AA15": {
+   "v": 10
+  },
+  "AB15": {
+   "v": 38.9
+  },
+  "AA16": {
+   "v": 11
+  },
+  "AB16": {
+   "v": 36.5
+  },
+  "AA17": {
+   "v": 12
+  },
+  "AB17": {
+   "v": 32.3
+  },
+  "AA18": {
+   "v": 13
+  },
+  "AB18": {
+   "v": 32.6
+  },
+  "AA19": {
+   "v": 14
+  },
+  "AB19": {
+   "v": 36.5
+  },
+  "AA20": {
+   "v": 15
+  },
+  "AB20": {
+   "v": 34.6
+  },
+  "AA21": {
+   "v": 16
+  },
+  "AB21": {
+   "v": 34
+  },
+  "AA22": {
+   "v": 17
+  },
+  "AB22": {
+   "v": 36.5
+  },
+  "AA23": {
+   "v": 18
+  },
+  "AB23": {
+   "v": 34.9
+  },
+  "AA24": {
+   "v": 19
+  },
+  "AB24": {
+   "v": 36.4
+  },
+  "AA25": {
+   "v": 20
+  },
+  "AB25": {
+   "v": 36.3
+  },
+  "AA26": {
+   "v": 21
+  },
+  "AB26": {
+   "v": 19.5
+  },
+  "AA27": {
+   "v": 22
+  },
+  "AB27": {
+   "v": 19.9
+  },
+  "AA28": {
+   "v": 23
+  },
+  "AB28": {
+   "v": 20.1
+  },
+  "AA29": {
+   "v": 24
+  },
+  "AB29": {
+   "v": 22.6
+  },
+  "AA30": {
+   "v": 25
+  },
+  "AB30": {
+   "v": 21
+  },
+  "AA31": {
+   "v": 26
+  },
+  "AB31": {
+   "v": 20.5
+  },
+  "AA32": {
+   "v": 27
+  },
+  "AB32": {
+   "v": 19.1
+  },
+  "AA33": {
+   "v": 28
+  },
+  "AB33": {
+   "v": 19.7
+  },
+  "AA34": {
+   "v": 29
+  },
+  "AB34": {
+   "v": 22.2
+  },
+  "AA35": {
+   "v": 30
+  },
+  "AB35": {
+   "v": 20.9
+  },
+  "AA36": {
+   "v": 31
+  },
+  "AB36": {
+   "v": 22.3
+  },
+  "AA37": {
+   "v": 32
+  },
+  "AB37": {
+   "v": 21.1
+  },
+  "AA38": {
+   "v": 33
+  },
+  "AB38": {
+   "v": 11.5
+  },
+  "AA39": {
+   "v": 34
+  },
+  "AB39": {
+   "v": 11.6
+  },
+  "AA40": {
+   "v": 35
+  },
+  "AB40": {
+   "v": 11.1
+  },
+  "AA41": {
+   "v": 36
+  },
+  "AB41": {
+   "v": 11.6
+  },
+  "AA42": {
+   "v": 37
+  },
+  "AB42": {
+   "v": 11.5
+  },
+  "AA43": {
+   "v": 38
+  },
+  "AB43": {
+   "v": 11.5
+  },
+  "AA44": {
+   "v": 39
+  },
+  "AB44": {
+   "v": 11.8
+  },
+  "AA45": {
+   "v": 40
+  },
+  "AB45": {
+   "v": 11.6
+  },
+  "AA46": {
+   "v": 41
+  },
+  "AB46": {
+   "v": 11.4
+  },
+  "AA47": {
+   "v": 42
+  },
+  "AB47": {
+   "v": 11.5
+  },
+  "AA48": {
+   "v": 43
+  },
+  "AB48": {
+   "v": 13.8
+  },
+  "AA49": {
+   "v": 44
+  },
+  "AB49": {
+   "v": 12.7
+  },
+  "AA50": {
+   "v": 45
+  },
+  "AB50": {
+   "v": 11.8
+  },
+  "AA51": {
+   "v": 46
+  },
+  "AB51": {
+   "v": 12.6
+  },
+  "AA52": {
+   "v": 47
+  },
+  "AB52": {
+   "v": 12.9
+  },
+  "AA53": {
+   "v": 48
+  },
+  "AB53": {
+   "v": 12.9
+  },
+  "AA54": {
+   "v": 49
+  },
+  "AB54": {
+   "v": 11.4
+  },
+  "AA55": {
+   "v": 50
+  },
+  "AB55": {
+   "v": 9.9
+  },
+  "AA56": {
+   "v": 51
+  },
+  "AB56": {
+   "v": 12.9
+  },
+  "AA57": {
+   "v": 52
+  },
+  "AB57": {
+   "v": 11.7
+  },
+  "AA58": {
+   "v": 53
+  },
+  "AB58": {
+   "v": 11.4
+  },
+  "AA59": {
+   "v": 54
+  },
+  "AB59": {
+   "v": 13
+  },
+  "AA60": {
+   "v": 55
+  },
+  "AB60": {
+   "v": 13.1
+  },
+  "AA61": {
+   "v": 56
+  },
+  "AB61": {
+   "v": 12.7
+  },
+  "AA62": {
+   "v": 57
+  },
+  "AB62": {
+   "v": 12.8
+  },
+  "AA63": {
+   "v": 58
+  },
+  "AB63": {
+   "v": 13
+  },
+  "AA64": {
+   "v": 59
+  },
+  "AB64": {
+   "v": 12.8
+  },
+  "AA65": {
+   "v": 60
+  },
+  "AB65": {
+   "v": 13.2
+  },
+  "AA66": {
+   "v": 61
+  },
+  "AB66": {
+   "v": 12.8
+  },
+  "AA67": {
+   "v": 62
+  },
+  "AB67": {
+   "v": 13.1
+  },
+  "AA68": {
+   "v": 63
+  },
+  "AB68": {
+   "v": 12.7
+  },
+  "AA69": {
+   "v": 64
+  },
+  "AB69": {
+   "v": 13
+  },
+  "AA70": {
+   "v": 65
+  },
+  "AB70": {
+   "v": 12.7
+  },
+  "AA71": {
+   "v": 66
+  },
+  "AB71": {
+   "v": 12.6
+  },
+  "AA72": {
+   "v": 67
+  },
+  "AB72": {
+   "v": 9.53
+  },
+  "AA73": {
+   "v": 68
+  },
+  "AB73": {
+   "v": 11.68
+  },
+  "AA74": {
+   "v": 69
+  },
+  "AB74": {
+   "v": 9.64
+  },
+  "AA75": {
+   "v": 70
+  },
+  "AB75": {
+   "v": 9.65
+  },
+  "AA76": {
+   "v": 71
+  },
+  "AB76": {
+   "v": 10.29
+  },
+  "AA77": {
+   "v": 72
+  },
+  "AB77": {
+   "v": 10.1
+  },
+  "AA78": {
+   "v": 73
+  },
+  "AB78": {
+   "v": 9.37
+  },
+  "AA79": {
+   "v": 74
+  },
+  "AB79": {
+   "v": 11
+  },
+  "AA80": {
+   "v": 75
+  },
+  "AB80": {
+   "v": 9.25
+  },
+  "AA81": {
+   "v": 76
+  },
+  "AB81": {
+   "v": 9.46
+  },
+  "AA82": {
+   "v": 77
+  },
+  "AB82": {
+   "v": 33.49
+  }
+ },
+ "taras": {
+  "capsula": {
+   "colunas": {
+    "AA": "numero",
+    "AB": "peso_g"
+   },
+   "linhas": "6-205"
+  }
+ }
 }

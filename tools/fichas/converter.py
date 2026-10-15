@@ -668,6 +668,10 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
         **({'ocultar': [{'de': int(str(o['linhas']).split('-')[0]), 'ate': int(str(o['linhas']).split('-')[-1]),
                          'celula': o['quando']['celula'], 'igual': o['quando']['igual']}
                         for o in spec['ocultar_linhas']]} if spec.get('ocultar_linhas') else {}),
+        # taras do cadastro de equipamentos (migração 24): a tabela de taras da ficha é trocada pela cópia do
+        # cadastro gravada no ensaio. "taras": {"capsula": {"colunas": {"FB": "numero", "FC": "peso_g"}, "linhas": "6-214"}}
+        **({'taras': {t: {'colunas': c['colunas'], 'de': int(str(c['linhas']).split('-')[0]), 'ate': int(str(c['linhas']).split('-')[-1])}
+                      for t, c in spec['taras'].items()}} if spec.get('taras') else {}),
         **({'aux': aux} if aux else {}),
         **({'graficos': graficos} if graficos else {}),
     }

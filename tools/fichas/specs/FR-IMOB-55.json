@@ -4,7 +4,7 @@
  "nome": "Solos — Ensaio de compactação completo (Proctor, ISC e expansão, granulometria e limites)",
  "arquivo": "FR-IMOB-55_Rev00.xlsx",
  "aba": "FR-IMOB-55_Rev00",
- "_nota": "Planilha-banco (abas 'Digitar Dados dos Ensaios', 'Tara' etc., ficha puxando por INDIRECT): como a FR-32, os dados são digitados direto na ficha (3 páginas: compactação, ISC e expansão, granulometria e limites). As abas ocultas (3CBR, densidade in situ com RANDBETWEEN, resumos, plano de coleta) não entram. Decisões do usuário (29/09): (1) pontos que entram na curva de compactação e cilindros que entram na curva de ISC/expansão = Sim/Não num painel só da tela (colunas N:O; vazio = Sim), no lugar das caixas de seleção da planilha; (2) taras pela tabela da planilha — a dos exemplos reais, em uso no laboratório (cápsulas 1–209, as três séries iguais; cilindros com peso, volume e altura), nas colunas FB:FH (auxiliares), até o cadastro de equipamentos; cápsula/cilindro fora da tabela dá #N/D; (3) ISC e expansão finais pela curva (padrão) ou pelo cilindro da ótima (lista O83: Curva / Cil. ótima). Densidade seca pela umidade higroscópica (configuração dos exemplos e da FR-32). Água adicionada: digitada em cada ponto (g), a % é calculada (a planilha usava % inicial + incremento em célula oculta). Nº dos pontos 1–5 fixos, 6º só com dados. Datas das três páginas digitadas (a página 2 apontava para K11, vazia; nos exemplos era a data da compactação + 4 dias). Limite de liquidez: LOGEST trocado pela regressão equivalente (INTERCEPT/SLOPE de LN(golpes) × umidade). As fórmulas #REF! do 5º cilindro (AR94, AR103) saem. Densidade da moldagem ótima só com a umidade das cápsulas de moldagem (a planilha dava #VALOR! sem elas; os exemplos usavam a umidade do ponto 3). Impressão em 3 páginas (quebras nas linhas 74 e 153, como no Excel). Resultados: resultado_proctor, resultado_cbr, resultado_granulometria, resultado_limites_atterberg e resultado_equivalencia_areia. Rev00.1 (15/10/2026, pedido do laboratorista): aba \"Lançamento\" igual à aba de digitação da planilha (os cálculos aparecem nela, em cinza, e vão para a ficha); opções da planilha (colunas N:O, só na tela): compactação Completa/Simples (O9 — Simples esconde as páginas 2 e 3), umidade pela higroscópica/pelas cápsulas (O10 → AS7/AS8), água adicionada \"Inicial + % por ponto\" (padrão, como a planilha: E28:I28 = D28 + n × % × peso) ou \"Digitada por ponto\" (O11, % por ponto em O12), amostra Trabalhada/Não trabalhada (O83 → AU7/AU8, era Curva/Cil. ótima).",
+ "_nota": "Planilha-banco (abas 'Digitar Dados dos Ensaios', 'Tara' etc., ficha puxando por INDIRECT): como a FR-32, os dados são digitados direto na ficha (3 páginas: compactação, ISC e expansão, granulometria e limites). As abas ocultas (3CBR, densidade in situ com RANDBETWEEN, resumos, plano de coleta) não entram. Decisões do usuário (29/09): (1) pontos que entram na curva de compactação e cilindros que entram na curva de ISC/expansão = Sim/Não num painel só da tela (colunas N:O; vazio = Sim), no lugar das caixas de seleção da planilha; (2) taras pela tabela da planilha — a dos exemplos reais, em uso no laboratório (cápsulas 1–209, as três séries iguais; cilindros com peso, volume e altura), nas colunas FB:FH (auxiliares), até o cadastro de equipamentos; cápsula/cilindro fora da tabela dá #N/D; (3) ISC e expansão finais pela curva (padrão) ou pelo cilindro da ótima (lista O83: Curva / Cil. ótima). Densidade seca pela umidade higroscópica (configuração dos exemplos e da FR-32). Água adicionada: digitada em cada ponto (g), a % é calculada (a planilha usava % inicial + incremento em célula oculta). Nº dos pontos 1–5 fixos, 6º só com dados. Datas das três páginas digitadas (a página 2 apontava para K11, vazia; nos exemplos era a data da compactação + 4 dias). Limite de liquidez: LOGEST trocado pela regressão equivalente (INTERCEPT/SLOPE de LN(golpes) × umidade). As fórmulas #REF! do 5º cilindro (AR94, AR103) saem. Densidade da moldagem ótima só com a umidade das cápsulas de moldagem (a planilha dava #VALOR! sem elas; os exemplos usavam a umidade do ponto 3). Impressão em 3 páginas (quebras nas linhas 74 e 153, como no Excel). Resultados: resultado_proctor, resultado_cbr, resultado_granulometria, resultado_limites_atterberg e resultado_equivalencia_areia. Rev00.1 (15/10/2026, pedido do laboratorista): aba \"Lançamento\" igual à aba de digitação da planilha (os cálculos aparecem nela, em cinza, e vão para a ficha); opções da planilha (colunas N:O, só na tela): compactação Completa/Simples (O9 — Simples esconde as páginas 2 e 3), umidade pela higroscópica/pelas cápsulas (O10 → AS7/AS8), água adicionada \"Inicial + % por ponto\" (padrão, como a planilha: E28:I28 = D28 + n × % × peso) ou \"Digitada por ponto\" (O11, % por ponto em O12), amostra Trabalhada/Não trabalhada (O83 → AU7/AU8, era Curva/Cil. ótima). Taras (15/10/2026): a tabela FB:FH vira a cópia do cadastro de equipamentos (migração 24) gravada no ensaio; sem cópia (ensaios antigos), vale a tabela da ficha.",
  "pedido": {
   "L8": "registro",
   "L76": "registro",
@@ -7309,5 +7309,24 @@
     ]
    }
   ]
+ },
+ "taras": {
+  "capsula": {
+   "colunas": {
+    "FB": "numero",
+    "FC": "peso_g",
+    "FD": "peso_g"
+   },
+   "linhas": "6-214"
+  },
+  "cilindro": {
+   "colunas": {
+    "FE": "numero",
+    "FF": "peso_g",
+    "FG": "volume_cm3",
+    "FH": "altura_mm"
+   },
+   "linhas": "6-159"
+  }
  }
 }

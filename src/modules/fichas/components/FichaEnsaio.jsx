@@ -157,6 +157,13 @@ export default function FichaEnsaio({
           </span>
         )}
         {modo !== 'leitura' && qtdAjustes > 0 && bloqueado && <span className={s.avisoAjustes}>✏️ {qtdAjustes} valor(es) corrigido(s) pelo laboratorista</span>}
+        {indice.taras && (
+          <span className={s.dicaTaras} title="Peso das cápsulas e cilindros buscado pelo número">
+            ⚖️ {estado?.taras
+              ? `Taras do cadastro de equipamentos (cópia de ${new Date(estado.taras.em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })})`
+              : 'Taras da tabela da ficha'}
+          </span>
+        )}
         {fotos?.enviando && <span className={s.fotoAviso}>⏫ Enviando foto…</span>}
         {!fotos?.enviando && fotos?.pendentes > 0 && <span className={s.fotoAviso}>⏳ {fotos.pendentes} foto(s) aguardando internet para envio</span>}
         {fotos?.erro && <span className={s.fotoErro} role="alert">{fotos.erro}</span>}
