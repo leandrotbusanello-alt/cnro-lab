@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import FichaGrade from './FichaGrade'
+import { linhasOcultas } from '../motor/ficha.js'
 import s from './Ficha.module.css'
 
 const MM_PX = 96 / 25.4
@@ -87,9 +88,20 @@ function cortarEmPaginas(folha, alturaMax) {
  */
 export default function ImpressaoFicha({ indice, motor, estado, assinaturas, titulo, onFechar }) {
   const folhas = indice.folhas || [indice]
+  // páginas que somem com a opção escolhida (FR-IMOB-55 "Simples": só a página 1)
+  const ocultas = linhasOcultas(indice, estado)
+  const paginaOculta = (f, y0, y1) => {
+    const faixas = ocultas[f.prefixo || ''] || []
+    if (!faixas.length) return false
+    const topos = [0]
+    for (const h of f.modelo.rows) topos.push(topos[topos.length - 1] + h)
+    return faixas.some(([de, ate]) => topos[Math.max(0, de - f.r1)] <= y0 + 0.5 && topos[Math.min(topos.length - 1, ate - f.r1 + 1)] >= y1 - 0.5)
+  }
   const paginas = folhas.flatMap(f => {
     const p = paginaDa(f)
-    return p.trechos.map(([y0, y1], i) => ({ folha: f, ...p, y0, y1, chave: `${f.id || 'principal'}-${i}` }))
+    return p.trechos
+      .map(([y0, y1], i) => ({ folha: f, ...p, y0, y1, chave: `${f.id || 'principal'}-${i}` }))
+      .filter(pg => !paginaOculta(f, pg.y0, pg.y1))
   })
   const paisagem = paginas[0].paisagem
 
@@ -117,7 +129,7 @@ export default function ImpressaoFicha({ indice, motor, estado, assinaturas, tit
               : { position: 'absolute', left: p.esquerda, top: p.topo }}
             >
               <div style={p.y0 ? { marginTop: -p.y0 * p.escala } : undefined}>
-                <FichaGrade indice={indice} folha={p.folha} motor={motor} estado={estado} assinaturas={assinaturas} modo="leitura" escala={p.escala} soImpressao />
+                <FichaGrade indice={indice} folha={p.folha} motor={motor} estado={estado} assinaturas={assinaturas} modo="leitura" escala={p.escala} soImpressao manterLinhas />
               </div>
             </div>
           </div>

@@ -28,6 +28,17 @@
 //   pelo assistente e pelo laboratorista; o valor digitado fica em entradas[endereço] e vale só para a ficha.
 //   cabecalho: { material, procedencia, complemento } — aproveitado de outra ficha quando o laboratorista
 //   troca a ficha do ensaio (migração 19); vale quando a ficha nova ainda não tem o valor em entradas.
+//
+// Opções que mudam a ficha (FR-IMOB-55 Rev00.1 — 15/10/2026):
+//   role.alterna = { celula, valor }: a célula é digitada só quando entradas[celula] === valor
+//     (vazio = role/opção padrão da célula de controle); senão vale a fórmula (fx) da própria célula.
+//     Ex.: água adicionada "Digitada por ponto" × "Inicial + % por ponto".
+//   role.padrao: opção que vale enquanto a lista está vazia (mostrada no lugar do "—").
+//   folha.ocultar = [{ de, ate, celula, igual }]: linhas que somem (tela e impressão) quando
+//     entradas[celula] === igual — as entradas dessas linhas não entram nos cálculos.
+//     Ex.: compactação "Simples" → só a página 1.
+//   modelo.lancamento = { secoes: [...] }: aba "Lançamento" (formulário compacto, como a aba de
+//     digitação da planilha) — ver components/FichaLancamento.jsx.
 // ─────────────────────────────────────────────────────────────────────────────
 import { Motor, colNum, colStr, ehErro, separarEndereco } from './formulas.js'
 
@@ -129,12 +140,79 @@ export function indexarModelo(modelo) {
     if (g) (gruposMarca[g] ||= []).push(a)
   }
 
+  // entradas que alternam com a fórmula da própria célula (role.alterna) e linhas que somem (folha.ocultar)
+  const alternadas = papeis.entrada.filter(a => cells[a].role.alterna)
+  const ocultar = folhas.flatMap(f => (f.modelo.ocultar || []).map(o => ({
+    ...o, prefixo: f.prefixo, celula: o.celula.includes('!') ? o.celula : f.prefixo + o.celula,
+  })))
+
   return {
     ...folhas[0],
     modelo, folhas, cells, formulas, estaticos, papeis, gruposEscolha, gruposMarca, traco,
+    alternadas, ocultar,
+    lancamento: modelo.lancamento || null,
     apelidos: modelo.apelidos || {},
     ordemDigitacao: folhas.flatMap(f => f.ordemDigitacao),
   }
+}
+
+/** Valor de uma lista de opções considerando a opção padrão (role.padrao) quando está vazia. */
+export function valorOpcao(indice, estado, a) {
+  const v = estado?.entradas?.[a]
+  if (v !== null && v !== undefined && v !== '') return v
+  return indice?.cells?.[a]?.role?.padrao ?? null
+}
+
+/** Linhas ocultas agora (por folha): { prefixo: [[de, ate], …] } */
+export function linhasOcultas(indice, estado) {
+  const out = {}
+  for (const o of indice?.ocultar || []) {
+    if (valorOpcao(indice, estado, o.celula) === o.igual) (out[o.prefixo] ||= []).push([o.de, o.ate])
+  }
+  return out
+}
+
+function emOculta(ocultas, a) {
+  const i = a.lastIndexOf('!')
+  const prefixo = i >= 0 ? a.slice(0, i + 1) : ''
+  const faixas = ocultas[prefixo]
+  if (!faixas) return false
+  const r = separarEndereco(i >= 0 ? a.slice(i + 1) : a).r
+  return faixas.some(([de, ate]) => r >= de && r <= ate)
+}
+
+/**
+ * A entrada está valendo? Não, quando a célula alterna com a fórmula e a opção escolhida é a da fórmula,
+ * ou quando a linha está oculta (p.ex. páginas 2 e 3 da FR-IMOB-55 com compactação "Simples").
+ */
+export function entradaAtiva(indice, estado, a, ocultas = linhasOcultas(indice, estado)) {
+  const role = indice.cells[a]?.role
+  if (!role) return false
+  if (role.alterna && valorOpcao(indice, estado, role.alterna.celula) !== role.alterna.valor) return false
+  return !emOculta(ocultas, a)
+}
+
+/** Linha oculta? (para o Lançamento e a lista) */
+export function celulaOculta(indice, estado, a) {
+  return emOculta(linhasOcultas(indice, estado), a)
+}
+
+/**
+ * Entradas como o motor as usa: as que não estão valendo ficam vazias (null).
+ * As fórmulas das células alternadas que estão digitadas saem de `formulasDesligadas`.
+ */
+export function entradasEfetivas(indice, estado) {
+  const ocultas = linhasOcultas(indice, estado)
+  const entradas = {}
+  const formulasDesligadas = []
+  for (const a of [...indice.papeis.entrada, ...indice.papeis.revisao]) {
+    const ativa = entradaAtiva(indice, estado, a, ocultas)
+    const alterna = !!indice.cells[a].role.alterna
+    if (alterna && !ativa && !emOculta(ocultas, a)) continue          // vale a fórmula da célula
+    if (alterna) formulasDesligadas.push(a)
+    entradas[a] = ativa ? valorDeEntrada(estado?.entradas?.[a]) : null
+  }
+  return { entradas, formulasDesligadas }
 }
 
 /** Campos do cabeçalho (papel 'pedido') que podem ser editados na ficha */
@@ -170,9 +248,8 @@ export function calcularFicha(indice, estado, pedidoCampos = {}) {
   const motor = new Motor()
   for (const [a, v] of Object.entries(indice.estaticos)) motor.definir(a, v)
   const cells = indice.cells
-  for (const a of [...indice.papeis.entrada, ...indice.papeis.revisao]) {
-    motor.definir(a, valorDeEntrada(estado?.entradas?.[a]))
-  }
+  const { entradas: efetivas, formulasDesligadas } = entradasEfetivas(indice, estado)
+  for (const [a, v] of Object.entries(efetivas)) motor.definir(a, v)
   for (const r of indice.traco?.linhas || []) {
     for (const col of [indice.traco.min, indice.traco.max]) {
       const v = estado?.entradas?.[col + r]
@@ -192,9 +269,14 @@ export function calcularFicha(indice, estado, pedidoCampos = {}) {
   }
   // valores corrigidos pelo laboratorista substituem a fórmula da célula
   let formulas = indice.formulas
+  if (formulasDesligadas.length) {
+    // células alternadas que estão sendo digitadas: o valor digitado substitui a fórmula
+    formulas = { ...indice.formulas }
+    for (const a of formulasDesligadas) delete formulas[a]
+  }
   const ajustes = estado?.ajustes || {}
   if (Object.keys(ajustes).length) {
-    formulas = { ...indice.formulas }
+    if (formulas === indice.formulas) formulas = { ...indice.formulas }
     for (const [a, v] of Object.entries(ajustes)) {
       if (!(a in formulas)) continue
       delete formulas[a]
@@ -276,7 +358,9 @@ export function montarDados(indice, estado, motor, { modeloId } = {}) {
 export function situacaoPreenchimento(indice, estado) {
   const invalidos = []
   let preenchidos = 0
-  for (const a of indice.papeis.entrada) {
+  const ocultas = linhasOcultas(indice, estado)
+  const ativas = indice.papeis.entrada.filter(a => entradaAtiva(indice, estado, a, ocultas))
+  for (const a of ativas) {
     const v = estado?.entradas?.[a]
     if (v && typeof v === 'object' && 'invalido' in v) invalidos.push(a)
     else if (v !== null && v !== undefined && v !== '') preenchidos++
@@ -288,7 +372,7 @@ export function situacaoPreenchimento(indice, estado) {
     if (f?.caminho || f?.local) preenchidos++
     if (f?.local && !f.caminho) pendentes++
   }
-  return { preenchidos, total: indice.papeis.entrada.length + indice.papeis.foto.length, invalidos, fotosPendentes: pendentes }
+  return { preenchidos, total: ativas.length + indice.papeis.foto.length, invalidos, fotosPendentes: pendentes }
 }
 
 // ── Resultados normalizados (resultado_*) ────────────────────────────────────

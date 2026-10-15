@@ -205,6 +205,10 @@ def papeis_da_spec(spec):
                 p[a]['opcoes'] = list(g['opcoes'])
                 p[a]['dado'] = 'texto'
                 p[a]['_opcoes_spec'] = True
+            if g.get('padrao') is not None:   # opção que vale com a lista vazia (FR-IMOB-55 Rev00.1)
+                p[a]['padrao'] = g['padrao']
+            if g.get('alterna'):        # digitada só com a opção escolhida; senão vale a fórmula da spec
+                p[a]['alterna'] = {'celula': g['alterna']['celula'], 'valor': g['alterna']['valor']}
             if g.get('marca'):          # marcação com clique: a célula mostra a marca ("X") ou fica vazia
                 p[a]['marca'] = g['marca']
                 p[a]['dado'] = 'texto'
@@ -328,6 +332,11 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
         c2 = max(c2, column_index_from_string(spec['colunas_tela'].split(':')[-1].strip()))
     colpx = larguras(ws, c2)[c1 - 1:]
     rowpx = alturas(ws, r2)[r1 - 1:]
+    # "larguras": {"O": 140} — largura (px) de uma coluna só de tela (listas de opções da FR-IMOB-55)
+    for col, w in (spec.get('larguras') or {}).items():
+        i = column_index_from_string(col) - c1
+        if 0 <= i < len(colpx):
+            colpx[i] = float(w)
 
     # mesclas (do Excel + extras da spec, p.ex. área de observações)
     faixas = [(m.min_row, m.min_col, m.max_row, m.max_col) for m in ws.merged_cells.ranges]
@@ -423,7 +432,11 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
                 v = formulas_spec[a]
                 d['fxi'] = 1   # fórmula acrescentada pela spec (não existe no Excel original)
             if isinstance(v, str) and v.startswith('='):
-                if papel and papel['tipo'] in ('entrada', 'revisao'):
+                if papel and papel.get('alterna') and a in formulas_spec:
+                    # entrada alternada: guarda a fórmula da spec (vale quando a opção não é a de digitar)
+                    d['fx'] = v[1:]
+                    v = None
+                elif papel and papel['tipo'] in ('entrada', 'revisao'):
                     alertas.append(f'{a}: célula de entrada tinha fórmula no Excel ({v}); a fórmula foi descartada.')
                     v = None
                 elif any(x in v.upper() for x in FUNCOES_BLOQUEADAS):
@@ -650,6 +663,11 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
             **({'quebras': [int(q) - r1 + 1 for q in spec['quebras']]} if spec.get('quebras') else {}),
         },
         'lista': spec.get('lista', {}),
+        # linhas que somem quando uma opção é escolhida (FR-IMOB-55: compactação "Simples" → só a página 1)
+        #   "ocultar_linhas": [{"linhas": "75-230", "quando": {"celula": "O8", "igual": "Simples"}}]
+        **({'ocultar': [{'de': int(str(o['linhas']).split('-')[0]), 'ate': int(str(o['linhas']).split('-')[-1]),
+                         'celula': o['quando']['celula'], 'igual': o['quando']['igual']}
+                        for o in spec['ocultar_linhas']]} if spec.get('ocultar_linhas') else {}),
         **({'aux': aux} if aux else {}),
         **({'graficos': graficos} if graficos else {}),
     }
@@ -1211,8 +1229,51 @@ def ler_grafico(cx, tema, ws_titulo, alertas, nome_arq):
 
 
 CHAVES_DA_FOLHA = ('imagens_na_celula', 'graficos_series', 'graficos_eixos', 'graficos_escala', 'fotos', 'formatos', 'remover_mesclas', 'alturas', 'celulas_extras', 'pedido', 'entradas', 'revisao', 'escolhas', 'assinaturas', 'linhas_assinatura', 'formulas',
-                   'colunas_tela', 'limpar', 'mesclas_extras', 'lista', 'rotulos', 'verificacoes', 'area_impressao', 'graficos')
+                   'colunas_tela', 'limpar', 'mesclas_extras', 'lista', 'rotulos', 'verificacoes', 'area_impressao', 'graficos',
+                   'larguras', 'ocultar_linhas')
 RE_ABA_FORMULA = re.compile(r"(?:'((?:[^']|'')+)'|([A-Za-z_][A-Za-z0-9_.]*))!\$?[A-Z]{1,3}\$?\d")
+
+
+def validar_lancamento(lanc, modelo):
+    """Confere as células citadas na aba Lançamento: precisam existir (entrada ou fórmula) na ficha."""
+    alertas = []
+    todas = dict(modelo['cells'])
+    for ab in modelo.get('abas', []):
+        todas.update({f"{ab['id']}!{a}": d for a, d in ab['cells'].items()})
+
+    def checar(a, onde):
+        if not a:
+            return
+        d = todas.get(a)
+        if d is None:
+            alertas.append(f'lançamento ({onde}): célula {a} não existe na ficha')
+        elif not d.get('role') and not d.get('fx'):
+            alertas.append(f'lançamento ({onde}): célula {a} não é entrada nem fórmula')
+
+    usadas = []
+    for s in lanc.get('secoes', []):
+        t = s.get('titulo', '?')
+        for c in s.get('campos', []):
+            checar(c['celula'], t); usadas.append(c['celula'])
+        for tb in s.get('tabelas', []):
+            for ln in tb.get('linhas', []):
+                if len(ln['celulas']) != len(tb['colunas']):
+                    alertas.append(f'lançamento ({t}): linha "{ln.get("rotulo")}" com {len(ln["celulas"])} células para {len(tb["colunas"])} colunas')
+                for a in ln['celulas']:
+                    checar(a, t); usadas.append(a)
+        for c in s.get('resultados', []):
+            checar(c['celula'], t)
+        if s.get('quando'):
+            checar(s['quando']['celula'], t)
+    # toda entrada da ficha precisa aparecer no Lançamento (senão o assistente não teria onde digitar)
+    entradas = [a for a, d in todas.items() if d.get('role', {}).get('tipo') == 'entrada']
+    faltam = [a for a in entradas if a not in usadas]
+    if faltam:
+        alertas.append(f'lançamento: entradas que não aparecem em nenhuma seção: {", ".join(faltam)}')
+    repetidas = sorted({a for a in usadas if usadas.count(a) > 1 and todas.get(a, {}).get('role')})
+    if repetidas:
+        alertas.append(f'lançamento: entradas repetidas: {", ".join(repetidas)}')
+    return alertas
 
 
 def converter(spec, arquivo_spec):
@@ -1255,6 +1316,11 @@ def converter(spec, arquivo_spec):
                 nome = (m.group(1) or '').replace("''", "'") or m.group(2)
                 if nome not in apelidos:
                     alertas.append(f'{rot}{a}: fórmula aponta para a aba "{nome}", que não faz parte da ficha (=' + d['fx'] + ')')
+
+    # aba "Lançamento" (formulário compacto, como a aba de digitação da planilha) — FR-IMOB-55 Rev00.1
+    if spec.get('lancamento'):
+        modelo['lancamento'] = spec['lancamento']
+        alertas += validar_lancamento(spec['lancamento'], modelo)
 
     # valores postos pela spec em células auxiliares (tabela de taras da FR-IMOB-55): o teste com LibreOffice grava na cópia
     extras_aux = {a: cfg['v'] for a, cfg in spec.get('celulas_extras', {}).items()

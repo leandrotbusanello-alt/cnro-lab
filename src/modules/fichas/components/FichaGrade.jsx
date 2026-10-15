@@ -4,7 +4,7 @@ import { formatar } from '../motor/formatacao.js'
 import CampoCelula from './CampoCelula'
 import Grafico from './Grafico'
 import FotoCelula from './FotoCelula'
-import { CAMPOS_PEDIDO_EDITAVEIS } from '../motor/ficha.js'
+import { CAMPOS_PEDIDO_EDITAVEIS, linhasOcultas, valorOpcao } from '../motor/ficha.js'
 import s from './Ficha.module.css'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -98,12 +98,13 @@ function alinhamento(d) {
  * Estrutura da tabela (calculada uma vez por folha).
  * soImpressao: só as colunas da área de impressão do Excel (sem as colunas "só de tela").
  */
-function montarEstrutura(folha, soImpressao, folga = 1) {
+function montarEstrutura(folha, soImpressao, folga = 1, ocultas = []) {
   const { modelo, c1, r1, cobertas } = folha
   const nCols = soImpressao ? folha.colsImpressao : modelo.cols.length
   const linhas = []
   modelo.rows.forEach((altura, ri) => {
     const r = r1 + ri
+    if (ocultas.some(([de, ate]) => r >= de && r <= ate)) return     // linhas que somem com a opção escolhida
     const celulas = []
     modelo.cols.slice(0, nCols).forEach((largura, ci) => {
       const c = c1 + ci
@@ -172,6 +173,22 @@ function MarcaAssinatura({ assinatura, texto, altura, fontePt, alinhamentoV }) {
 }
 
 /**
+ * Faixas de pixels (y da folha) das linhas ocultas e deslocamento de quem está abaixo delas
+ * (gráficos e imagens posicionados por cima da tabela).
+ */
+function faixasOcultasPx(folha, ocultas) {
+  if (!ocultas.length) return null
+  const topos = [0]
+  for (const h of folha.modelo.rows) topos.push(topos[topos.length - 1] + h)
+  const px = ocultas.map(([de, ate]) => [topos[Math.max(0, de - folha.r1)], topos[Math.min(topos.length - 1, ate - folha.r1 + 1)]])
+  return {
+    some: y => px.some(([a, b]) => y >= a && y < b),
+    desloca: y => px.reduce((t, [a, b]) => (b <= y ? t + (b - a) : t), 0),
+    total: px.reduce((t, [a, b]) => t + (b - a), 0),
+  }
+}
+
+/**
  * Props
  *   indice, motor, estado        ficha (ver motor/ficha.js)
  *   folha       qual aba desenhar (indice.folhas[i]); padrão: a principal (frente)
@@ -190,15 +207,22 @@ function MarcaAssinatura({ assinatura, texto, altura, fontePt, alinhamentoV }) {
 export default function FichaGrade({
   indice, folha: folhaProp, motor, estado, modo = 'leitura', destacar = false, bloqueado = false, assinaturas = {},
   escala: escalaFixa, idBase = 'ficha', soImpressao = false, onEntrada, onEscolha, onVerificacao, onCliqueAssinatura,
-  onAjuste, onTraco, onMarcar, tracoOpcoes, fotos,
+  onAjuste, onTraco, onMarcar, tracoOpcoes, fotos, entradasTravadas = false, manterLinhas = false,
 }) {
   const folha = folhaProp || indice.folhas?.[0] || indice
   const pre = folha.prefixo || ''
+  // linhas que somem com a opção escolhida (FR-IMOB-55 "Simples": só a página 1). Na impressão (manterLinhas)
+  // a folha fica inteira e as páginas ocultas é que saem (ImpressaoFicha).
+  const ocultasTodas = useMemo(() => linhasOcultas(indice, estado), [indice, estado])
+  const ocultas = manterLinhas ? [] : (ocultasTodas[pre] || [])
+  const chaveOcultas = JSON.stringify(ocultas)
+  const px = useMemo(() => faixasOcultasPx(folha, ocultas), [folha, chaveOcultas]) // eslint-disable-line react-hooks/exhaustive-deps
   // Conteúdo da célula = altura da linha − borda. Na impressão (zoom < 1) a borda fina não encolhe
   // (vira 1 pixel do dispositivo = 1/zoom px da folha); descontar isso mantém cada linha na altura do
   // Excel — senão a tabela cresce e o que é posicionado por cima (logo, gráficos) sai do lugar.
   const folga = escalaFixa && escalaFixa < 1 ? Math.min(4, 1.05 / escalaFixa + 0.3) : 1
-  const estrutura = useMemo(() => montarEstrutura(folha, soImpressao, folga), [folha, soImpressao, folga])
+  const estrutura = useMemo(() => montarEstrutura(folha, soImpressao, folga, ocultas), [folha, soImpressao, folga, chaveOcultas]) // eslint-disable-line react-hooks/exhaustive-deps
+  const alturaFolha = folha.altura - (px?.total || 0)
   // colunas "só de tela" (p.ex. leitura da prensa da FR-IMOB-46): caixa separada da ficha por um espaço
   const temTela = !soImpressao && folha.modelo.cols.length > folha.colsImpressao
   const ESPACO_TELA = 18
@@ -220,7 +244,8 @@ export default function FichaGrade({
   }, [escalaFixa, largura])
 
   const escala = escalaFixa || escalaAuto
-  const podeEntrada = !bloqueado && (modo === 'preencher' || modo === 'revisao')
+  // entradasTravadas: ficha com aba Lançamento — o assistente digita lá; aqui ele confere e assina
+  const podeEntrada = !bloqueado && !entradasTravadas && (modo === 'preencher' || modo === 'revisao')
   const podeRevisao = !bloqueado && modo === 'revisao'
   const ordem = folha.ordemDigitacao
 
@@ -233,8 +258,9 @@ export default function FichaGrade({
   }
 
   function conteudo(cel) {
-    const { d, papel } = cel
+    const { d } = cel
     const a = pre + cel.a
+    const papel = papelAgora(cel)
     if (papel === 'entrada' || papel === 'revisao') {
       const editavel = papel === 'entrada' ? podeEntrada : podeRevisao
       if (d.role.marca) {
@@ -266,6 +292,7 @@ export default function FichaGrade({
           nf={d.nf}
           multilinha={!!d.role.ml}
           opcoes={ehTraco ? tracoOpcoes : d.role.opcoes}
+          padrao={d.role.padrao}
           editavel={editavel}
           rotulo={d.role.rot || d.role.rl || a}
           onConfirmar={v => (ehTraco ? onTraco?.(v) : onEntrada?.(a, v))}
@@ -378,6 +405,13 @@ export default function FichaGrade({
     )
   }
 
+  // entrada que alterna com a fórmula (role.alterna): com a outra opção escolhida, é uma célula calculada
+  function papelAgora(cel) {
+    const r = cel.d.role
+    if (cel.papel === 'entrada' && r?.alterna && valorOpcao(indice, estado, r.alterna.celula) !== r.alterna.valor) return null
+    return cel.papel
+  }
+
   function classes(cel) {
     const out = []
     if (cel.oculta) out.push(s.oculta)
@@ -386,7 +420,7 @@ export default function FichaGrade({
       const temConteudo = !!(d.role || d.fx || d.rt || (d.v !== undefined && d.v !== null && d.v !== ''))
       out.push(temConteudo ? s.soTela : s.soTelaVazia)
     }
-    const p = cel.papel
+    const p = papelAgora(cel)
     if (destacar) {
       if (p === 'entrada') out.push(podeEntrada ? s.dEntrada : s.dEntradaFixa)
       if (p === 'pedido') out.push(podeEntrada && CAMPOS_PEDIDO_EDITAVEIS.includes(cel.d.role?.campo) ? s.dEntrada : s.dPedido)
@@ -451,14 +485,14 @@ export default function FichaGrade({
 
   return (
     <div ref={caixa} className={s.caixaGrade} style={escalaFixa ? { width: largura * escala } : undefined}>
-      <div className={s.escalaGrade} style={{ width: largura * escala, height: folha.altura * escala }}>
+      <div className={s.escalaGrade} style={{ width: largura * escala, height: alturaFolha * escala }}>
         {/* Impressão (escala fixa): zoom em vez de transform. Com transform, a folha continua ocupando o
             tamanho original na paginação e o navegador quebra a ficha em duas páginas. */}
         <div
           className={s.folhaGrade}
           style={escalaFixa
-            ? { width: largura, height: folha.altura, zoom: escala }
-            : { width: largura, height: folha.altura, transform: `scale(${escala})` }}
+            ? { width: largura, height: alturaFolha, zoom: escala }
+            : { width: largura, height: alturaFolha, transform: `scale(${escala})` }}
         >
           <table className={s.grade} style={{ width: largura }}>
             <colgroup>
@@ -480,14 +514,14 @@ export default function FichaGrade({
               ))}
             </tbody>
           </table>
-          {folha.modelo.imgs.map((im, i) => (
-            <img key={i} className={s.imagem} alt="" src={im.src} style={{ left: im.x, top: im.y, width: im.w, height: im.h }} />
-          ))}
-          {folha.modelo.graficos?.map((g, i) => (
-            <div key={`g${i}`} className={s.grafico} style={{ left: g.x, top: g.y, width: g.w, height: g.h }}>
+          {folha.modelo.imgs.map((im, i) => (px?.some(im.y) ? null : (
+            <img key={i} className={s.imagem} alt="" src={im.src} style={{ left: im.x, top: im.y - (px?.desloca(im.y) || 0), width: im.w, height: im.h }} />
+          )))}
+          {folha.modelo.graficos?.map((g, i) => (px?.some(g.y) ? null : (
+            <div key={`g${i}`} className={s.grafico} style={{ left: g.x, top: g.y - (px?.desloca(g.y) || 0), width: g.w, height: g.h }}>
               <Grafico g={g} motor={motor} prefixo={pre} cells={indice.cells} />
             </div>
-          ))}
+          )))}
         </div>
       </div>
     </div>

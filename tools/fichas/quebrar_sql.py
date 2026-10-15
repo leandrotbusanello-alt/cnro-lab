@@ -25,14 +25,14 @@ def quebrar(lit):            # lit inclui as aspas
         while f < len(corpo) and corpo[f - 1] == "'" and (len(corpo[k:f]) - len(corpo[k:f].rstrip("'"))) % 2 == 1:
             f += 1
         partes.append("'" + corpo[k:f] + "'"); k = f
-    return '(' + '\n  || '.join(partes) + ')'
+    return '(\n     ' + '\n  || '.join(partes) + ')'
 for arq in sys.argv[1:]:
     novas = []
     for linha in open(arq, encoding='utf-8').read().split('\n'):
-        if len(linha) <= 4000: novas.append(linha); continue
+        if len(linha) <= TAM + 200: novas.append(linha); continue
         res, ult = [], 0
         for a, b in literais(linha):
-            if b - a + 1 > 4000:
+            if b - a + 1 > TAM // 2:
                 res.append(linha[ult:a]); res.append(quebrar(linha[a:b + 1])); ult = b + 1
         res.append(linha[ult:]); novas.append(''.join(res))
     txt = '\n'.join(novas)

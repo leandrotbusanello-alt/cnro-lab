@@ -1,10 +1,10 @@
 {
  "codigo": "FR-IMOB-55",
- "versao": "Rev00",
+ "versao": "Rev00.1",
  "nome": "Solos — Ensaio de compactação completo (Proctor, ISC e expansão, granulometria e limites)",
  "arquivo": "FR-IMOB-55_Rev00.xlsx",
  "aba": "FR-IMOB-55_Rev00",
- "_nota": "Planilha-banco (abas 'Digitar Dados dos Ensaios', 'Tara' etc., ficha puxando por INDIRECT): como a FR-32, os dados são digitados direto na ficha (3 páginas: compactação, ISC e expansão, granulometria e limites). As abas ocultas (3CBR, densidade in situ com RANDBETWEEN, resumos, plano de coleta) não entram. Decisões do usuário (29/09): (1) pontos que entram na curva de compactação e cilindros que entram na curva de ISC/expansão = Sim/Não num painel só da tela (colunas N:O; vazio = Sim), no lugar das caixas de seleção da planilha; (2) taras pela tabela da planilha — a dos exemplos reais, em uso no laboratório (cápsulas 1–209, as três séries iguais; cilindros com peso, volume e altura), nas colunas FB:FH (auxiliares), até o cadastro de equipamentos; cápsula/cilindro fora da tabela dá #N/D; (3) ISC e expansão finais pela curva (padrão) ou pelo cilindro da ótima (lista O83: Curva / Cil. ótima). Densidade seca pela umidade higroscópica (configuração dos exemplos e da FR-32). Água adicionada: digitada em cada ponto (g), a % é calculada (a planilha usava % inicial + incremento em célula oculta). Nº dos pontos 1–5 fixos, 6º só com dados. Datas das três páginas digitadas (a página 2 apontava para K11, vazia; nos exemplos era a data da compactação + 4 dias). Limite de liquidez: LOGEST trocado pela regressão equivalente (INTERCEPT/SLOPE de LN(golpes) × umidade). As fórmulas #REF! do 5º cilindro (AR94, AR103) saem. Densidade da moldagem ótima só com a umidade das cápsulas de moldagem (a planilha dava #VALOR! sem elas; os exemplos usavam a umidade do ponto 3). Impressão em 3 páginas (quebras nas linhas 74 e 153, como no Excel). Resultados: resultado_proctor, resultado_cbr, resultado_granulometria, resultado_limites_atterberg e resultado_equivalencia_areia.",
+ "_nota": "Planilha-banco (abas 'Digitar Dados dos Ensaios', 'Tara' etc., ficha puxando por INDIRECT): como a FR-32, os dados são digitados direto na ficha (3 páginas: compactação, ISC e expansão, granulometria e limites). As abas ocultas (3CBR, densidade in situ com RANDBETWEEN, resumos, plano de coleta) não entram. Decisões do usuário (29/09): (1) pontos que entram na curva de compactação e cilindros que entram na curva de ISC/expansão = Sim/Não num painel só da tela (colunas N:O; vazio = Sim), no lugar das caixas de seleção da planilha; (2) taras pela tabela da planilha — a dos exemplos reais, em uso no laboratório (cápsulas 1–209, as três séries iguais; cilindros com peso, volume e altura), nas colunas FB:FH (auxiliares), até o cadastro de equipamentos; cápsula/cilindro fora da tabela dá #N/D; (3) ISC e expansão finais pela curva (padrão) ou pelo cilindro da ótima (lista O83: Curva / Cil. ótima). Densidade seca pela umidade higroscópica (configuração dos exemplos e da FR-32). Água adicionada: digitada em cada ponto (g), a % é calculada (a planilha usava % inicial + incremento em célula oculta). Nº dos pontos 1–5 fixos, 6º só com dados. Datas das três páginas digitadas (a página 2 apontava para K11, vazia; nos exemplos era a data da compactação + 4 dias). Limite de liquidez: LOGEST trocado pela regressão equivalente (INTERCEPT/SLOPE de LN(golpes) × umidade). As fórmulas #REF! do 5º cilindro (AR94, AR103) saem. Densidade da moldagem ótima só com a umidade das cápsulas de moldagem (a planilha dava #VALOR! sem elas; os exemplos usavam a umidade do ponto 3). Impressão em 3 páginas (quebras nas linhas 74 e 153, como no Excel). Resultados: resultado_proctor, resultado_cbr, resultado_granulometria, resultado_limites_atterberg e resultado_equivalencia_areia. Rev00.1 (15/10/2026, pedido do laboratorista): aba \"Lançamento\" igual à aba de digitação da planilha (os cálculos aparecem nela, em cinza, e vão para a ficha); opções da planilha (colunas N:O, só na tela): compactação Completa/Simples (O9 — Simples esconde as páginas 2 e 3), umidade pela higroscópica/pelas cápsulas (O10 → AS7/AS8), água adicionada \"Inicial + % por ponto\" (padrão, como a planilha: E28:I28 = D28 + n × % × peso) ou \"Digitada por ponto\" (O11, % por ponto em O12), amostra Trabalhada/Não trabalhada (O83 → AU7/AU8, era Curva/Cil. ótima).",
  "pedido": {
   "L8": "registro",
   "L76": "registro",
@@ -68,31 +68,26 @@
     "E19",
     "E20",
     "E21",
-    "E28",
     "E30",
     "E31",
     "F19",
     "F20",
     "F21",
-    "F28",
     "F30",
     "F31",
     "G19",
     "G20",
     "G21",
-    "G28",
     "G30",
     "G31",
     "H19",
     "H20",
     "H21",
-    "H28",
     "H30",
     "H31",
     "I19",
     "I20",
     "I21",
-    "I28",
     "I30",
     "I31",
     "K19",
@@ -227,7 +222,47 @@
    "opcoes": [
     "Sim",
     "Não"
-   ]
+   ],
+   "padrao": "Sim"
+  },
+  {
+   "celulas": [
+    "O9"
+   ],
+   "tipo": "texto",
+   "opcoes": [
+    "Completa",
+    "Simples"
+   ],
+   "padrao": "Completa"
+  },
+  {
+   "celulas": [
+    "O10"
+   ],
+   "tipo": "texto",
+   "opcoes": [
+    "Pela higroscópica",
+    "Pelas cápsulas"
+   ],
+   "padrao": "Pela higroscópica"
+  },
+  {
+   "celulas": [
+    "O11"
+   ],
+   "tipo": "texto",
+   "opcoes": [
+    "Inicial + % por ponto",
+    "Digitada por ponto"
+   ],
+   "padrao": "Inicial + % por ponto"
+  },
+  {
+   "celulas": [
+    "O12"
+   ],
+   "tipo": "numero"
   },
   {
    "celulas": [
@@ -235,9 +270,24 @@
    ],
    "tipo": "texto",
    "opcoes": [
-    "Curva",
-    "Cil. ótima"
-   ]
+    "Não trabalhada",
+    "Trabalhada"
+   ],
+   "padrao": "Não trabalhada"
+  },
+  {
+   "celulas": [
+    "E28",
+    "F28",
+    "G28",
+    "H28",
+    "I28"
+   ],
+   "tipo": "numero",
+   "alterna": {
+    "celula": "O11",
+    "valor": "Digitada por ponto"
+   }
   }
  ],
  "formulas": {
@@ -306,10 +356,10 @@
   "AN10": "=O112<>\"Não\"",
   "AO8": "=O131<>\"Não\"",
   "AO10": "=O131<>\"Não\"",
-  "AS7": "=TRUE",
-  "AS8": "=FALSE",
-  "AU7": "=O83=\"Cil. ótima\"",
-  "AU8": "=O83<>\"Cil. ótima\"",
+  "AS7": "=$O$10<>\"Pelas cápsulas\"",
+  "AS8": "=$O$10=\"Pelas cápsulas\"",
+  "AU7": "=O83=\"Trabalhada\"",
+  "AU8": "=O83<>\"Trabalhada\"",
   "AR94": "=\"\"",
   "AR103": "=\"\"",
   "AM205": "=IF(ISNUMBER(AM202),LN(AM202),\"\")",
@@ -318,7 +368,15 @@
   "AP205": "=IF(ISNUMBER(AP202),LN(AP202),\"\")",
   "AQ205": "=IF(ISNUMBER(AQ202),LN(AQ202),\"\")",
   "AM203": "=IF(AM201<>\"\",EXP(INTERCEPT(AM205:AQ205,AM201:AQ201)),\"\")",
-  "AM204": "=IF(AM201<>\"\",EXP(SLOPE(AM205:AQ205,AM201:AQ201)),\"\")"
+  "AM204": "=IF(AM201<>\"\",EXP(SLOPE(AM205:AQ205,AM201:AQ201)),\"\")",
+  "E28": "=IF(AND(ISNUMBER($D$28),ISNUMBER($O$12),ISNUMBER($K$28),ISNUMBER(E31)),$D$28+1*$O$12*$K$28,\"\")",
+  "F28": "=IF(AND(ISNUMBER($D$28),ISNUMBER($O$12),ISNUMBER($K$28),ISNUMBER(F31)),$D$28+2*$O$12*$K$28,\"\")",
+  "G28": "=IF(AND(ISNUMBER($D$28),ISNUMBER($O$12),ISNUMBER($K$28),ISNUMBER(G31)),$D$28+3*$O$12*$K$28,\"\")",
+  "H28": "=IF(AND(ISNUMBER($D$28),ISNUMBER($O$12),ISNUMBER($K$28),ISNUMBER(H31)),$D$28+4*$O$12*$K$28,\"\")",
+  "I28": "=IF(AND(ISNUMBER($D$28),ISNUMBER($O$12),ISNUMBER($K$28),ISNUMBER(I31)),$D$28+5*$O$12*$K$28,\"\")",
+  "AL28": "=IF(ISNUMBER($O$12),$O$12,\"\")",
+  "C40": "=IF($O$9=\"Simples\",\"\",IF(ISERROR(BB94),\"\",BB94))",
+  "D40": "=IF($O$9=\"Simples\",\"\",IF(ISERROR(BB103),\"\",BB103))"
  },
  "celulas_extras": {
   "FB5": {
@@ -4120,28 +4178,40 @@
    "estilo_de": "P2"
   },
   "N9": {
-   "estilo_de": "P2"
+   "v": "Ensaio:",
+   "estilo_de": "A19",
+   "h": "right"
   },
   "O9": {
-   "estilo_de": "P2"
+   "estilo_de": "D19",
+   "h": "center"
   },
   "N10": {
-   "estilo_de": "P2"
+   "v": "Umidade:",
+   "estilo_de": "A19",
+   "h": "right"
   },
   "O10": {
-   "estilo_de": "P2"
+   "estilo_de": "D19",
+   "h": "center"
   },
   "N11": {
-   "estilo_de": "P2"
+   "v": "Água adicionada:",
+   "estilo_de": "A19",
+   "h": "right"
   },
   "O11": {
-   "estilo_de": "P2"
+   "estilo_de": "D19",
+   "h": "center"
   },
   "N12": {
-   "estilo_de": "P2"
+   "v": "% por ponto:",
+   "estilo_de": "A19",
+   "h": "right"
   },
   "O12": {
-   "estilo_de": "P2"
+   "estilo_de": "D19",
+   "h": "center"
   },
   "N13": {
    "estilo_de": "P2"
@@ -4585,10 +4655,9 @@
    "estilo_de": "P2"
   },
   "N83": {
-   "v": "ISC final:",
+   "v": "Amostra:",
    "estilo_de": "A19",
-   "negrito": true,
-   "h": "center"
+   "h": "right"
   },
   "O83": {
    "estilo_de": "D19",
@@ -5900,11 +5969,11 @@
   "B16": "Sub-trecho",
   "L213": "SUCS",
   "K28": "Peso do material (g)",
-  "O83": "ISC e expansão finais: pela curva ou pelo cilindro da ótima",
+  "O83": "Amostra trabalhada (ISC pelo cilindro da moldagem ótima) ou não trabalhada (pela curva)",
   "D19": "Ponto 1 — cápsula nº",
   "D20": "Ponto 1 — peso bruto úmido (g)",
   "D21": "Ponto 1 — peso bruto seco (g)",
-  "D28": "Ponto 1 — água adicionada (g)",
+  "D28": "Ponto 1 — água adicionada (inicial) (g)",
   "D30": "Ponto 1 — cilindro nº",
   "D31": "Ponto 1 — peso bruto úmido do cilindro (g)",
   "O19": "Ponto 1 entra na curva?",
@@ -6069,7 +6138,11 @@
   "K217": "Equivalente de areia — proveta 1: h1",
   "K218": "Equivalente de areia — proveta 1: h2",
   "L217": "Equivalente de areia — proveta 2: h1",
-  "L218": "Equivalente de areia — proveta 2: h2"
+  "L218": "Equivalente de areia — proveta 2: h2",
+  "O9": "Compactação: completa ou simples (simples = só a página 1)",
+  "O10": "Umidade dos pontos: pela higroscópica ou pelas cápsulas",
+  "O11": "Água adicionada: inicial + % por ponto, ou digitada em cada ponto",
+  "O12": "% de água acrescentada por ponto"
  },
  "resultados": [
   {
@@ -6169,5 +6242,1072 @@
    ]
   }
  ],
- "pedido_exemplo": {}
+ "pedido_exemplo": {},
+ "formatos": {
+  "O12": "0.0%"
+ },
+ "larguras": {
+  "N": 116,
+  "O": 132
+ },
+ "ocultar_linhas": [
+  {
+   "linhas": "75-230",
+   "quando": {
+    "celula": "O9",
+    "igual": "Simples"
+   }
+  }
+ ],
+ "lancamento": {
+  "secoes": [
+   {
+    "titulo": "Opções do ensaio",
+    "nota": "Como as marcações da aba de digitação da planilha.",
+    "campos": [
+     {
+      "celula": "O9",
+      "rotulo": "Compactação"
+     },
+     {
+      "celula": "O10",
+      "rotulo": "Umidade dos pontos"
+     },
+     {
+      "celula": "O11",
+      "rotulo": "Água adicionada"
+     },
+     {
+      "celula": "O83",
+      "rotulo": "Amostra"
+     }
+    ]
+   },
+   {
+    "titulo": "Identificação",
+    "campos": [
+     {
+      "celula": "L8",
+      "rotulo": "Registro"
+     },
+     {
+      "celula": "K10",
+      "rotulo": "Data da compactação"
+     },
+     {
+      "celula": "B13",
+      "rotulo": "Estaca"
+     },
+     {
+      "celula": "E13",
+      "rotulo": "Posição"
+     },
+     {
+      "celula": "H13",
+      "rotulo": "Camada"
+     },
+     {
+      "celula": "B14",
+      "rotulo": "Próctor"
+     },
+     {
+      "celula": "E14",
+      "rotulo": "Golpes"
+     },
+     {
+      "celula": "F14",
+      "rotulo": "Golpes (complemento)"
+     },
+     {
+      "celula": "H14",
+      "rotulo": "Rodovia"
+     },
+     {
+      "celula": "B15",
+      "rotulo": "Trecho",
+      "largo": true
+     },
+     {
+      "celula": "B16",
+      "rotulo": "Sub-trecho",
+      "largo": true
+     }
+    ]
+   },
+   {
+    "titulo": "Umidade higroscópica",
+    "tabelas": [
+     {
+      "colunas": [
+       "Cápsula 1",
+       "Cápsula 2"
+      ],
+      "linhas": [
+       {
+        "rotulo": "Cápsula nº",
+        "celulas": [
+         "K19",
+         "L19"
+        ]
+       },
+       {
+        "rotulo": "Peso bruto úmido (g)",
+        "celulas": [
+         "K20",
+         "L20"
+        ]
+       },
+       {
+        "rotulo": "Peso bruto seco (g)",
+        "celulas": [
+         "K21",
+         "L21"
+        ]
+       },
+       {
+        "rotulo": "Peso da cápsula (g)",
+        "celulas": [
+         "K23",
+         "L23"
+        ]
+       },
+       {
+        "rotulo": "Umidade (%)",
+        "celulas": [
+         "K25",
+         "L25"
+        ]
+       }
+      ]
+     }
+    ],
+    "resultados": [
+     {
+      "celula": "K26",
+      "rotulo": "Umidade média"
+     }
+    ]
+   },
+   {
+    "titulo": "Compactação",
+    "campos": [
+     {
+      "celula": "K28",
+      "rotulo": "Peso do material (g)"
+     },
+     {
+      "celula": "O12",
+      "rotulo": "% acrescentada por ponto",
+      "quando": {
+       "celula": "O11",
+       "diferente": "Digitada por ponto"
+      }
+     }
+    ],
+    "tabelas": [
+     {
+      "titulo": "Pontos",
+      "colunas": [
+       "1",
+       "2",
+       "3",
+       "4",
+       "5",
+       "6"
+      ],
+      "linhas": [
+       {
+        "rotulo": "Entra na curva?",
+        "celulas": [
+         "O19",
+         "O20",
+         "O21",
+         "O22",
+         "O23",
+         "O24"
+        ]
+       },
+       {
+        "rotulo": "Cápsula nº",
+        "celulas": [
+         "D19",
+         "E19",
+         "F19",
+         "G19",
+         "H19",
+         "I19"
+        ]
+       },
+       {
+        "rotulo": "Peso bruto úmido (g)",
+        "celulas": [
+         "D20",
+         "E20",
+         "F20",
+         "G20",
+         "H20",
+         "I20"
+        ]
+       },
+       {
+        "rotulo": "Peso bruto seco (g)",
+        "celulas": [
+         "D21",
+         "E21",
+         "F21",
+         "G21",
+         "H21",
+         "I21"
+        ]
+       },
+       {
+        "rotulo": "Umidade pela cápsula (%)",
+        "celulas": [
+         "D25",
+         "E25",
+         "F25",
+         "G25",
+         "H25",
+         "I25"
+        ]
+       },
+       {
+        "rotulo": "Água adicionada (g)",
+        "celulas": [
+         "D28",
+         "E28",
+         "F28",
+         "G28",
+         "H28",
+         "I28"
+        ]
+       },
+       {
+        "rotulo": "% água adicionada",
+        "celulas": [
+         "D29",
+         "E29",
+         "F29",
+         "G29",
+         "H29",
+         "I29"
+        ]
+       },
+       {
+        "rotulo": "Umidade média (%)",
+        "celulas": [
+         "D26",
+         "E26",
+         "F26",
+         "G26",
+         "H26",
+         "I26"
+        ]
+       },
+       {
+        "rotulo": "Cilindro nº",
+        "celulas": [
+         "D30",
+         "E30",
+         "F30",
+         "G30",
+         "H30",
+         "I30"
+        ]
+       },
+       {
+        "rotulo": "Peso bruto úmido do cilindro (g)",
+        "celulas": [
+         "D31",
+         "E31",
+         "F31",
+         "G31",
+         "H31",
+         "I31"
+        ]
+       },
+       {
+        "rotulo": "Peso do cilindro (g)",
+        "celulas": [
+         "D32",
+         "E32",
+         "F32",
+         "G32",
+         "H32",
+         "I32"
+        ]
+       },
+       {
+        "rotulo": "Volume do cilindro (cm³)",
+        "celulas": [
+         "D33",
+         "E33",
+         "F33",
+         "G33",
+         "H33",
+         "I33"
+        ]
+       },
+       {
+        "rotulo": "Dens. solo úmido (g/m³)",
+        "celulas": [
+         "D35",
+         "E35",
+         "F35",
+         "G35",
+         "H35",
+         "I35"
+        ]
+       },
+       {
+        "rotulo": "Dens. solo seco (g/m³)",
+        "celulas": [
+         "D36",
+         "E36",
+         "F36",
+         "G36",
+         "H36",
+         "I36"
+        ]
+       }
+      ]
+     }
+    ],
+    "resultados": [
+     {
+      "celula": "K30",
+      "rotulo": "Peso do material seco (g)"
+     },
+     {
+      "celula": "A40",
+      "rotulo": "Umidade ótima"
+     },
+     {
+      "celula": "B40",
+      "rotulo": "Densidade máxima"
+     }
+    ],
+    "graficos": [
+     0
+    ]
+   },
+   {
+    "titulo": "ISC — moldagem",
+    "campos": [
+     {
+      "celula": "K78",
+      "rotulo": "Data (ISC e expansão)"
+     }
+    ],
+    "tabelas": [
+     {
+      "titulo": "Umidade de moldagem",
+      "colunas": [
+       "Cápsula 1",
+       "Cápsula 2"
+      ],
+      "linhas": [
+       {
+        "rotulo": "Cápsula nº",
+        "celulas": [
+         "D84",
+         "E84"
+        ]
+       },
+       {
+        "rotulo": "Peso bruto úmido (g)",
+        "celulas": [
+         "D85",
+         "E85"
+        ]
+       },
+       {
+        "rotulo": "Peso bruto seco (g)",
+        "celulas": [
+         "D86",
+         "E86"
+        ]
+       },
+       {
+        "rotulo": "Umidade (%)",
+        "celulas": [
+         "D90",
+         "E90"
+        ]
+       }
+      ]
+     },
+     {
+      "titulo": "Moldagem ótima",
+      "colunas": [
+       "Cilindro"
+      ],
+      "linhas": [
+       {
+        "rotulo": "Cilindro nº",
+        "celulas": [
+         "K84"
+        ]
+       },
+       {
+        "rotulo": "Peso bruto úmido (g)",
+        "celulas": [
+         "K85"
+        ]
+       },
+       {
+        "rotulo": "Peso do cilindro (g)",
+        "celulas": [
+         "K86"
+        ]
+       },
+       {
+        "rotulo": "Volume do cilindro (cm³)",
+        "celulas": [
+         "K87"
+        ]
+       },
+       {
+        "rotulo": "Dens. solo seco (g/m³)",
+        "celulas": [
+         "K90"
+        ]
+       }
+      ]
+     }
+    ],
+    "resultados": [
+     {
+      "celula": "D91",
+      "rotulo": "Umidade média de moldagem"
+     }
+    ]
+   },
+   {
+    "titulo": "ISC — expansão",
+    "tabelas": [
+     {
+      "colunas": [
+       "Cilindro 1",
+       "Cilindro 2",
+       "Cilindro 3"
+      ],
+      "linhas": [
+       {
+        "rotulo": "Cilindro nº",
+        "celulas": [
+         "C93",
+         "C112",
+         "C131"
+        ]
+       },
+       {
+        "rotulo": "Entra na curva?",
+        "celulas": [
+         "O93",
+         "O112",
+         "O131"
+        ]
+       },
+       {
+        "rotulo": "Constante da prensa",
+        "celulas": [
+         "A94",
+         "A113",
+         "A132"
+        ]
+       },
+       {
+        "rotulo": "Leitura 1 — data",
+        "celulas": [
+         "B95",
+         "B114",
+         "B133"
+        ]
+       },
+       {
+        "rotulo": "Leitura 1 — hora",
+        "celulas": [
+         "C95",
+         "C114",
+         "C133"
+        ]
+       },
+       {
+        "rotulo": "Leitura 1",
+        "celulas": [
+         "D95",
+         "D114",
+         "D133"
+        ]
+       },
+       {
+        "rotulo": "Leitura 2 — data",
+        "celulas": [
+         "B96",
+         "B115",
+         "B134"
+        ]
+       },
+       {
+        "rotulo": "Leitura 2 — hora",
+        "celulas": [
+         "C96",
+         "C115",
+         "C134"
+        ]
+       },
+       {
+        "rotulo": "Leitura 2",
+        "celulas": [
+         "D96",
+         "D115",
+         "D134"
+        ]
+       },
+       {
+        "rotulo": "Leitura 3 — data",
+        "celulas": [
+         "B97",
+         "B116",
+         "B135"
+        ]
+       },
+       {
+        "rotulo": "Leitura 3 — hora",
+        "celulas": [
+         "C97",
+         "C116",
+         "C135"
+        ]
+       },
+       {
+        "rotulo": "Leitura 3",
+        "celulas": [
+         "D97",
+         "D116",
+         "D135"
+        ]
+       },
+       {
+        "rotulo": "Leitura 4 — data",
+        "celulas": [
+         "B98",
+         "B117",
+         "B136"
+        ]
+       },
+       {
+        "rotulo": "Leitura 4 — hora",
+        "celulas": [
+         "C98",
+         "C117",
+         "C136"
+        ]
+       },
+       {
+        "rotulo": "Leitura 4",
+        "celulas": [
+         "D98",
+         "D117",
+         "D136"
+        ]
+       },
+       {
+        "rotulo": "Diferença",
+        "celulas": [
+         "D99",
+         "D118",
+         "D137"
+        ]
+       },
+       {
+        "rotulo": "Expansão (%)",
+        "celulas": [
+         "E99",
+         "E118",
+         "E137"
+        ]
+       },
+       {
+        "rotulo": "Altura do cilindro (cm)",
+        "celulas": [
+         "D100",
+         "D119",
+         "D138"
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "titulo": "ISC — penetração (leitura da prensa)",
+    "tabelas": [
+     {
+      "colunas": [
+       "Cilindro 1",
+       "Cilindro 2",
+       "Cilindro 3"
+      ],
+      "linhas": [
+       {
+        "rotulo": "0,63 mm",
+        "celulas": [
+         "C103",
+         "C122",
+         "C141"
+        ]
+       },
+       {
+        "rotulo": "1,27 mm",
+        "celulas": [
+         "C104",
+         "C123",
+         "C142"
+        ]
+       },
+       {
+        "rotulo": "1,90 mm",
+        "celulas": [
+         "C105",
+         "C124",
+         "C143"
+        ]
+       },
+       {
+        "rotulo": "2,54 mm",
+        "celulas": [
+         "C106",
+         "C125",
+         "C144"
+        ]
+       },
+       {
+        "rotulo": "3,81 mm",
+        "celulas": [
+         "C107",
+         "C126",
+         "C145"
+        ]
+       },
+       {
+        "rotulo": "5,08 mm",
+        "celulas": [
+         "C108",
+         "C127",
+         "C146"
+        ]
+       },
+       {
+        "rotulo": "6,35 mm",
+        "celulas": [
+         "C109",
+         "C128",
+         "C147"
+        ]
+       },
+       {
+        "rotulo": "7,62 mm",
+        "celulas": [
+         "C110",
+         "C129",
+         "C148"
+        ]
+       },
+       {
+        "rotulo": "ISC a 2,54 mm",
+        "celulas": [
+         "E106",
+         "E125",
+         "E144"
+        ]
+       },
+       {
+        "rotulo": "ISC a 5,08 mm",
+        "celulas": [
+         "E108",
+         "E127",
+         "E146"
+        ]
+       }
+      ]
+     }
+    ],
+    "resultados": [
+     {
+      "celula": "C40",
+      "rotulo": "ISC"
+     },
+     {
+      "celula": "D40",
+      "rotulo": "Expansão"
+     }
+    ],
+    "graficos": [
+     2,
+     5
+    ]
+   },
+   {
+    "titulo": "Granulometria",
+    "campos": [
+     {
+      "celula": "L164",
+      "rotulo": "Data (granulometria)"
+     },
+     {
+      "celula": "D178",
+      "rotulo": "Amostra total úmida (g)"
+     },
+     {
+      "celula": "G177",
+      "rotulo": "Peneiramento fino — amostra úmida (g)"
+     }
+    ],
+    "tabelas": [
+     {
+      "titulo": "Umidade higroscópica",
+      "colunas": [
+       "Cápsula 1",
+       "Cápsula 2"
+      ],
+      "linhas": [
+       {
+        "rotulo": "Cápsula nº",
+        "celulas": [
+         "C167",
+         "D167"
+        ]
+       },
+       {
+        "rotulo": "Solo úmido + tara (g)",
+        "celulas": [
+         "C168",
+         "D168"
+        ]
+       },
+       {
+        "rotulo": "Solo seco + tara (g)",
+        "celulas": [
+         "C169",
+         "D169"
+        ]
+       },
+       {
+        "rotulo": "Teor de umidade (%)",
+        "celulas": [
+         "C173",
+         "D173"
+        ]
+       }
+      ]
+     },
+     {
+      "titulo": "Peneiramento",
+      "colunas": [
+       "Retido (g)",
+       "% que passa"
+      ],
+      "linhas": [
+       {
+        "rotulo": "2\"",
+        "celulas": [
+         "G169",
+         "I169"
+        ]
+       },
+       {
+        "rotulo": "1 ½\"",
+        "celulas": [
+         "G170",
+         "I170"
+        ]
+       },
+       {
+        "rotulo": "1\"",
+        "celulas": [
+         "G171",
+         "I171"
+        ]
+       },
+       {
+        "rotulo": "¾\"",
+        "celulas": [
+         "G172",
+         "I172"
+        ]
+       },
+       {
+        "rotulo": "3/8\"",
+        "celulas": [
+         "G173",
+         "I173"
+        ]
+       },
+       {
+        "rotulo": "nº 4",
+        "celulas": [
+         "G174",
+         "I174"
+        ]
+       },
+       {
+        "rotulo": "nº 10",
+        "celulas": [
+         "G175",
+         "I175"
+        ]
+       },
+       {
+        "rotulo": "nº 40",
+        "celulas": [
+         "G180",
+         "J180"
+        ]
+       },
+       {
+        "rotulo": "nº 200",
+        "celulas": [
+         "G182",
+         "J182"
+        ]
+       }
+      ]
+     }
+    ],
+    "resultados": [
+     {
+      "celula": "C174",
+      "rotulo": "Umidade média"
+     },
+     {
+      "celula": "D182",
+      "rotulo": "Amostra total seca (g)"
+     },
+     {
+      "celula": "K167",
+      "rotulo": "Pedregulho"
+     },
+     {
+      "celula": "K169",
+      "rotulo": "Areia grossa"
+     },
+     {
+      "celula": "K171",
+      "rotulo": "Areia fina"
+     },
+     {
+      "celula": "K173",
+      "rotulo": "Passante nº 200"
+     },
+     {
+      "celula": "K177",
+      "rotulo": "Faixa"
+     }
+    ],
+    "graficos": [
+     7
+    ]
+   },
+   {
+    "titulo": "Limites físicos",
+    "campos": [
+     {
+      "celula": "L197",
+      "rotulo": "Data (ensaios físicos)"
+     },
+     {
+      "celula": "L213",
+      "rotulo": "SUCS"
+     }
+    ],
+    "tabelas": [
+     {
+      "titulo": "Limite de liquidez",
+      "colunas": [
+       "1",
+       "2",
+       "3",
+       "4",
+       "5"
+      ],
+      "linhas": [
+       {
+        "rotulo": "Cápsula nº",
+        "celulas": [
+         "C199",
+         "D199",
+         "E199",
+         "F199",
+         "G199"
+        ]
+       },
+       {
+        "rotulo": "Cápsula + solo úmido (g)",
+        "celulas": [
+         "C200",
+         "D200",
+         "E200",
+         "F200",
+         "G200"
+        ]
+       },
+       {
+        "rotulo": "Cápsula + solo seco (g)",
+        "celulas": [
+         "C201",
+         "D201",
+         "E201",
+         "F201",
+         "G201"
+        ]
+       },
+       {
+        "rotulo": "Nº de golpes",
+        "celulas": [
+         "C206",
+         "D206",
+         "E206",
+         "F206",
+         "G206"
+        ]
+       },
+       {
+        "rotulo": "% de água",
+        "celulas": [
+         "C205",
+         "D205",
+         "E205",
+         "F205",
+         "G205"
+        ]
+       }
+      ]
+     },
+     {
+      "titulo": "Limite de plasticidade",
+      "colunas": [
+       "1",
+       "2",
+       "3",
+       "4",
+       "5"
+      ],
+      "linhas": [
+       {
+        "rotulo": "Cápsula nº",
+        "celulas": [
+         "H199",
+         "I199",
+         "J199",
+         "K199",
+         "L199"
+        ]
+       },
+       {
+        "rotulo": "Cápsula + solo úmido (g)",
+        "celulas": [
+         "H200",
+         "I200",
+         "J200",
+         "K200",
+         "L200"
+        ]
+       },
+       {
+        "rotulo": "Cápsula + solo seco (g)",
+        "celulas": [
+         "H201",
+         "I201",
+         "J201",
+         "K201",
+         "L201"
+        ]
+       },
+       {
+        "rotulo": "% de água",
+        "celulas": [
+         "H205",
+         "I205",
+         "J205",
+         "K205",
+         "L205"
+        ]
+       }
+      ]
+     }
+    ],
+    "resultados": [
+     {
+      "celula": "K206",
+      "rotulo": "Pontos aproveitados (LP)"
+     },
+     {
+      "celula": "L208",
+      "rotulo": "LL"
+     },
+     {
+      "celula": "L209",
+      "rotulo": "LP"
+     },
+     {
+      "celula": "L210",
+      "rotulo": "IP"
+     },
+     {
+      "celula": "L211",
+      "rotulo": "IG"
+     },
+     {
+      "celula": "L212",
+      "rotulo": "HRB"
+     }
+    ],
+    "graficos": [
+     6
+    ]
+   },
+   {
+    "titulo": "Equivalente de areia",
+    "tabelas": [
+     {
+      "colunas": [
+       "Proveta 1",
+       "Proveta 2"
+      ],
+      "linhas": [
+       {
+        "rotulo": "h1",
+        "celulas": [
+         "K217",
+         "L217"
+        ]
+       },
+       {
+        "rotulo": "h2",
+        "celulas": [
+         "K218",
+         "L218"
+        ]
+       },
+       {
+        "rotulo": "E.A.",
+        "celulas": [
+         "K219",
+         "L219"
+        ]
+       }
+      ]
+     }
+    ],
+    "resultados": [
+     {
+      "celula": "K220",
+      "rotulo": "E.A. média"
+     }
+    ]
+   }
+  ]
+ }
 }

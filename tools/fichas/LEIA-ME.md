@@ -166,6 +166,37 @@ Requisitos: Python 3.10+ (`openpyxl`, `lxml`), Node 18+ e LibreOffice (só para 
   (`celulas_extras` com `estilo_de` de uma célula vazia) e desfaça mesclas que invadem o painel.
 - `LOGEST` não existe no motor: use `INTERCEPT`/`SLOPE` sobre `LN(y)` (curva do limite de liquidez da FR-IMOB-55).
 
+### Aba "Lançamento" e opções que mudam a ficha (FR-IMOB-55 Rev00.1, 15/10/2026)
+A planilha-banco tem uma aba de digitação compacta e a ficha só mostra o resultado. Na ficha online isso vira duas abas:
+**Lançamento** (formulário) e **Ficha** (a folha, igual à impressão). Os campos do Lançamento são as **mesmas células** da ficha —
+não há dado duplicado; os calculados aparecem em cinza, para conferência. O assistente digita só no Lançamento; na Ficha ele confere e assina.
+O laboratorista (revisão) corrige nas duas.
+```jsonc
+"lancamento": { "secoes": [
+  { "titulo": "Compactação", "nota": "texto opcional",
+    "quando": { "celula": "O9", "diferente": "Simples" },            // opcional (ou "igual")
+    "campos": [ { "celula": "K28", "rotulo": "Peso do material (g)", "largo": false,
+                  "quando": { "celula": "O11", "diferente": "Digitada por ponto" } } ],
+    "tabelas": [ { "titulo": "Pontos", "colunas": ["1","2","3"],
+                   "linhas": [ { "rotulo": "Cilindro nº", "celulas": ["D30","E30","F30"] },
+                               { "rotulo": "Dens. solo seco", "celulas": ["D36","E36","F36"] } ] } ],   // entrada → campo; fórmula → cinza
+    "resultados": [ { "celula": "A40", "rotulo": "Umidade ótima" } ],
+    "graficos": [0] } ] }                                              // gráficos da ficha (índice), no fim da seção
+```
+- O conversor avisa se alguma **entrada da ficha não aparece** no Lançamento, se há entrada repetida ou célula inexistente.
+- Seção cujas células estão todas em linhas ocultas some sozinha.
+- `"padrao": "Completa"` num grupo de `entradas` com `opcoes`: opção que vale enquanto a lista está vazia (aparece no lugar do "—").
+- `"alterna": { "celula": "O11", "valor": "Digitada por ponto" }` num grupo de `entradas` que também tem fórmula em `formulas`:
+  a célula é digitada só com essa opção; com a outra, vale a fórmula (FR-IMOB-55: água adicionada "Inicial + % por ponto" × "Digitada por ponto").
+- `"ocultar_linhas": [{ "linhas": "75-230", "quando": { "celula": "O9", "igual": "Simples" } }]`: as linhas somem da tela e as páginas que
+  ficam inteiras dentro delas saem da impressão; as entradas dessas linhas não entram nos cálculos (continuam guardadas, voltam se a opção mudar).
+  Use faixas que correspondem a páginas inteiras (quebras).
+- `"larguras": { "O": 132 }`: largura (px) de uma coluna — útil nas colunas só de tela com listas de opções.
+- Código: `components/FichaLancamento.jsx`; `entradaAtiva`, `entradasEfetivas`, `linhasOcultas`, `valorOpcao` em `motor/ficha.js`.
+- **Conferência independente** da FR-IMOB-55 Rev00.1: os estados `__planRev00` e `__planAntiga` vêm das planilhas preenchidas enviadas em 15/10
+  (aba de digitação → entradas); os resultados batem com os valores que o Excel calculou na ficha (umidade ótima, densidade máxima, ISC,
+  expansão, LL, LP, IP, IG, HRB). Exceções conhecidas: umidade da moldagem ótima (decisão do lote 10) e datas da página 2 (digitadas).
+
 ### Quebra de página (impressão)
 - **Quebras fixas** (`"quebras": [74, 153]` na spec, última linha de cada página): a folha sai em páginas cortadas nessas linhas, todas na
   mesma escala (a da página mais alta) — FR-IMOB-55, 3 páginas como no Excel.

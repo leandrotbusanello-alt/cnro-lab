@@ -3,7 +3,7 @@
   "versao": "Rev01.1",
   "nome": "Concreto asfáltico — Análise granulométrica da mistura",
   "arquivo": "FR-IMOB-21_Rev01.xlsx",
-  "_nota": "Planilha 'Rev01 - Dersa' enviada em 25/09 (o cabeçalho interno ainda diz Versão 00). Duas listas suspensas: M19 = faixa normativa (limites M/N) e M17 = traço de projeto (faixa de trabalho O/P). As tabelas de faixas e traços (colunas R…AY, fora da área) entram como células auxiliares. Massa inicial, retidos, fundo e massa total são digitados. Conferido com o exemplo real da Rev00 (O.S. 2026.03.31.02.140, PDF). Gráfico: aparece na ficha (desenhado pelo sistema a partir dos valores calculados, com a formatação do Excel). Sem resultado_* (granulometria de mistura ainda sem tabela). | Rev01.1 (08/10/2026): lista de faixas só com as normas atuais (DNIT 031/2006 B e C · DER-SP ET-DE-P00/027 DER 25/19/12,5/9,5/4,75 · CCR ES-E-002-R12 BN25-D, EGL 25, EGL 16 19, EGL 19, EGL 12,5, EGL 9,5), valores conferidos com as tabelas das normas enviadas pelo usuário; mesmas 9 peneiras (sem 5/8\"); acima do tamanho máximo = 100, como a planilha. Traço de projeto (M17) vem do Cadastro (traco_cadastro): faixa de trabalho gravada em BG/BH (mín/máx) ao escolher; O/P = faixa do traço limitada à faixa da norma; peneira que o traço não tem = \"-\".",
+  "_nota": "Planilha 'Rev01 - Dersa' enviada em 25/09 (o cabeçalho interno ainda diz Versão 00). Duas listas suspensas: M19 = faixa normativa (limites M/N) e M17 = traço de projeto (faixa de trabalho O/P). As tabelas de faixas e traços (colunas R…AY, fora da área) entram como células auxiliares. Massa inicial, retidos, fundo e massa total são digitados. Conferido com o exemplo real da Rev00 (O.S. 2026.03.31.02.140, PDF). Gráfico: aparece na ficha (desenhado pelo sistema a partir dos valores calculados, com a formatação do Excel). Sem resultado_* (granulometria de mistura ainda sem tabela). | Rev01.1 (08/10/2026): lista de faixas só com as normas atuais (DNIT 031/2006 B e C · DER-SP ET-DE-P00/027 DER 25/19/12,5/9,5/4,75 · CCR ES-E-002-R12 BN25-D, EGL 25, EGL 16 19, EGL 19, EGL 12,5, EGL 9,5), valores conferidos com as tabelas das normas enviadas pelo usuário; mesmas 9 peneiras (sem 5/8\"); acima do tamanho máximo = 100, como a planilha. Traço de projeto (M17) vem do Cadastro (traco_cadastro): faixa de trabalho gravada em BG/BH (mín/máx) ao escolher; O/P = faixa do traço limitada à faixa da norma; peneira que o traço não tem = \"-\". | 08/10/2026 (tarde): volta a FAIXA III DERSA ET-P00/027 (antiga), para os lançamentos antigos, com os valores da ficha em papel enviada pelo usuário (1/2\" 80–100…). A planilha tem 14 pares de colunas (S…AT, índices 1…28): a Faixa III antiga ocupa o 14º par, AS/AT (27/28), que estava vazio; M/N com HLOOKUP exato em S19:AT29. | 08/10/2026 (noite): Massa total (D31/H31) passa a ser calculada = soma dos retidos + fundo (como na FR-IMOB-54), a pedido do usuário; antes era digitada (planilha original).",
   "pedido": {
     "C7": "os",
     "C8": "material",
@@ -31,7 +31,7 @@
       ],
       "linhas": [
         20,
-        "21-31"
+        "21-30"
       ],
       "tipo": "numero"
     },
@@ -48,6 +48,7 @@
         "DER 12,5 - DER-SP ET-DE-P00/027",
         "DER 9,5 - DER-SP ET-DE-P00/027",
         "DER 4,75 - DER-SP ET-DE-P00/027",
+        "FAIXA III DERSA ET-P00/027 (antiga)",
         "BN25-D - CCR ES-E-002-R12",
         "EGL 25 - CCR ES-E-002-R12",
         "EGL 16 19 - CCR ES-E-002-R12",
@@ -93,8 +94,6 @@
     "H20": "Massa inicial (g)",
     "D30": "Fundo (g)",
     "H30": "Fundo (g)",
-    "D31": "Massa total (g)",
-    "H31": "Massa total (g)",
     "D21": "Massa retida — peneira 1\" (g)",
     "D22": "Massa retida — peneira 3/4\" (g)",
     "D23": "Massa retida — peneira 1/2\" (g)",
@@ -857,6 +856,66 @@
     },
     "AR29": {
       "v": 10
+    },
+    "AX35": {
+      "v": "FAIXA III DERSA ET-P00/027 (antiga)"
+    },
+    "AY35": {
+      "v": 27
+    },
+    "AS21": {
+      "v": 100
+    },
+    "AT21": {
+      "v": 100
+    },
+    "AS22": {
+      "v": 100
+    },
+    "AT22": {
+      "v": 100
+    },
+    "AS23": {
+      "v": 80
+    },
+    "AT23": {
+      "v": 100
+    },
+    "AS24": {
+      "v": 70
+    },
+    "AT24": {
+      "v": 90
+    },
+    "AS25": {
+      "v": 44
+    },
+    "AT25": {
+      "v": 72
+    },
+    "AS26": {
+      "v": 22
+    },
+    "AT26": {
+      "v": 50
+    },
+    "AS27": {
+      "v": 8
+    },
+    "AT27": {
+      "v": 26
+    },
+    "AS28": {
+      "v": 4
+    },
+    "AT28": {
+      "v": 16
+    },
+    "AS29": {
+      "v": 2
+    },
+    "AT29": {
+      "v": 10
     }
   },
   "formulas": {
@@ -877,7 +936,28 @@
     "O28": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG28),IF(AND(ISNUMBER(M28),ISNUMBER(N28),N28>0),MAX(BG28,M28),BG28),\"-\")))",
     "P28": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH28),IF(AND(ISNUMBER(M28),ISNUMBER(N28),N28>0),MIN(BH28,N28),BH28),\"-\")))",
     "O29": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BG29),IF(AND(ISNUMBER(M29),ISNUMBER(N29),N29>0),MAX(BG29,M29),BG29),\"-\")))",
-    "P29": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH29),IF(AND(ISNUMBER(M29),ISNUMBER(N29),N29>0),MIN(BH29,N29),BH29),\"-\")))"
+    "P29": "=IF($M$19=\"\",\"\",IF($M$17=\"\",\"\",IF(ISNUMBER(BH29),IF(AND(ISNUMBER(M29),ISNUMBER(N29),N29>0),MIN(BH29,N29),BH29),\"-\")))",
+    "R17": "=VLOOKUP(M19,AX22:AY35,2,0)",
+    "M21": "=IF($M$19=\"\",\"\",HLOOKUP($R$17,$S$19:$AT$29,3,FALSE))",
+    "N21": "=IF($M$19=\"\",\"\",HLOOKUP($R$18,$S$19:$AT$29,3,FALSE))",
+    "M22": "=IF($M$19=\"\",\"\",HLOOKUP($R$17,$S$19:$AT$29,4,FALSE))",
+    "N22": "=IF($M$19=\"\",\"\",HLOOKUP($R$18,$S$19:$AT$29,4,FALSE))",
+    "M23": "=IF($M$19=\"\",\"\",HLOOKUP($R$17,$S$19:$AT$29,5,FALSE))",
+    "N23": "=IF($M$19=\"\",\"\",HLOOKUP($R$18,$S$19:$AT$29,5,FALSE))",
+    "M24": "=IF($M$19=\"\",\"\",HLOOKUP($R$17,$S$19:$AT$29,6,FALSE))",
+    "N24": "=IF($M$19=\"\",\"\",HLOOKUP($R$18,$S$19:$AT$29,6,FALSE))",
+    "M25": "=IF($M$19=\"\",\"\",HLOOKUP($R$17,$S$19:$AT$29,7,FALSE))",
+    "N25": "=IF($M$19=\"\",\"\",HLOOKUP($R$18,$S$19:$AT$29,7,FALSE))",
+    "M26": "=IF($M$19=\"\",\"\",HLOOKUP($R$17,$S$19:$AT$29,8,FALSE))",
+    "N26": "=IF($M$19=\"\",\"\",HLOOKUP($R$18,$S$19:$AT$29,8,FALSE))",
+    "M27": "=IF($M$19=\"\",\"\",HLOOKUP($R$17,$S$19:$AT$29,9,FALSE))",
+    "N27": "=IF($M$19=\"\",\"\",HLOOKUP($R$18,$S$19:$AT$29,9,FALSE))",
+    "M28": "=IF($M$19=\"\",\"\",HLOOKUP($R$17,$S$19:$AT$29,10,FALSE))",
+    "N28": "=IF($M$19=\"\",\"\",HLOOKUP($R$18,$S$19:$AT$29,10,FALSE))",
+    "M29": "=IF($M$19=\"\",\"\",HLOOKUP($R$17,$S$19:$AT$29,11,FALSE))",
+    "N29": "=IF($M$19=\"\",\"\",HLOOKUP($R$18,$S$19:$AT$29,11,FALSE))",
+    "D31": "=IF(D20<>\"\",SUM(D21:D30),\"\")",
+    "H31": "=IF(H20<>\"\",SUM(H21:H30),\"\")"
   },
   "traco_cadastro": {
     "celula": "M17",

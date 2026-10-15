@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { LARGURA_VISAO_LISTA } from '../constants'
 import FichaGrade from './FichaGrade'
 import FichaLista from './FichaLista'
+import FichaLancamento from './FichaLancamento'
 import { entradasDoTraco } from '../motor/ficha.js'
 import s from './Ficha.module.css'
 
@@ -17,6 +18,10 @@ const NOME = { executor: 'Responsável executor', calculista: 'Responsável calc
  *                onAssinar={quem => …} onRemoverAssinatura={quem => …}
  *                fotos={useFotosFicha(…)} />   ← fichas com quadro de foto (FR-IMOB-27)
  *
+ * Fichas com aba "Lançamento" (indice.lancamento — FR-IMOB-55 Rev00.1): abas Lançamento | Ficha.
+ * O assistente digita no Lançamento; na aba Ficha ele confere e assina. O laboratorista (revisão)
+ * pode corrigir nas duas.
+ *
  * Assinar: o usuário clica no campo da assinatura, confirma, e a assinatura aparece
  * na ficha (e na impressão). Com a ficha assinada pelo responsável da etapa, os
  * campos ficam travados até a assinatura ser removida.
@@ -26,7 +31,10 @@ export default function FichaEnsaio({
   assinaturas = {}, podeAssinar = {}, motivoSemAssinatura, usuarioNome,
   onAssinar, onRemoverAssinatura, idBase = 'ficha', fotos, tracos,
 }) {
-  const [vista, setVista] = useState(() => (window.innerWidth < LARGURA_VISAO_LISTA ? 'lista' : 'grade'))
+  const temLancamento = !!indice.lancamento
+  const [vista, setVista] = useState(() => (temLancamento
+    ? (modo === 'revisao' ? 'grade' : 'lancamento')
+    : (window.innerWidth < LARGURA_VISAO_LISTA ? 'lista' : 'grade')))
   const [confirmacao, setConfirmacao] = useState(null)   // { quem, rect }
   const [abaAtiva, setAbaAtiva] = useState(0)             // frente e verso: qual folha aparece na grade
   const folhas = indice.folhas || [indice]
@@ -111,18 +119,36 @@ export default function FichaEnsaio({
     fotos,
   }
   const qtdAjustes = Object.keys(estado?.ajustes || {}).length
+  // ficha com Lançamento: o assistente digita só no Lançamento (decisão de 15/10/2026)
+  const travarGrade = temLancamento && modo === 'preencher'
 
   return (
     <div className={s.ficha}>
       <div className={s.barraVista} role="group" aria-label="Forma de exibição">
-        <button type="button" aria-pressed={vista === 'grade'} className={vista === 'grade' ? s.vistaAtiva : ''} onClick={() => setVista('grade')}>
-          Ficha
-        </button>
-        <button type="button" aria-pressed={vista === 'lista'} className={vista === 'lista' ? s.vistaAtiva : ''} onClick={() => setVista('lista')}>
-          Lista
-        </button>
+        {temLancamento ? (
+          <>
+            <button type="button" aria-pressed={vista === 'lancamento'} className={vista === 'lancamento' ? s.vistaAtiva : ''} onClick={() => setVista('lancamento')}>
+              Lançamento
+            </button>
+            <button type="button" aria-pressed={vista === 'grade'} className={vista === 'grade' ? s.vistaAtiva : ''} onClick={() => setVista('grade')}>
+              Ficha
+            </button>
+          </>
+        ) : (
+          <>
+            <button type="button" aria-pressed={vista === 'grade'} className={vista === 'grade' ? s.vistaAtiva : ''} onClick={() => setVista('grade')}>
+              Ficha
+            </button>
+            <button type="button" aria-pressed={vista === 'lista'} className={vista === 'lista' ? s.vistaAtiva : ''} onClick={() => setVista('lista')}>
+              Lista
+            </button>
+          </>
+        )}
+        {travarGrade && vista === 'grade' && !bloqueado && (
+          <span className={s.dicaAba}>Para digitar, use a aba Lançamento. Aqui você confere a ficha e assina.</span>
+        )}
         {bloqueado && <span className={s.travada}>🔒 Assinada — remova a assinatura para editar</span>}
-        {modo === 'revisao' && !bloqueado && (
+        {modo === 'revisao' && !bloqueado && vista !== 'lancamento' && (
           <span className={s.avisoAjustes}>
             {qtdAjustes > 0
               ? <>✏️ {qtdAjustes} valor(es) calculado(s) corrigido(s) à mão (em laranja)
@@ -136,7 +162,9 @@ export default function FichaEnsaio({
         {fotos?.erro && <span className={s.fotoErro} role="alert">{fotos.erro}</span>}
       </div>
 
-      {vista === 'grade' ? (
+      {vista === 'lancamento' && temLancamento ? (
+        <FichaLancamento {...props} motor={motor} podeAssinar={podeAssinar} idBase={`${idBase}-c`} />
+      ) : vista === 'grade' ? (
         <>
           {folhas.length > 1 && (
             <div className={s.abasFolha} role="tablist" aria-label="Páginas da ficha">
@@ -155,7 +183,7 @@ export default function FichaEnsaio({
             </div>
           )}
           <div className={s.papel}>
-            <FichaGrade {...props} folha={folha} motor={motor} destacar={modo !== 'leitura'} idBase={`${idBase}-g`} />
+            <FichaGrade {...props} folha={folha} motor={motor} destacar={modo !== 'leitura'} idBase={`${idBase}-g`} entradasTravadas={travarGrade} />
           </div>
         </>
       ) : (

@@ -218,3 +218,43 @@ select.itemCampo { cursor: pointer; }
 .avisoAjustes { font-size: 12.5px; color: #9a3412; display: flex; align-items: center; gap: 8px; }
 .avisoAjustes button { border: 1px solid #fdba74; background: #fff7ed; color: #9a3412; border-radius: 6px; padding: 2px 8px; cursor: pointer; font-size: 12px; }
 @media print { .dAjustado { background: none !important; box-shadow: none !important; } }
+
+/* ── Aba Lançamento (FR-IMOB-55 Rev00.1): formulário como a aba de digitação da planilha ── */
+.lanc { display: flex; flex-direction: column; gap: 12px; }
+.lancNota { font-size: 12.5px; color: var(--muted); margin: -4px 0 10px; }
+.lancCampos { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px 14px; margin-bottom: 12px; }
+.lancCampos > * { min-width: 0; }
+.lancTabelaCaixa { overflow-x: auto; margin-bottom: 12px; border: 1px solid #e5e7eb; border-radius: 8px; -webkit-overflow-scrolling: touch; }
+.lancTabela { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.lancTabela th, .lancTabela td { border-bottom: 1px solid #eef0f3; padding: 3px 4px; }
+.lancTabela tbody tr:last-child th, .lancTabela tbody tr:last-child td { border-bottom: 0; }
+.lancTabela thead th {
+  background: #f3f6fb; color: var(--navy); font-weight: 700; font-size: 12.5px; text-align: center;
+  padding: 6px 4px; min-width: 84px;
+}
+.lancTabela tbody th {
+  text-align: left; font-weight: 600; color: #374151; white-space: nowrap; padding-right: 10px;
+  position: sticky; left: 0; background: #fff; z-index: 1; box-shadow: 1px 0 0 #eef0f3;
+}
+.lancTabela thead th.lancCanto { position: sticky; left: 0; z-index: 2; text-align: left; color: var(--muted); font-weight: 600; }
+.lancTabela td { min-width: 84px; }
+.lancLinhaCalc th { color: var(--muted); font-weight: 500; }
+.lancCampo {
+  width: 100%; box-sizing: border-box; border: 1px solid #b9c7dd; border-radius: 6px; background: #f6f9ff;
+  padding: 6px 7px; font-size: 14.5px; color: #111827; font-family: inherit; text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+select.lancCampo { text-align: left; padding-right: 2px; }
+.lancCampo:focus { outline: 2px solid rgba(37, 99, 235, .35); border-color: #2563eb; background: #fff; }
+.lancCampo[readonly] { background: #f3f4f6; border-color: var(--border); color: #374151; }
+.lancCampo[aria-invalid] { border-color: #dc2626; background: #fef2f2; }
+.lancCalc {
+  display: block; text-align: right; padding: 6px 7px; color: #4b5563; background: #f3f4f6;
+  border-radius: 6px; font-size: 14px; white-space: nowrap; min-height: 1em;
+}
+.item .lancCalc { padding: 10px 12px; font-size: 16px; text-align: left; }
+.lancResultados { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
+.lancResultado { background: #eef4ff; border: 1px solid #c7d7f5; border-radius: 8px; padding: 6px 12px; min-width: 120px; }
+.lancResultado dt { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; }
+.lancResultado dd { margin: 2px 0 0; font-size: 17px; font-weight: 700; color: var(--navy); font-variant-numeric: tabular-nums; }
+.dicaAba { font-size: 12.5px; color: #1e3a8a; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 999px; padding: 3px 10px; margin-left: 6px; }

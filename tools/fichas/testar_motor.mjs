@@ -10,12 +10,12 @@
 //
 // Rode depois de python3 tools/fichas/converter.py (que gera a pasta saida/). Sai com código 1 se algo divergir.
 // ─────────────────────────────────────────────────────────────────────────────
-import { readFileSync, readdirSync, writeFileSync, mkdtempSync } from 'node:fs'
+import { readFileSync, readdirSync, writeFileSync, mkdtempSync, existsSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { tmpdir } from 'node:os'
 import { execFileSync } from 'node:child_process'
-import { indexarModelo, calcularFicha, linhasResultado, montarDados } from '../../src/modules/fichas/motor/ficha.js'
+import { indexarModelo, calcularFicha, linhasResultado, montarDados, entradasEfetivas } from '../../src/modules/fichas/motor/ficha.js'
 import { ehErro } from '../../src/modules/fichas/motor/formulas.js'
 
 const AQUI = dirname(fileURLToPath(import.meta.url))
@@ -71,6 +71,12 @@ function valoresAleatorios(indice, exemplo) {
   return out
 }
 
+// planilha-mestre da ficha: a revisão do sistema "Rev01.1" usa a planilha da Rev01 (o ajuste está na spec)
+function planilhaDe(nome) {
+  const arq = join(AQUI, 'planilhas', `${nome}.xlsx`)
+  return existsSync(arq) ? arq : join(AQUI, 'planilhas', `${nome.replace(/\.\d+$/, '')}.xlsx`)
+}
+
 let falhas = 0
 for (const arq of readdirSync(SAIDA).filter(f => f.endsWith('.modelo.json')).sort()) {
   const nome = arq.replace('.modelo.json', '')
@@ -121,8 +127,12 @@ for (const arq of readdirSync(SAIDA).filter(f => f.endsWith('.modelo.json')).sor
         }
       }
       const arqIn = join(tmp, `in${rodada}.json`), arqOut = join(tmp, `out${rodada}.json`)
-      const planilha = { ...entradas }
-      for (const a of [...indice.papeis.entrada, ...indice.papeis.revisao, ...indice.papeis.pedido]) if (!(a in planilha)) planilha[a] = null
+      // entradas como o motor usa (opção que alterna com a fórmula, linhas ocultas — FR-IMOB-55 Rev00.1)
+      const { entradas: efetivas, formulasDesligadas } = entradasEfetivas(indice, { entradas, escolhas })
+      const planilha = { ...efetivas }
+      for (const a of [...indice.papeis.entrada, ...indice.papeis.revisao, ...indice.papeis.pedido]) {
+        if (!(a in planilha) && !indice.cells[a].role.alterna) planilha[a] = null
+      }
       for (const a of indice.papeis.escolha) {
         const r = indice.cells[a].role
         if (r.marca) planilha[a] = escolhas[r.grupo] === r.opcao ? r.marca : null
@@ -132,6 +142,7 @@ for (const arq of readdirSync(SAIDA).filter(f => f.endsWith('.modelo.json')).sor
         if (d.fxi) planilha[a] = `=${d.fx}`
         if (d.vx) planilha[a] = d.v                     // valor posto pela spec (celulas_extras)
       }
+      for (const a of formulasDesligadas) planilha[a] = efetivas[a]   // célula alternada digitada: o valor no lugar da fórmula
       Object.assign(planilha, verif.extras_aux || {})    // valores da spec em células auxiliares (tabela de taras)
       for (const f of indice.folhas) {                    // auxiliares com fórmula da spec
         for (const [a, d] of Object.entries(f.modelo.aux || {})) if (d.fxi) planilha[f.prefixo + a] = `=${d.fx}`
@@ -141,7 +152,7 @@ for (const arq of readdirSync(SAIDA).filter(f => f.endsWith('.modelo.json')).sor
       const paraExcel = a => { const m = /^([A-Z][A-Z0-9_]*)!(.+)$/.exec(a); return m && abasExcel[m[1]] ? `${abasExcel[m[1]]}!${m[2]}` : a }
       const deExcel = Object.fromEntries(Object.entries(abasExcel).filter(([id]) => id).map(([id, nome]) => [nome, id]))
       writeFileSync(arqIn, JSON.stringify(Object.fromEntries(Object.entries(planilha).map(([a, v]) => [paraExcel(a), v]))))
-      execFileSync('python3', [join(AQUI, 'recalcular_libreoffice.py'), join(AQUI, 'planilhas', `${nome}.xlsx`), abasExcel[''] || '', arqIn, arqOut])
+      execFileSync('python3', [join(AQUI, 'recalcular_libreoffice.py'), planilhaDe(nome), abasExcel[''] || '', arqIn, arqOut])
       const esperado = Object.fromEntries(Object.entries(JSON.parse(readFileSync(arqOut, 'utf8'))).map(([a, v]) => {
         const i = a.lastIndexOf('!')
         return [i > 0 && deExcel[a.slice(0, i)] ? `${deExcel[a.slice(0, i)]}!${a.slice(i + 1)}` : a, v]

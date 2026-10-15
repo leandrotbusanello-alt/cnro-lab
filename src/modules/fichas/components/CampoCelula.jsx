@@ -9,7 +9,7 @@ import { formatar, interpretarEntrada, textoParaEdicao } from '../motor/formatac
  * Declarado fora dos componentes pais (evita perda de foco ao digitar no celular).
  */
 export default function CampoCelula({
-  id, valor, dado = 'numero', nf, multilinha = false, editavel, className, style, rotulo, opcoes,
+  id, valor, dado = 'numero', nf, multilinha = false, editavel, className, style, rotulo, opcoes, padrao,
   onConfirmar, onNavegar,
 }) {
   const [editando, setEditando] = useState(null)
@@ -59,8 +59,9 @@ export default function CampoCelula({
   }
 
   // lista suspensa (validação de dados do Excel): escolhe uma das opções; travada, mostra só o texto
+  // padrao: opção que vale enquanto nada foi escolhido (FR-IMOB-55: "Completa", "Pela higroscópica"…)
   if (opcoes && editavel) {
-    const atual = typeof valor === 'string' ? valor : valor == null ? '' : String(valor)
+    const atual = typeof valor === 'string' && valor ? valor : valor == null || valor === '' ? (padrao ?? '') : String(valor)
     const lista = atual && !opcoes.includes(atual) ? [atual, ...opcoes] : opcoes
     return (
       <select
@@ -72,7 +73,7 @@ export default function CampoCelula({
         onChange={e => onConfirmar(e.target.value || null)}
         onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); onNavegar?.(e.shiftKey ? -1 : 1) } }}
       >
-        <option value="">—</option>
+        {padrao == null && <option value="">—</option>}
         {lista.map(o => <option key={o} value={o}>{o}</option>)}
       </select>
     )
@@ -80,7 +81,7 @@ export default function CampoCelula({
 
   // lista travada (leitura/impressão): mostra o texto escolhido, com quebra de linha se a opção tiver
   if (opcoes && !editavel) {
-    const texto = valor == null ? '' : String(valor)
+    const texto = valor == null || valor === '' ? (padrao ?? '') : String(valor)
     return (
       <div id={id} className={className} style={{ ...style, whiteSpace: 'pre-line', display: 'flex', alignItems: 'center', justifyContent: style?.textAlign === 'left' ? 'flex-start' : 'center', lineHeight: 1.15, cursor: 'default' }} aria-label={rotulo}>
         {texto}
