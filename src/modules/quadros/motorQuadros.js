@@ -64,7 +64,13 @@ export function linhasDoMaterial(def, dados) {
   const porPedido = new Map()
   for (const e of dados.ensaios || []) {
     if (!porPedido.has(e.pedido_id)) porPedido.set(e.pedido_id, [])
-    porPedido.get(e.pedido_id).push({ dados: e.dados_resultado || {}, resultados: e.resultados || {} })
+    const d = e.dados_resultado || {}
+    porPedido.get(e.pedido_id).push({ dados: d, resultados: e.resultados || {} })
+    // folhas adicionais da mesma ficha (20/10/2026): entram como mais uma ficha da amostra
+    // (os resultado_* de todas as folhas já vêm juntos na primeira)
+    for (const f of Array.isArray(d.folhas_extras) ? d.folhas_extras : []) {
+      porPedido.get(e.pedido_id).push({ dados: { ...f, codigo: d.codigo, versao: d.versao }, resultados: {} })
+    }
   }
   const out = []
   for (const p of dados.pedidos || []) {

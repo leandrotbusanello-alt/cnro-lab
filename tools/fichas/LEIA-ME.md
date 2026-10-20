@@ -252,6 +252,20 @@ quadro com os resultados **aprovados** e imprime no layout da planilha da Qualid
   lugar do Supabase) em `http://localhost:5199/?tela=quadros` (`&perfil=ASSIST` para ver o bloqueio).
 - **Formato novo no motor de formatação:** mês por extenso sem dia (`[$-416]mmm\-yy` → "set-26").
 
+## Contagem de ensaios por atividade — `contagem_regras.py` (migração 27)
+
+A view `public.contagem_atividades` conta, para a gerência, cada CP, determinação, ponto, furo ou cilindro ensaiado. As regras estão em `public.contagem_regras`, uma linha por ficha × atividade, e são geradas a partir dos modelos (`saida/*.modelo.json`).
+
+- **Unidade:** um grupo de `lista.grupos` (ou uma coluna dele). A unidade conta se qualquer célula-chave tiver valor em `dados_resultado.entradas`.
+- **Células-chave:** só entradas numéricas de medição. Ficam de fora textos, datas, "nº", "constante" e "km", que podem vir do pedido. Algumas fichas filtram mais pelo rótulo: Marshall usa espessura, diâmetro e massa; FR-46 usa espessura e massa; FR-50 usa as cargas.
+- **Modos:** `unidades` conta as unidades preenchidas; `uma` conta 1 se houver algo preenchido. Sem unidades, `uma` conta 1 quando o ensaio está em revisão ou aprovado.
+- **Moldagem:** vem do pedido, e não da ficha. É calculada direto na view (CP's de concreto com responsável CNRO; CP's solo cimento sempre).
+
+**Ficha nova ou alteração de regra:**
+1. Edite `regras()` em `contagem_regras.py`.
+2. Rode `python3 contagem_regras.py` para ver o resumo.
+3. Rode `python3 contagem_regras.py --sql ARQ` e cole o insert gerado numa migração nova. O insert faz upsert por (ficha, atividade).
+
 ## Regras do conversor
 - **Códigos:** além das FR-IMOB, o conversor e o `sql_lote.py` aceitam as fichas do laboratório (FR-LAB-01, 02, 51…), que ficam
   lado a lado com as FR-IMOB do mesmo ensaio (decisão de 29/09) e gravam nas mesmas tabelas `resultado_*`.

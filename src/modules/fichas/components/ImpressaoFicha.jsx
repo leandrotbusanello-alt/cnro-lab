@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import FichaGrade from './FichaGrade'
 import { linhasOcultas } from '../motor/ficha.js'
+import { qtdFolhas, estadoDaFolha } from '../motor/folhas.js'
 import s from './Ficha.module.css'
 
 const MM_PX = 96 / 25.4
@@ -81,12 +82,8 @@ function cortarEmPaginas(folha, alturaMax) {
   return trechos
 }
 
-/**
- * Pré-visualização A4 e impressão/PDF da ficha, na escala da planilha
- * ("ajustar à página" do Excel). Fichas com frente e verso saem com uma página por aba.
- * Só para quem tem permissão de imprimir.
- */
-export default function ImpressaoFicha({ indice, motor, estado, assinaturas, titulo, onFechar }) {
+/** Páginas de um conjunto (folha da ficha: motor + estado), sem as páginas ocultas pela opção escolhida. */
+function paginasDoConjunto(indice, { k, motor, estado }) {
   const folhas = indice.folhas || [indice]
   // páginas que somem com a opção escolhida (FR-IMOB-55 "Simples": só a página 1)
   const ocultas = linhasOcultas(indice, estado)
@@ -97,12 +94,27 @@ export default function ImpressaoFicha({ indice, motor, estado, assinaturas, tit
     for (const h of f.modelo.rows) topos.push(topos[topos.length - 1] + h)
     return faixas.some(([de, ate]) => topos[Math.max(0, de - f.r1)] <= y0 + 0.5 && topos[Math.min(topos.length - 1, ate - f.r1 + 1)] >= y1 - 0.5)
   }
-  const paginas = folhas.flatMap(f => {
+  return folhas.flatMap(f => {
     const p = paginaDa(f)
     return p.trechos
-      .map(([y0, y1], i) => ({ folha: f, ...p, y0, y1, chave: `${f.id || 'principal'}-${i}` }))
+      .map(([y0, y1], i) => ({ folha: f, ...p, y0, y1, motor, estado, chave: `${k}-${f.id || 'principal'}-${i}` }))
       .filter(pg => !paginaOculta(f, pg.y0, pg.y1))
   })
+}
+
+/**
+ * Pré-visualização A4 e impressão/PDF da ficha, na escala da planilha
+ * ("ajustar à página" do Excel). Fichas com frente e verso saem com uma página por aba.
+ * Folhas adicionais da mesma ficha (motores + estado.extras — 20/10/2026) saem em sequência,
+ * cada uma como a ficha é, com as mesmas assinaturas.
+ * Só para quem tem permissão de imprimir.
+ */
+export default function ImpressaoFicha({ indice, motor, motores, estado, assinaturas, titulo, onFechar }) {
+  const n = motores?.length ? qtdFolhas(estado) : 1
+  const conjuntos = Array.from({ length: n }, (_, k) => ({
+    k, motor: k ? motores[k] : (motores?.[0] || motor), estado: n > 1 ? estadoDaFolha(estado, k) : estado,
+  }))
+  const paginas = conjuntos.flatMap(c => paginasDoConjunto(indice, c))
   const paisagem = paginas[0].paisagem
 
   useEffect(() => {
@@ -129,7 +141,7 @@ export default function ImpressaoFicha({ indice, motor, estado, assinaturas, tit
               : { position: 'absolute', left: p.esquerda, top: p.topo }}
             >
               <div style={p.y0 ? { marginTop: -p.y0 * p.escala } : undefined}>
-                <FichaGrade indice={indice} folha={p.folha} motor={motor} estado={estado} assinaturas={assinaturas} modo="leitura" escala={p.escala} soImpressao manterLinhas />
+                <FichaGrade indice={indice} folha={p.folha} motor={p.motor} estado={p.estado} assinaturas={assinaturas} modo="leitura" escala={p.escala} soImpressao manterLinhas />
               </div>
             </div>
           </div>

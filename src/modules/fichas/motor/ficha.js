@@ -242,6 +242,16 @@ export function estadoDosDados(dados) {
     cabecalho: { ...(dados?.cabecalho || {}) },
     // cópia das taras do cadastro de equipamentos (migração 24)
     ...(dados?.taras ? { taras: dados.taras } : {}),
+    // folhas adicionais da mesma ficha (20/10/2026 — ver folhas.js)
+    ...(Array.isArray(dados?.folhas_extras) && dados.folhas_extras.length
+      ? { extras: dados.folhas_extras.map(f => ({
+          entradas: { ...(f?.entradas || {}) },
+          escolhas: { ...(f?.escolhas || {}) },
+          verificacoes: { ...(f?.verificacoes || {}) },
+          fotos: { ...(f?.fotos || {}) },
+          ajustes: { ...(f?.ajustes || {}) },
+        })) }
+      : {}),
   }
 }
 

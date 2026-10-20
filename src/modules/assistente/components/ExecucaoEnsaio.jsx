@@ -13,7 +13,7 @@ import { carregarCadastros } from '../../../lib/cadastros'
 import { useFicha } from '../../fichas/useFicha'
 import { useFotosFicha } from '../../fichas/fotosFicha'
 import { INTERVALO_RASCUNHO_SERVIDOR } from '../../fichas/constants'
-import FichaEnsaio from '../../fichas/components/FichaEnsaio'
+import FichaComFolhas from '../../fichas/components/FichaComFolhas'
 import { useTracosDaFicha } from '../../fichas/useTracosDaFicha'
 import FotoApoio from '../../fichas/components/FotoApoio'
 import { urlAssinatura } from '../../laboratorio/labRepo'
@@ -314,10 +314,11 @@ export default function ExecucaoEnsaio() {
       {modeloReg && ficha.indice && estado && (
         <div className={`${styles.area} ${fotoAberta ? styles.comFoto : ''}`}>
           <div className={styles.areaFicha}>
-            <FichaEnsaio
+            <FichaComFolhas
               tracos={tracos}
               indice={ficha.indice}
-              motor={ficha.motor}
+              motores={ficha.motores}
+              podeGerenciarFolhas={emExecucao}
               estado={estado}
               onEstado={alterar}
               modo={emExecucao ? 'preencher' : 'leitura'}

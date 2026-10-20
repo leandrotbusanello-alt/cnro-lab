@@ -11,7 +11,7 @@ import { estadoDosDados } from '../../fichas/motor/ficha.js'
 import { useFicha } from '../../fichas/useFicha'
 import { useFotosFicha } from '../../fichas/fotosFicha'
 import { CONFORMIDADES, MODULOS_QUE_IMPRIMEM } from '../../fichas/constants'
-import FichaEnsaio from '../../fichas/components/FichaEnsaio'
+import FichaComFolhas from '../../fichas/components/FichaComFolhas'
 import { useTracosDaFicha } from '../../fichas/useTracosDaFicha'
 import ImpressaoFicha from '../../fichas/components/ImpressaoFicha'
 import styles from './RevisaoFicha.module.css'
@@ -185,10 +185,10 @@ export default function RevisaoFicha({ pedido, ensaioOs: eo, podeRevisar, ocupad
           {aviso && <div className={`${ui.aviso} ${ui.avisoErro}`} role="status">{aviso}</div>}
           {!modeloReg && !erroModelo && <div className={styles.carregando}><div className="spinner" /></div>}
           {modeloReg && ficha.indice && (
-            <FichaEnsaio
+            <FichaComFolhas
               tracos={tracos}
               indice={ficha.indice}
-              motor={ficha.motor}
+              motores={ficha.motores}
               estado={estado}
               onEstado={alterar}
               modo={modo}
@@ -300,6 +300,7 @@ export default function RevisaoFicha({ pedido, ensaioOs: eo, podeRevisar, ocupad
           indice={ficha.indice}
           motor={ficha.motor}
           estado={estado}
+          motores={ficha.motores}
           assinaturas={assinaturas}
           titulo={`${titulo} · ${numeroOS(pedido) || numeroPE(pedido)}`}
           onFechar={() => setImprimindo(false)}
