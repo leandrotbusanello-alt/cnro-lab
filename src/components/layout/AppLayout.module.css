@@ -7,10 +7,12 @@
 .topbar {
   display: flex; align-items: center; gap: 16px;
   background: var(--navy, #1e3a5f); color: #fff;
-  padding: 0 20px; height: 56px; flex-shrink: 0;
+  padding: 0 20px; height: 60px; flex-shrink: 0;
   position: sticky; top: 0; z-index: 100;
 }
-.brand { font-weight: 800; font-size: 16px; letter-spacing: 1px; flex-shrink: 0; }
+.brand { display: flex; flex-direction: column; align-items: center; gap: 1px; flex-shrink: 0; line-height: 1; }
+.brandLogo { height: 34px; width: auto; display: block; }
+.brandNome { font-weight: 800; font-size: 9.5px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,.85); }
 
 .desktopNav { display: flex; gap: 4px; flex: 1; }
 .navLink {

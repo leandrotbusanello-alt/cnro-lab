@@ -2,6 +2,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import { useOnlineSync } from '../../hooks/useOnlineSync'
 import styles from './AppLayout.module.css'
+import logoNovaRota from '../../assets/logo-nova-rota-branca.png'
 
 // "Início" (o painel interno) é a tela de todos — não depende do módulo
 // "dashboard", que agora controla só o acesso ao Lab Painel (sistema à parte).
@@ -37,7 +38,10 @@ export default function AppLayout() {
     <div className={styles.shell}>
       {/* Desktop top bar */}
       <header className={styles.topbar}>
-        <span className={styles.brand}>CNRO Lab</span>
+        <span className={styles.brand}>
+          <img src={logoNovaRota} alt="Nova Rota do Oeste" className={styles.brandLogo} />
+          <span className={styles.brandNome}>CNRO Lab</span>
+        </span>
 
         <nav className={styles.desktopNav}>
           {navItems.map(item => (

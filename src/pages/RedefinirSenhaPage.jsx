@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuthStore } from '../store/authStore'
 import NovaSenhaForm from './NovaSenhaForm'
 import styles from './LoginPage.module.css'
+import logoNovaRota from '../assets/logo-nova-rota-branca.png'
 
 // O link do e-mail chega com #access_token=... ou #error=...; guardado antes de o
 // Supabase processar e limpar o endereço.
@@ -49,8 +50,8 @@ export default function RedefinirSenhaPage() {
     <div className={styles.bg}>
       <div className={styles.card}>
         <div className={styles.logo}>
-          <div className={styles.logoBox}>CNRO</div>
-          <div className={styles.logoSub}>Lab Control</div>
+          <div className={styles.logoBox}><img src={logoNovaRota} alt="Nova Rota do Oeste" /></div>
+          <div className={styles.logoSub}>CNRO Lab</div>
         </div>
 
         <div className={styles.form}>

@@ -2,6 +2,7 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import NovaSenhaForm from './NovaSenhaForm'
 import styles from './LoginPage.module.css'
+import logoNovaRota from '../assets/logo-nova-rota-branca.png'
 
 /**
  * Troca de senha obrigatória: primeiro acesso ou senha resetada pelo Gestor
@@ -30,8 +31,8 @@ export default function TrocarSenhaPage() {
     <div className={styles.bg}>
       <div className={styles.card}>
         <div className={styles.logo}>
-          <div className={styles.logoBox}>CNRO</div>
-          <div className={styles.logoSub}>Lab Control</div>
+          <div className={styles.logoBox}><img src={logoNovaRota} alt="Nova Rota do Oeste" /></div>
+          <div className={styles.logoSub}>CNRO Lab</div>
         </div>
 
         <div className={styles.form}>

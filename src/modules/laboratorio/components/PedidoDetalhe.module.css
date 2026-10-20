@@ -8,7 +8,7 @@
 
 .acoes {
   display: flex; gap: 8px; flex-wrap: wrap;
-  position: sticky; top: 56px; z-index: 5;
+  position: sticky; top: 60px; z-index: 5;
   background: var(--gray); padding: 6px 0;
 }
 

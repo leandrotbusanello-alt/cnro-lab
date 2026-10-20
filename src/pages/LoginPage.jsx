@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import CampoSenha from '../components/ui/CampoSenha'
 import styles from './LoginPage.module.css'
+import logoNovaRota from '../assets/logo-nova-rota-branca.png'
 
 export default function LoginPage() {
   const [modo, setModo] = useState('entrar') // 'entrar' | 'esqueci'
@@ -50,8 +51,8 @@ export default function LoginPage() {
     <div className={styles.bg}>
       <div className={styles.card}>
         <div className={styles.logo}>
-          <div className={styles.logoBox}>CNRO</div>
-          <div className={styles.logoSub}>Lab Control</div>
+          <div className={styles.logoBox}><img src={logoNovaRota} alt="Nova Rota do Oeste" /></div>
+          <div className={styles.logoSub}>CNRO Lab</div>
         </div>
 
         {modo === 'entrar' ? (
