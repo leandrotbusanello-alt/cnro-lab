@@ -84,6 +84,10 @@ export default function FilaView() {
   }, [itens, visao, sub, filtros, empresasPorId, usuariosPorId])
 
   const qtdFiltros = Object.values(filtros).filter(Boolean).length
+  const reaberturas = useMemo(
+    () => pedidos.filter(p => p.status === 'concluido' && p.reabertura_solicitada_em)
+      .sort((a, b) => String(a.reabertura_solicitada_em).localeCompare(String(b.reabertura_solicitada_em))),
+    [pedidos])
 
   return (
     <div className={styles.wrapper}>
@@ -104,6 +108,24 @@ export default function FilaView() {
           </button>
         </div>
       </div>
+
+      {/* Gestor: pedidos de reabertura de O.S. finalizada (migração 30) */}
+      {lab.ehGestor && reaberturas.length > 0 && (
+        <div className={`${ui.aviso} ${ui.avisoAlerta}`} role="status">
+          🔓 <span>
+            <strong>{reaberturas.length === 1 ? '1 O.S. aguardando' : `${reaberturas.length} O.S. aguardando`} autorização de reabertura:</strong>{' '}
+            {reaberturas.map((p, i) => (
+              <span key={p.id}>
+                {i > 0 && ' · '}
+                <Link to={`/laboratorio/${encodeURIComponent(p.id)}`} state={{ voltar: '/laboratorio' }}>
+                  {p.numero_os || numeroPE(p)}
+                </Link>
+                {usuariosPorId[p.reabertura_solicitada_por] ? ` (${usuariosPorId[p.reabertura_solicitada_por].nome})` : ''}
+              </span>
+            ))}
+          </span>
+        </div>
+      )}
 
       {/* Visões principais */}
       <div className={styles.visoes} role="tablist">

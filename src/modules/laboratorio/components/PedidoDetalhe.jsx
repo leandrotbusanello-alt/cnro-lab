@@ -21,6 +21,8 @@ import ModalFinalizar from './ModalFinalizar'
 import RevisaoEnsaio from './RevisaoEnsaio'
 import ModalExcluirPedido from './ModalExcluirPedido'
 import ModalAlterarNumero from './ModalAlterarNumero'
+import ModalDatas from './ModalDatas'
+import ModalReabrir from './ModalReabrir'
 import FichaDocumento from './fichas/FichaDocumento'
 import Toast from '../../../components/ui/Toast'
 import styles from './PedidoDetalhe.module.css'
@@ -123,6 +125,8 @@ export default function PedidoDetalhe() {
             {sit.correcaoRecebida && <Selo tom="alerta">↩ Correção recebida do campo</Selo>}
             {ehOSProvisoria(pedido) && <Selo tom="offline">Número provisório</Selo>}
             {sit.alteradoOffline && <Selo tom="offline">📶 Não sincronizado</Selo>}
+            {perm.reaberta && <Selo tom="alerta" title={pedido.reaberta_motivo || ''}>🔓 Reaberta</Selo>}
+            {perm.reaberturaSolicitada && <Selo tom="alerta">🔓 Reabertura solicitada</Selo>}
           </div>
         </div>
       </div>
@@ -145,6 +149,36 @@ export default function PedidoDetalhe() {
                 ✓ Validar e gerar O.S.
               </button>
             </>
+          )}
+          {perm.podeEditarReaberta && (
+            <>
+              <button className={`${ui.btn} ${ui.btnSecundario}`} onClick={() => setModo('editar')} disabled={ocupado}>
+                ✏️ Editar pedido
+              </button>
+              <button className={`${ui.btn} ${ui.btnSecundario}`} onClick={() => setModal({ tipo: 'datasOS' })} disabled={ocupado}>
+                📅 Datas da O.S.
+              </button>
+            </>
+          )}
+          {perm.podeSolicitarReabertura && (
+            <button className={`${ui.btn} ${ui.btnSecundario}`} onClick={() => setModal({ tipo: 'solicitarReabertura' })} disabled={ocupado}>
+              🔓 Solicitar reabertura
+            </button>
+          )}
+          {perm.podeReabrir && perm.reaberturaSolicitada && (
+            <>
+              <button className={`${ui.btn} ${ui.btnAcao}`} onClick={() => setModal({ tipo: 'reabrir' })} disabled={ocupado}>
+                ✓ Autorizar reabertura
+              </button>
+              <button className={`${ui.btn} ${ui.btnPerigo}`} onClick={() => setModal({ tipo: 'recusarReabertura' })} disabled={ocupado}>
+                ✕ Recusar
+              </button>
+            </>
+          )}
+          {perm.podeReabrir && !perm.reaberturaSolicitada && (
+            <button className={`${ui.btn} ${ui.btnSecundario}`} onClick={() => setModal({ tipo: 'reabrir' })} disabled={ocupado}>
+              🔓 Reabrir O.S.
+            </button>
           )}
           {perm.podeGerenciarOS && (
             <button
@@ -180,6 +214,7 @@ export default function PedidoDetalhe() {
       {modo === 'editar' ? (
         <EditarPedido
           pedido={pedido}
+          comOS={temOS}
           onCancelar={() => setModo('ver')}
           onSalvar={async (patch, campos) => {
             const ok = await rodar(() => lab.acoes.salvarEdicao(pedido, patch, campos), 'Pedido atualizado.')
@@ -224,6 +259,7 @@ export default function PedidoDetalhe() {
                 ocupado={ocupado}
                 rodar={rodar}
                 onRevisar={eo => setModal({ tipo: 'revisao', ensaioOsId: eo.id })}
+                onEditarDatas={perm.podeEditarReaberta ? eo => setModal({ tipo: 'datasEnsaio', ensaioOsId: eo.id }) : undefined}
               />
             ) : (
               <section className={ui.secao}>
@@ -323,6 +359,88 @@ export default function PedidoDetalhe() {
           }}
         />
       )}
+      {modal?.tipo === 'solicitarReabertura' && (
+        <ModalMotivo
+          titulo="Solicitar reabertura da O.S."
+          subtitulo={`${numeroOS(pedido)} · o Gestor recebe o pedido e autoriza ou recusa.`}
+          rotulo="Motivo da reabertura"
+          placeholder="O que precisa ser corrigido (ex.: empresa errada; data da O.S. com ano errado)."
+          textoConfirmar="Enviar pedido ao Gestor"
+          ocupado={ocupado}
+          onFechar={fechar}
+          onConfirmar={async motivo => {
+            const ok = await rodar(() => lab.acoes.solicitarReabertura(pedido, motivo), 'Pedido de reabertura enviado ao Gestor.')
+            if (ok) fechar()
+          }}
+        />
+      )}
+      {modal?.tipo === 'recusarReabertura' && (
+        <ModalMotivo
+          titulo="Recusar reabertura"
+          subtitulo={`Pedido de ${lab.usuariosPorId[pedido.reabertura_solicitada_por]?.nome || 'laboratorista'}: “${pedido.reabertura_motivo || ''}”`}
+          rotulo="Motivo da recusa"
+          textoConfirmar="Recusar"
+          perigo
+          ocupado={ocupado}
+          onFechar={fechar}
+          onConfirmar={async motivo => {
+            const ok = await rodar(() => lab.acoes.recusarReabertura(pedido, motivo), 'Reabertura recusada.')
+            if (ok) fechar()
+          }}
+        />
+      )}
+      {modal?.tipo === 'reabrir' && (
+        <ModalReabrir
+          pedido={pedido}
+          solicitante={lab.usuariosPorId[pedido.reabertura_solicitada_por]}
+          ocupado={ocupado}
+          onFechar={fechar}
+          onConfirmar={async motivo => {
+            const ok = await rodar(() => lab.acoes.reabrirOS(pedido, motivo), 'O.S. reaberta. Ela volta para o laboratorista.')
+            if (ok) fechar()
+          }}
+        />
+      )}
+      {modal?.tipo === 'datasOS' && (
+        <ModalDatas
+          titulo="Datas da O.S."
+          subtitulo={numeroOS(pedido)}
+          aviso={`O número da O.S. começa pela data da O.S. — ao mudá-la, o número muda junto (lote e sequencial continuam). A data da solicitação fica em ${pedido.ano}, o ano do PE.`}
+          campos={[
+            { chave: 'dataSolicitacao', rotulo: 'Data da solicitação (PE)', valor: pedido.created_at, tipo: 'momento', obrigatorio: true },
+            { chave: 'dataOS', rotulo: 'Data da O.S.', valor: pedido.data_validacao, tipo: 'data', obrigatorio: true },
+          ]}
+          ocupado={ocupado}
+          onFechar={fechar}
+          onConfirmar={async v => {
+            const ok = await rodar(() => lab.acoes.alterarDatasOS(pedido, v), 'Datas da O.S. atualizadas.')
+            if (ok) fechar()
+          }}
+        />
+      )}
+      {modal?.tipo === 'datasEnsaio' && (() => {
+        const eo = ensaiosOs.find(e => e.id === modal.ensaioOsId)
+        if (!eo) return null
+        return (
+          <ModalDatas
+            titulo="Datas do ensaio"
+            subtitulo={`${eo.nome_ensaio} · ${numeroOS(pedido)}`}
+            aviso="As datas das assinaturas na ficha (executor e calculista) e as do resultado acompanham."
+            campos={[
+              { chave: 'atribuicao', rotulo: 'Atribuição', valor: eo.data_atribuicao, tipo: 'momento' },
+              { chave: 'inicio', rotulo: 'Início da execução', valor: eo.iniciado_em, tipo: 'momento' },
+              { chave: 'envio', rotulo: 'Envio para revisão (execução)', valor: eo.enviado_em || eo.data_conclusao, tipo: 'momento' },
+              { chave: 'aprovacao', rotulo: 'Aprovação', valor: eo.aprovado_em, tipo: 'momento', desabilitado: eo.status !== 'aprovado' },
+            ]}
+            ocupado={ocupado}
+            onFechar={fechar}
+            onConfirmar={async v => {
+              const ok = await rodar(() => lab.acoes.alterarDatasEnsaio(pedido, eo, v), 'Datas do ensaio atualizadas.')
+              if (ok) fechar()
+            }}
+          />
+        )
+      })()}
       {modal?.tipo === 'numero' && (
         <ModalAlterarNumero
           pedido={pedido}
@@ -405,10 +523,29 @@ function Avisos({ pedido, perm, responsavel, lab }) {
     )
   }
   if (pedido.status === 'concluido') {
+    const solicitante = lab.usuariosPorId[pedido.reabertura_solicitada_por]
     return (
-      <div className={`${ui.aviso} ${ui.avisoOk}`}>
-        🔒 O.S. finalizada em {dataHora(pedido.finalizado_em)}{finalizador ? ` por ${finalizador.nome}` : ''}.
-        Documento bloqueado — somente o Gestor pode reabrir.
+      <>
+        <div className={`${ui.aviso} ${ui.avisoOk}`}>
+          🔒 O.S. finalizada em {dataHora(pedido.finalizado_em)}{finalizador ? ` por ${finalizador.nome}` : ''}.
+          Documento bloqueado — somente o Gestor pode reabrir.
+        </div>
+        {pedido.reabertura_solicitada_em && (
+          <div className={`${ui.aviso} ${ui.avisoAlerta}`}>
+            🔓 <span><strong>Reabertura solicitada</strong> por {solicitante?.nome || 'laboratorista'} em {dataHora(pedido.reabertura_solicitada_em)}
+            {' '}— aguardando o Gestor. Motivo: <strong>{pedido.reabertura_motivo}</strong></span>
+          </div>
+        )}
+      </>
+    )
+  }
+  if (perm.reaberta) {
+    const quem = lab.usuariosPorId[pedido.reaberta_por]
+    return (
+      <div className={`${ui.aviso} ${ui.avisoAlerta}`}>
+        🔓 <span><strong>O.S. reaberta</strong> em {dataHora(pedido.reaberta_em)}{quem ? ` por ${quem.nome}` : ''}.
+        Motivo: <strong>{pedido.reaberta_motivo}</strong>. A finalização anterior foi desconsiderada:
+        corrija o que for preciso (pedido, datas, ensaios) e finalize de novo.</span>
       </div>
     )
   }

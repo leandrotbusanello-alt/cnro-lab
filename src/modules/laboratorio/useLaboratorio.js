@@ -157,6 +157,12 @@ export function useLaboratorio() {
       historico,
       podeExcluir: ehDev,
       podeAlterarNumero: ehDev && !!pedido.sequencial,
+      // Reabertura (migração 30): o laboratorista pede, o Gestor decide; histórico só o DEV
+      reaberta: !!pedido.reaberta_em && posOS,
+      podeEditarReaberta: !!pedido.reaberta_em && posOS && (souResp || ehGestor),
+      podeSolicitarReabertura: pedido.status === 'concluido' && !historico && souResp && !ehGestor && !pedido.reabertura_solicitada_em,
+      podeReabrir: pedido.status === 'concluido' && (historico ? ehDev : ehGestor),
+      reaberturaSolicitada: pedido.status === 'concluido' && !!pedido.reabertura_solicitada_em,
     }
   }, [perfil, ehGestor, ehDev, meuIdPara])
 
@@ -197,6 +203,11 @@ export function useLaboratorio() {
       salvarFichaOS:          embrulhar(repo.salvarFichaOS),
       excluirPedido:          embrulhar(repo.excluirPedido),
       alterarNumeroPE:        embrulhar(repo.alterarNumeroPE),
+      solicitarReabertura:    embrulhar(repo.solicitarReabertura),
+      recusarReabertura:      embrulhar(repo.recusarReabertura),
+      reabrirOS:              embrulhar(repo.reabrirOS),
+      alterarDatasOS:         embrulhar(repo.alterarDatasOS),
+      alterarDatasEnsaio:     embrulhar(repo.alterarDatasEnsaio),
     }
   }, [ctxAcao, carregar])
 

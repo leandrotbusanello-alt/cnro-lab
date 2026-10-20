@@ -13,7 +13,7 @@ import ui from './ui.module.css'
  * Ensaios da O.S.: atribuição de assistente e ficha por ensaio, status,
  * visibilidade para o campo e acesso à revisão.
  */
-export default function EnsaiosOS({ pedido, ensaiosOs, podeGerenciar, ocupado, rodar, onRevisar }) {
+export default function EnsaiosOS({ pedido, ensaiosOs, podeGerenciar, ocupado, rodar, onRevisar, onEditarDatas }) {
   const { usuarios, fichas, modelos, ensaios, ensaiosPorId, usuariosPorId, acoes } = useLab()
   // fichas que já têm modelo online (o assistente só consegue executar essas)
   const fichasOnline = useMemo(() => new Set((modelos || []).filter(m => m.ativo !== false).map(m => m.ficha_ensaio_id)), [modelos])
@@ -207,6 +207,16 @@ export default function EnsaiosOS({ pedido, ensaiosOs, podeGerenciar, ocupado, r
                       onClick={() => onRevisar(eo)}
                     >
                       {eo.status === 'aguardando_revisao' && podeGerenciar ? 'Revisar' : 'Ver resultado'}
+                    </button>
+                  )}
+                  {onEditarDatas && (
+                    <button
+                      className={`${ui.btn} ${ui.btnSecundario} ${ui.btnPequeno}`}
+                      disabled={ocupado}
+                      title="O.S. reaberta: corrigir as datas deste ensaio"
+                      onClick={() => onEditarDatas(eo)}
+                    >
+                      📅 Datas
                     </button>
                   )}
                   {podeRemover && (

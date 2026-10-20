@@ -34,7 +34,7 @@ async function buscarPedidos({ ehDev = false } = {}) {
   // e os pedidos cancelados (para poder excluí-los)
   const filtro =
     `status.in.(aguardando_lab,em_analise,em_andamento,aguardando_revisao,devolvido_campo),` +
-    `finalizado_em.gte.${desde}` + (ehDev ? ',lancamento_historico.is.true,status.eq.cancelado' : '')
+    `finalizado_em.gte.${desde},reabertura_solicitada_em.not.is.null` + (ehDev ? ',lancamento_historico.is.true,status.eq.cancelado' : '')
 
   let r = await supabase.from('pedidos_ensaio').select(SELECT_PEDIDO_COMPLETO)
     .or(filtro).order('created_at', { ascending: true }).limit(1000)
@@ -316,7 +316,8 @@ function passosAssumir(ctx, pedido) {
 export async function salvarEdicao(ctx, pedido, patch, camposAlterados = []) {
   const evento = { acao: 'Pedido editado', campos: camposAlterados }
   return executarSequencia([
-    ...passosAssumir(ctx, pedido),
+    // O.S. reaberta (migração 30): quem edita não assume o pedido (o Gestor pode corrigir a O.S. de outro)
+    ...(pedido.reaberta_em && pedido.numero_os ? [] : passosAssumir(ctx, pedido)),
     {
       op: { tipo: 'update', tabela: 'pedidos_ensaio', id: pedido.id, dados: patch,
             descricao: 'Editar pedido', pedidoId: pedido.id },
@@ -639,6 +640,43 @@ export async function alterarNumeroPE(ctx, pedido, sequencial) {
   const { data, error } = await supabase.rpc('alterar_numero_pe', { p_pedido_id: pedido.id, p_sequencial: sequencial })
   if (error) throw new Error(mensagemErro(error))
   return { resultado: data, offline: false }
+}
+
+// ── Reabrir O.S. finalizada (migração 30 — 20/10/2026) ───────────────────────
+// Operações online e diretas (não entram na fila offline).
+
+async function rpcOnline(nome, args, msgOffline) {
+  if (!navigator.onLine) throw new Error(msgOffline || 'Esta ação só pode ser feita com internet.')
+  const { data, error } = await supabase.rpc(nome, args)
+  if (error) throw new Error(mensagemErro(error))
+  return { resultado: data, offline: false }
+}
+
+/** Laboratorista pede ao Gestor a reabertura da O.S. finalizada (motivo obrigatório). */
+export async function solicitarReabertura(ctx, pedido, motivo) {
+  return rpcOnline('solicitar_reabertura_os', { p_pedido_id: pedido.id, p_motivo: motivo })
+}
+
+/** Gestor recusa o pedido de reabertura (motivo obrigatório). */
+export async function recusarReabertura(ctx, pedido, motivo) {
+  return rpcOnline('recusar_reabertura_os', { p_pedido_id: pedido.id, p_motivo: motivo })
+}
+
+/** Gestor (DEV nos lançamentos históricos) reabre a O.S.; sem motivo, vale o do pedido de reabertura. */
+export async function reabrirOS(ctx, pedido, motivo) {
+  return rpcOnline('reabrir_os', { p_pedido_id: pedido.id, p_motivo: motivo || null })
+}
+
+/** O.S. reaberta: data da solicitação e data da O.S. (o nº da O.S. acompanha a data). */
+export async function alterarDatasOS(ctx, pedido, { dataSolicitacao, dataOS }) {
+  return rpcOnline('alterar_datas_os', { p_pedido_id: pedido.id, p_data_solicitacao: dataSolicitacao, p_data_os: dataOS })
+}
+
+/** O.S. reaberta: datas de um ensaio (atribuição, início, envio, aprovação). */
+export async function alterarDatasEnsaio(ctx, pedido, ensaioOs, { atribuicao, inicio, envio, aprovacao }) {
+  return rpcOnline('alterar_datas_ensaio', {
+    p_ensaio_os_id: ensaioOs.id, p_atribuicao: atribuicao, p_inicio: inicio, p_envio: envio, p_aprovacao: aprovacao,
+  })
 }
 
 // ── Fichas FR-IMOB-05 / FR-IMOB-04 ───────────────────────────────────────────

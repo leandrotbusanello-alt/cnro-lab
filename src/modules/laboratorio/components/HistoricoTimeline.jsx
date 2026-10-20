@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { dataHora } from '../utils'
+import { dataHora, data } from '../utils'
 import styles from './HistoricoTimeline.module.css'
 import ui from './ui.module.css'
 
@@ -46,7 +46,19 @@ function detalhes(ev) {
   const d = []
   if (ev.ensaio) d.push(`Ensaio: ${ev.ensaio}`)
   if (ev.assistente) d.push(`Executor: ${ev.assistente}`)
-  if (ev.numero_os) d.push(`O.S. ${ev.numero_os}`)
+  if (ev.numero_os && typeof ev.numero_os === 'object') d.push(`Nº da O.S.: ${ev.numero_os.de} → ${ev.numero_os.para}`)
+  else if (ev.numero_os) d.push(`O.S. ${ev.numero_os}`)
+  // reabertura e datas (migração 30)
+  const dia = v => (v ? data(v) : '—')
+  for (const [k, rot] of [['data_solicitacao', 'Data da solicitação'], ['data_os', 'Data da O.S.'], ['atribuicao', 'Atribuição'],
+    ['inicio', 'Início'], ['envio', 'Envio'], ['aprovacao', 'Aprovação']]) {
+    if (ev[k] && typeof ev[k] === 'object') d.push(`${rot}: ${dia(ev[k].de)} → ${dia(ev[k].para)}`)
+  }
+  if (ev.pedido_por) d.push(`Pedido por ${ev.pedido_por}`)
+  if (ev.pedido_motivo) d.push(`Pedido: ${ev.pedido_motivo}`)
+  if (ev.finalizacao_desconsiderada?.em) {
+    d.push(`Finalização desconsiderada: ${dataHora(ev.finalizacao_desconsiderada.em)}${ev.finalizacao_desconsiderada.por ? ` · ${ev.finalizacao_desconsiderada.por}` : ''}`)
+  }
   if (ev.auxiliar) d.push(`Auxiliar: ${ev.auxiliar}`)
   if (ev.de && ev.para) d.push(`${ev.de} → ${ev.para}`)
   else if (ev.para) d.push(`Para: ${ev.para}`)

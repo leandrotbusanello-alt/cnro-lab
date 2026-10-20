@@ -13,10 +13,11 @@ import amStyles from './AmostrasView.module.css'
 import ui from './ui.module.css'
 
 /**
- * Edição do pedido pelo laboratorista (antes de gerar a O.S.).
+ * Edição do pedido pelo laboratorista (antes de gerar a O.S. — ou com a O.S. reaberta, migração 30:
+ * aí os ensaios mudam pela lista da O.S., não aqui).
  * Só grava o que mudou. Se nada mudou, apenas fecha (o pedido não é assumido).
  */
-export default function EditarPedido({ pedido, onSalvar, onCancelar, ocupado }) {
+export default function EditarPedido({ pedido, onSalvar, onCancelar, ocupado, comOS = false }) {
   const { empresas, ensaios } = useLab()
   const cadastros = useCadastros()
 
@@ -70,7 +71,7 @@ export default function EditarPedido({ pedido, onSalvar, onCancelar, ocupado }) 
 
   function salvar() {
     setErro(null)
-    if (form.ensaios_ids.length === 0) { setErro('Selecione ao menos um ensaio.'); return }
+    if (!comOS && form.ensaios_ids.length === 0) { setErro('Selecione ao menos um ensaio.'); return }
     if (!form.material) { setErro('Selecione o material.'); return }
     if (subcats.length > 0 && !form.sub_tipo) { setErro('Selecione a subcategoria.'); return }
 
@@ -103,7 +104,9 @@ export default function EditarPedido({ pedido, onSalvar, onCancelar, ocupado }) 
   return (
     <div className={styles.wrapper}>
       <div className={`${ui.aviso} ${ui.avisoInfo}`}>
-        ✏️ Editando o pedido. Ao salvar alguma alteração, você passa a ser o responsável por ele.
+        {comOS
+          ? '✏️ Editando o pedido da O.S. reaberta. Empresa e lote passam também para as fichas FR-IMOB-04/05. Os ensaios são ajustados na lista de ensaios da O.S.'
+          : '✏️ Editando o pedido. Ao salvar alguma alteração, você passa a ser o responsável por ele.'}
       </div>
 
       <section className={ui.secao}>
@@ -151,10 +154,12 @@ export default function EditarPedido({ pedido, onSalvar, onCancelar, ocupado }) 
         </label>
       </section>
 
-      <section className={ui.secao}>
-        <div className={ui.secaoTitulo}>Ensaios solicitados</div>
-        <EnsaiosPicker ensaios={ensaios} selecionados={form.ensaios_ids} onChange={v => set('ensaios_ids', v)} />
-      </section>
+      {!comOS && (
+        <section className={ui.secao}>
+          <div className={ui.secaoTitulo}>Ensaios solicitados</div>
+          <EnsaiosPicker ensaios={ensaios} selecionados={form.ensaios_ids} onChange={v => set('ensaios_ids', v)} />
+        </section>
+      )}
 
       <section className={ui.secao}>
         <div className={ui.secaoTitulo}>Informações gerais</div>
