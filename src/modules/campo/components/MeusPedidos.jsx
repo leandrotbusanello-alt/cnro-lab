@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useCampo } from '../useCampo'
 import { TIPOS_AMOSTRA } from '../constants'
@@ -6,6 +6,8 @@ import styles from './MeusPedidos.module.css'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { formatarPE } from '../../../lib/numeracao'
+import { useResultadosCampo } from '../resultadosCampo'
+import EnsaiosDoPedido from './EnsaiosDoPedido'
 
 const STATUS_LABEL = {
   pendente_sync:        { label: 'Aguardando envio',           cls: 'offline'   },
@@ -31,7 +33,10 @@ function formatarNumeroPE(pedido) {
 }
 
 export default function MeusPedidos({ onCorrigir, onNovoPedido }) {
-  const { pedidos, loading, reenviarPedido } = useCampo()
+  const { pedidos, empresas, loading, reenviarPedido } = useCampo()
+  // resultados liberados pelo laboratório (migração 32)
+  const res = useResultadosCampo(pedidos)
+  const empresasPorId = useMemo(() => Object.fromEntries((empresas || []).map(e => [e.id, e])), [empresas])
   const [reenviadoId, setReenviadoId] = useState(null)
 
   // Vindo de um número do Painel (ex.: "em_andamento,aguardando_revisao")
@@ -68,6 +73,8 @@ export default function MeusPedidos({ onCorrigir, onNovoPedido }) {
         </div>
       )}
 
+      {res.erro && <div className={styles.bannerFiltro}><span>⚠️ Resultados: {res.erro}</span></div>}
+
       <div className={styles.header}>
         <h2 className={styles.title}>Meus Pedidos</h2>
         <button className={styles.btnNovo} onClick={onNovoPedido}>+ Novo Pedido</button>
@@ -100,6 +107,8 @@ export default function MeusPedidos({ onCorrigir, onNovoPedido }) {
               onReenviar={handleReenviar}
               reenviadoId={reenviadoId}
               destaque
+              res={res}
+              empresasPorId={empresasPorId}
             />
           ))}
         </section>
@@ -115,6 +124,8 @@ export default function MeusPedidos({ onCorrigir, onNovoPedido }) {
               onCorrigir={onCorrigir}
               onReenviar={handleReenviar}
               reenviadoId={reenviadoId}
+              res={res}
+              empresasPorId={empresasPorId}
             />
           ))}
         </section>
@@ -123,7 +134,7 @@ export default function MeusPedidos({ onCorrigir, onNovoPedido }) {
   )
 }
 
-function PedidoCard({ pedido, onCorrigir, onReenviar, reenviadoId, destaque }) {
+function PedidoCard({ pedido, onCorrigir, onReenviar, reenviadoId, destaque, res, empresasPorId }) {
   const st   = STATUS_LABEL[pedido.status] || { label: pedido.status, cls: 'pending' }
   const data = pedido.created_at
     ? format(new Date(pedido.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
@@ -163,6 +174,19 @@ function PedidoCard({ pedido, onCorrigir, onReenviar, reenviadoId, destaque }) {
         <div className={styles.motivo}>
           <strong>Motivo:</strong> {pedido.motivo_devolucao}
         </div>
+      )}
+
+      {pedido.numero_os && <div className={styles.osNumero}>O.S. {pedido.numero_os}</div>}
+
+      {res && (
+        <EnsaiosDoPedido
+          pedido={pedido}
+          status={res.porPedido[pedido.id]}
+          liberados={res.liberados}
+          resultados={res.resultados}
+          usuarios={res.usuarios}
+          empresasPorId={empresasPorId}
+        />
       )}
 
       {pedido.status === 'pendente_sync' && (
