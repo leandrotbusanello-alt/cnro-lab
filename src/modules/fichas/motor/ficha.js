@@ -287,6 +287,19 @@ function valorDeEntrada(v) {
 }
 
 /**
+ * Correção da revisão gravada como texto numérico ("28,80"): vale como número.
+ * Acontecia quando a célula calculada mostrava "-" (texto) antes da correção — o campo era tratado
+ * como texto e o gráfico não desenhava o ponto (O.S. 2026.02.10.03.068, FR-IMOB-21, 20/10/2026).
+ */
+export function ajusteNumerico(v) {
+  if (typeof v !== 'string') return v
+  const t = v.trim()
+  if (/^-?\d+(,\d+)?$/.test(t)) return Number(t.replace(',', '.'))
+  if (/^-?\d{1,3}(\.\d{3})+(,\d+)?$/.test(t)) return Number(t.replace(/\./g, '').replace(',', '.'))
+  return v
+}
+
+/**
  * Calcula a ficha. Retorna o motor já recalculado (motor.valores tem tudo).
  *   pedidoCampos: { os, material, registro, procedencia, complemento, … }
  */
@@ -327,7 +340,7 @@ export function calcularFicha(indice, estado, pedidoCampos = {}) {
     for (const [a, v] of Object.entries(ajustes)) {
       if (!(a in formulas)) continue
       delete formulas[a]
-      motor.definir(a, valorDeEntrada(v))
+      motor.definir(a, ajusteNumerico(valorDeEntrada(v)))
     }
   }
   motor.definirFormulas(formulas, { apelidos: indice.apelidos })

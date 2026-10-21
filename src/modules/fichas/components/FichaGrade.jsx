@@ -4,7 +4,7 @@ import { formatar } from '../motor/formatacao.js'
 import CampoCelula from './CampoCelula'
 import Grafico from './Grafico'
 import FotoCelula from './FotoCelula'
-import { CAMPOS_PEDIDO_EDITAVEIS, linhasOcultas, valorOpcao } from '../motor/ficha.js'
+import { CAMPOS_PEDIDO_EDITAVEIS, ajusteNumerico, linhasOcultas, valorOpcao } from '../motor/ficha.js'
 import s from './Ficha.module.css'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -375,8 +375,10 @@ export default function FichaGrade({
           rotulo={`Valor calculado ${a}${ajustado ? ' (alterado manualmente)' : ''}`}
           onConfirmar={novo => {
             if (novo === null || novo === '') { if (ajustado) onAjuste(a, null); return }
-            if (!ajustado && mesmoValor(novo, v)) return
-            onAjuste(a, novo)
+            // célula que mostrava texto ("-") recebendo um número: grava como número (senão o gráfico não lê)
+            const valor = ajusteNumerico(novo)
+            if (!ajustado && mesmoValor(valor, v)) return
+            onAjuste(a, valor)
           }}
         />
       )
