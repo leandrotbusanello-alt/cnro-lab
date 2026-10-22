@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 176 136">
+  <defs>
+    <clipPath id="faixa"><rect x="0" y="53" width="176" height="31"/></clipPath>
+    <clipPath id="foraFaixa"><path d="M0 0H176V53H0ZM0 84H176V136H0Z"/></clipPath>
+    <path id="arcoTopo" d="M83 0A95 95 0 0 0 176 84V53A64 64 0 0 1 113 0Z"/>
+    <path id="arcoTeal" d="M0 53A79 83 0 0 1 79 136H48A48 52 0 0 0 0 84Z"/>
+  </defs>
+  <rect x="0" y="53" width="176" height="31" fill="#356ab1"/>
+  <g clip-path="url(#foraFaixa)">
+    <use href="#arcoTopo" fill="#29509f"/>
+    <use href="#arcoTeal" fill="#0cb2ab"/>
+  </g>
+  <g clip-path="url(#faixa)">
+    <use href="#arcoTopo" fill="#283272"/>
+    <use href="#arcoTeal" fill="#275ba7"/>
+  </g>
+</svg>

@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.novarota.cnrolab",
+      "sha256_cert_fingerprints": [
+        "SUBSTITUIR_PELA_IMPRESSAO_DIGITAL_SHA256_DO_PWABUILDER"
+      ]
+    }
+  }
+]
