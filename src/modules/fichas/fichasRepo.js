@@ -6,18 +6,25 @@ import { cacheGet, cacheGetAll, cachePut, cachePutVarios } from '../../lib/offli
 
 const COLUNAS_LISTA = 'id, ficha_ensaio_id, codigo, versao, titulo, ativo, publicado_em, motor, hash'
 
+// Lista já guardada no aparelho nesta sessão. Se o servidor devolver a mesma lista,
+// não precisa ler e regravar o cache (que guarda o conteúdo completo das fichas).
+let ultimaListaGuardada = null
+
 /** Lista (sem o conteúdo) de todos os modelos. Offline: o que estiver no aparelho. */
 export async function listarModelos() {
   if (navigator.onLine) {
     try {
       const { data, error } = await supabase.from('fichas_modelo').select(COLUNAS_LISTA).order('publicado_em', { ascending: false })
       if (error) throw error
+      const assinatura = JSON.stringify(data || [])
+      if (assinatura === ultimaListaGuardada) return data || []
       // guarda a lista, preservando o conteúdo já baixado
       const locais = Object.fromEntries((await cacheGetAll('fichas_modelo_cache')).map(m => [m.id, m]))
       await cachePutVarios('fichas_modelo_cache', (data || []).map(m => {
         const l = locais[m.id]
         return l && l.hash === m.hash ? { ...l, ...m } : { ...m, modelo: undefined, mapa_resultados: undefined }
       }))
+      ultimaListaGuardada = assinatura
       return data || []
     } catch { /* segue com o cache */ }
   }

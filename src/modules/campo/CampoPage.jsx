@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import MeusPedidos from './components/MeusPedidos'
 import NovoPedidoForm from './components/NovoPedidoForm'
-import styles from './CampoPage.module.css'
 
 export default function CampoPage() {
   const [view, setView] = useState('lista') // 'lista' | 'novo' | 'corrigir'

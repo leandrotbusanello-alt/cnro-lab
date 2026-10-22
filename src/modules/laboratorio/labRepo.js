@@ -1,7 +1,7 @@
 import { supabase } from '../../lib/supabase'
 import { recortarAssinatura } from '../../lib/assinatura'
 import {
-  cacheSubstituir, cacheGetAll, cacheGet, cachePut, cacheDelete,
+  cacheSubstituirSeMudou, cacheGetAll, cacheGet, cachePut, cacheDelete,
   getPedidosPendentes, arquivoObter, arquivoSalvar, idMapTodos,
 } from '../../lib/offlineDB'
 import {
@@ -47,15 +47,54 @@ async function buscarPedidos({ ehDev = false } = {}) {
   return r.data || []
 }
 
-async function buscarEnsaiosOs(pedidoIds) {
-  const ids = pedidoIds.filter(id => !ehIdTemp(id))
+const LOTE_IDS = 150
+
+/** Divide a lista em lotes (o filtro `in` vai na URL, que tem limite de tamanho) */
+function emLotes(lista, tamanho = LOTE_IDS) {
+  const lotes = []
+  for (let i = 0; i < lista.length; i += tamanho) lotes.push(lista.slice(i, i + tamanho))
+  return lotes
+}
+
+/** Busca em lotes, em paralelo, juntando as linhas na ordem */
+async function buscarEmLotes(ids, consultar) {
+  const respostas = await Promise.all(emLotes(ids).map(consultar))
   const saida = []
-  for (let i = 0; i < ids.length; i += 150) {
-    const { data, error } = await supabase.from('ensaios_os').select('*').in('pedido_id', ids.slice(i, i + 150))
+  for (const { data, error } of respostas) {
     if (error) throw error
     saida.push(...(data || []))
   }
   return saida
+}
+
+// Últimos ensaios_os recebidos do servidor (id → linha). Nas atualizações automáticas
+// (tempo real, foco, intervalo) só as linhas com updated_at diferente são baixadas de
+// novo — o dados_resultado (conteúdo das fichas) é a parte pesada e quase nunca muda.
+// O banco atualiza ensaios_os.updated_at em todo UPDATE (tg_ensaio_os_guard).
+let ensaiosOsAnteriores = new Map()
+
+async function buscarEnsaiosOs(pedidoIds, { incremental = false } = {}) {
+  const ids = pedidoIds.filter(id => !ehIdTemp(id))
+  let linhas
+
+  if (incremental && ensaiosOsAnteriores.size > 0) {
+    const versoes = await buscarEmLotes(ids, lote =>
+      supabase.from('ensaios_os').select('id, updated_at').in('pedido_id', lote))
+    const mudaram = versoes
+      .filter(v => ensaiosOsAnteriores.get(v.id)?.updated_at !== v.updated_at)
+      .map(v => v.id)
+    const novas = new Map((await buscarEmLotes(mudaram, lote =>
+      supabase.from('ensaios_os').select('*').in('id', lote))).map(r => [r.id, r]))
+    linhas = versoes
+      .map(v => novas.get(v.id) || ensaiosOsAnteriores.get(v.id))
+      .filter(Boolean)
+  } else {
+    linhas = await buscarEmLotes(ids, lote =>
+      supabase.from('ensaios_os').select('*').in('pedido_id', lote))
+  }
+
+  ensaiosOsAnteriores = new Map(linhas.map(r => [r.id, r]))
+  return linhas
 }
 
 /** Pedidos criados offline pelo Campo neste aparelho (ainda não enviados) */
@@ -76,7 +115,7 @@ async function pedidosCampoOffline() {
  * Lançamentos históricos só aparecem para o DEV (os demais não os veem nas filas).
  * @returns {{pedidos, ensaiosOs, usuarios, ensaios, empresas, fichas, fonte}}
  */
-export async function carregarDados({ ehDev = false } = {}) {
+export async function carregarDados({ ehDev = false, incremental = false } = {}) {
   let dados
   let fonte = 'servidor'
 
@@ -94,28 +133,30 @@ export async function carregarDados({ ehDev = false } = {}) {
           .then(r => { if (r.error) throw r.error; return r.data || [] }),
       ])
       const pedidos = ehDev ? pedidosTodos : pedidosTodos.filter(p => !ehHistorico(p))
-      const ensaiosOs = await buscarEnsaiosOs(pedidos.map(p => p.id))
+      const [ensaiosOs, fila, mapaIds, pedidosLocais, ensaiosOsLocais] = await Promise.all([
+        buscarEnsaiosOs(pedidos.map(p => p.id), { incremental }),
+        listarFila(), idMapTodos(), cacheGetAll('pedidos_cache'), cacheGetAll('ensaios_os_cache'),
+      ])
       // fichas online a revisar: baixa os modelos para revisar também sem internet
       prepararModelos(ensaiosOs.filter(e => e.ficha_modelo_id && e.status === 'aguardando_revisao').map(e => e.ficha_modelo_id))
 
       // Pedidos com operações ainda na fila (ex.: erro de sincronização)
       // continuam exibindo a versão local, para não "sumir" o trabalho feito.
-      const pendentes = new Set((await listarFila()).map(o => o.pedidoId))
-      const mapaIds = await idMapTodos()
+      const pendentes = new Set(fila.map(o => o.pedidoId))
       // registro local provisório já sincronizado → mostra só a versão do servidor
       const jaSincronizado = r => ehIdTemp(r.id) && mapaIds[r.id]
       const pedidosFinais = mesclarLocais(pedidos,
-        (await cacheGetAll('pedidos_cache')).filter(p => p._alteradoOffline && pendentes.has(p.id) && !jaSincronizado(p)))
+        pedidosLocais.filter(p => p._alteradoOffline && pendentes.has(p.id) && !jaSincronizado(p)))
       const ensaiosOsFinais = mesclarLocais(ensaiosOs,
-        (await cacheGetAll('ensaios_os_cache')).filter(e => e._alteradoOffline && pendentes.has(e.pedido_id) && !jaSincronizado(e)))
+        ensaiosOsLocais.filter(e => e._alteradoOffline && pendentes.has(e.pedido_id) && !jaSincronizado(e)))
 
       await Promise.all([
-        cacheSubstituir('pedidos_cache', pedidosFinais),
-        cacheSubstituir('ensaios_os_cache', ensaiosOsFinais),
-        cacheSubstituir('usuarios_cache', usuarios),
-        cacheSubstituir('ensaios_cache', ensaios),
-        cacheSubstituir('empresas_cache', empresas),
-        cacheSubstituir('fichas_ensaio_cache', fichas),
+        cacheSubstituirSeMudou('pedidos_cache', pedidosFinais),
+        cacheSubstituirSeMudou('ensaios_os_cache', ensaiosOsFinais),
+        cacheSubstituirSeMudou('usuarios_cache', usuarios),
+        cacheSubstituirSeMudou('ensaios_cache', ensaios),
+        cacheSubstituirSeMudou('empresas_cache', empresas),
+        cacheSubstituirSeMudou('fichas_ensaio_cache', fichas),
       ])
       dados = { pedidos: pedidosFinais, ensaiosOs: ensaiosOsFinais, usuarios, ensaios, empresas, fichas }
     } catch (e) {
@@ -134,13 +175,14 @@ export async function carregarDados({ ehDev = false } = {}) {
     dados = { pedidos: ehDev ? pedidos : pedidos.filter(p => !ehHistorico(p)), ensaiosOs, usuarios, ensaios, empresas, fichas }
   }
 
-  // Pedidos do Campo criados offline neste aparelho
-  const offline = await pedidosCampoOffline()
+  // Pedidos do Campo criados offline neste aparelho +
+  // modelos das fichas online (lista, sem o conteúdo): indicam quais fichas já estão no sistema
+  const [offline, modelos] = await Promise.all([
+    pedidosCampoOffline(),
+    listarModelos().catch(() => []),
+  ])
   const ids = new Set(dados.pedidos.map(p => p.id))
   dados.pedidos = [...dados.pedidos, ...offline.filter(p => !ids.has(p.id))]
-
-  // Modelos das fichas online (lista, sem o conteúdo): indicam quais fichas já estão no sistema
-  const modelos = await listarModelos().catch(() => [])
 
   return { ...dados, modelos, fonte }
 }

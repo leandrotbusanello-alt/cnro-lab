@@ -47,4 +47,18 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        // Bibliotecas em arquivos próprios: mudam pouco, então o navegador/PWA
+        // reaproveita do cache quando só o código do sistema é atualizado.
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined
+          if (id.includes('@supabase') || id.includes('iceberg-js')) return 'supabase'
+          if (/node_modules\/(react|react-dom|scheduler|react-router|react-router-dom|@remix-run)\//.test(id)) return 'react'
+          return 'vendor'
+        },
+      },
+    },
+  },
 })

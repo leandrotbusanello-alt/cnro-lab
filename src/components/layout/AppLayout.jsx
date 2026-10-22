@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import { useOnlineSync } from '../../hooks/useOnlineSync'
@@ -72,7 +73,10 @@ export default function AppLayout() {
 
       {/* Content */}
       <main className={styles.content}>
-        <Outlet />
+        {/* módulo ainda sendo baixado: a barra de navegação continua na tela */}
+        <Suspense fallback={<div className={styles.carregandoModulo}><div className="spinner" /></div>}>
+          <Outlet />
+        </Suspense>
       </main>
 
       {/* Mobile bottom nav */}

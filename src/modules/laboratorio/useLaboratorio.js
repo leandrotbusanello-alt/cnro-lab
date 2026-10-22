@@ -40,7 +40,8 @@ export function useLaboratorio() {
     carregandoRef.current = true
     if (!silencioso) setLoading(true)
     try {
-      const r = await repo.carregarDados({ ehDev })
+      // Atualização automática (silenciosa): baixa de novo só os ensaios que mudaram
+      const r = await repo.carregarDados({ ehDev, incremental: silencioso })
       setDados({
         pedidos: r.pedidos, ensaiosOs: r.ensaiosOs, usuarios: r.usuarios,
         ensaios: r.ensaios, empresas: r.empresas, fichas: r.fichas, modelos: r.modelos || [],
@@ -133,9 +134,9 @@ export function useLaboratorio() {
   /** Quem assina como laboratorista neste pedido (histórico: o laboratorista do pedido) */
   const laboratoristaDe = useCallback((pedido) => (
     ehHistorico(pedido)
-      ? porId(dados.usuarios)[pedido.laboratorista_id]
-      : (porId(dados.usuarios)[perfil?.id] || perfil)
-  ), [dados.usuarios, perfil])
+      ? indices.usuariosPorId[pedido.laboratorista_id]
+      : (indices.usuariosPorId[perfil?.id] || perfil)
+  ), [indices.usuariosPorId, perfil])
 
   // ── Regras de permissão (espelham as regras do banco) ────────────────────
   const permissoes = useCallback((pedido) => {
