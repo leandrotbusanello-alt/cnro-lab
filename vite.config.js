@@ -30,6 +30,9 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // Arquivos de verificação (ex.: assetlinks.json do app Android) vêm sempre do
+        // servidor — sem isso o app instalado no navegador abre a tela "não encontrada"
+        navigateFallbackDenylist: [/^\/\.well-known\//],
         runtimeCaching: [
           {
             urlPattern: ({ url }) =>
