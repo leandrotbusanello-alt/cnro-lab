@@ -21,42 +21,48 @@ export function useCampo() {
   const carregar = useCallback(async () => {
     setLoading(true)
     try {
-      if (navigator.onLine) {
-        // Empresas (incluindo lote para preenchimento automático)
-        // (seção 14, item 1) a tabela tem nome/lote/rodovia — não há nome_fantasia/cnpj
-        const { data: emp } = await supabase
-          .from('empresas')
-          .select('*')
-          .order('nome')
-        if (emp) {
+      let online = navigator.onLine
+      if (online) {
+        try {
+          const ok = r => { if (r.error) throw r.error; return r.data || [] }
+          // Consultas independentes: em paralelo (antes uma esperava a outra)
+          const [emp, ens, us, peds, pendentesTodos] = await Promise.all([
+            // Empresas (incluindo lote para preenchimento automático)
+            // (seção 14, item 1) a tabela tem nome/lote/rodovia — não há nome_fantasia/cnpj
+            supabase.from('empresas').select('*').order('nome').then(ok),
+            // Ensaios disponíveis
+            supabase.from('ensaios').select('*').order('nome').then(ok),
+            // Usuários (DEV: escolher solicitante e laboratorista do lançamento histórico)
+            ehDev(perfil)
+              ? supabase.from('usuarios').select('id, nome, cargo, perfil, status, modulos_acesso').order('nome').then(ok)
+              : Promise.resolve([]),
+            // Pedidos do usuário atual (lançamentos históricos não aparecem aqui)
+            supabase.from('pedidos_ensaio')
+              .select('*')   // (item 2) empresa = texto preenchido pelo banco a partir de empresa_id
+              .eq('solicitante_id', perfil?.id)
+              .eq('lancamento_historico', false)
+              .order('created_at', { ascending: false })
+              .limit(50)
+              .then(ok),
+            getPedidosPendentes(),
+          ])
           const ativas = emp.filter(e => e.ativo !== false)
           setEmpresas(ativas)
-          await cacheEmpresas(ativas)
+          setEnsaios(ens)
+          setUsuarios(us)
+          // pedidos ainda guardados no aparelho continuam visíveis até sincronizar
+          const idsServidor = new Set(peds.map(x => x.id))
+          const pendentes = pendentesTodos.filter(p => !idsServidor.has(p.id))
+          setPedidos([...pendentes.map(p => ({ ...p, status: 'pendente_sync' })), ...peds])
+          setError(null)
+          await Promise.all([cacheEmpresas(ativas), cacheEnsaios(ens)]).catch(() => {})
+        } catch (e) {
+          // Conexão caiu no meio (ou o servidor falhou): usa o que está no aparelho
+          setError(e?.message || 'Erro ao carregar dados.')
+          online = false
         }
-
-        // Ensaios disponíveis
-        const { data: ens } = await supabase.from('ensaios').select('*').order('nome')
-        if (ens) { setEnsaios(ens); await cacheEnsaios(ens) }
-
-        // Usuários (DEV: escolher solicitante e laboratorista do lançamento histórico)
-        if (ehDev(perfil)) {
-          const { data: us } = await supabase.from('usuarios')
-            .select('id, nome, cargo, perfil, status, modulos_acesso').order('nome')
-          setUsuarios(us || [])
-        }
-
-        // Pedidos do usuário atual (lançamentos históricos não aparecem aqui)
-        const { data: peds } = await supabase
-          .from('pedidos_ensaio')
-          .select('*')   // (item 2) empresa = texto preenchido pelo banco a partir de empresa_id
-          .eq('solicitante_id', perfil?.id)
-          .eq('lancamento_historico', false)
-          .order('created_at', { ascending: false })
-          .limit(50)
-        // pedidos ainda guardados no aparelho continuam visíveis até sincronizar
-        const pendentes = (await getPedidosPendentes()).filter(p => !(peds || []).some(x => x.id === p.id))
-        setPedidos([...pendentes.map(p => ({ ...p, status: 'pendente_sync' })), ...(peds || [])])
-      } else {
+      }
+      if (!online) {
         // Offline fallback
         const [empCache, ensCache, pendentes] = await Promise.all([
           getEmpresasCache(),

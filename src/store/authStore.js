@@ -6,6 +6,9 @@ import { MODULOS_PADRAO, modulosDoUsuario } from '../lib/modulos'
 
 const INTERVALO_VERIFICACAO_MS = 60_000
 
+/** Busca de perfil em andamento ({ authId, promessa }) */
+let cargaEmAndamento = null
+
 // Módulos liberados: mesma regra do banco (public.modulos_do_usuario) — ver lib/modulos.js.
 // Mantido por compatibilidade com quem importava daqui.
 export const MODULOS_POR_PERFIL = MODULOS_PADRAO
@@ -55,29 +58,31 @@ export const useAuthStore = create((set, get) => ({
     if (get()._iniciado) return
     set({ _iniciado: true })
 
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user) {
-        await get().carregarPerfil(session.user.id).catch(() => {})
-      } else {
-        set({ carregando: false })
-      }
-    } catch {
-      set({ carregando: false })
-    }
-
-    supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
-        await get().carregarPerfil(session.user.id).catch(() => {})
-      } else {
-        set({ perfil: null, carregando: false })
-      }
+    // O Supabase emite INITIAL_SESSION logo ao registrar o ouvinte (com ou sem sessão):
+    // é a carga inicial — não precisa de getSession() antes (carregava o perfil duas vezes).
+    supabase.auth.onAuthStateChange((evento, session) => {
+      // Recomendação do Supabase: não aguardar outras chamadas dentro deste callback
+      // (pode travar o cliente de autenticação). Executa logo depois.
+      setTimeout(() => get()._aoMudarSessao(evento, session), 0)
     })
 
     // Usuário inativado pelo Gestor perde o acesso sem precisar sair e entrar
     setInterval(() => { get().verificarAcesso() }, INTERVALO_VERIFICACAO_MS)
     window.addEventListener('focus', () => { get().verificarAcesso() })
     window.addEventListener('online', () => { get().verificarAcesso() })
+  },
+
+  _aoMudarSessao(evento, session) {
+    const authId = session?.user?.id
+    if (!authId) {
+      set({ perfil: null, carregando: false })
+      return
+    }
+    // Renovação do token e o SIGNED_IN que o Supabase repete ao voltar para a aba:
+    // o perfil já está carregado (mudanças feitas pelo Gestor chegam por verificarAcesso).
+    const atual = get().perfil
+    if (atual && (atual.auth_id === authId || atual.id === authId) && evento !== 'USER_UPDATED') return
+    get().carregarPerfil(authId).catch(() => set({ carregando: false }))
   },
 
   /** Confere no banco se o usuário logado continua ativo (e se precisa trocar a senha). */
@@ -137,7 +142,17 @@ export const useAuthStore = create((set, get) => ({
    * O vínculo com o Supabase Auth é `usuarios.auth_id` (aceita também `usuarios.id`).
    * Lança erro com mensagem amigável se o perfil não existir ou estiver inativo.
    */
-  async carregarPerfil(authId) {
+  carregarPerfil(authId) {
+    // Chamadas simultâneas (login + evento SIGNED_IN) compartilham a mesma busca
+    if (cargaEmAndamento?.authId === authId) return cargaEmAndamento.promessa
+    const promessa = get()._buscarPerfil(authId).finally(() => {
+      if (cargaEmAndamento?.promessa === promessa) cargaEmAndamento = null
+    })
+    cargaEmAndamento = { authId, promessa }
+    return promessa
+  },
+
+  async _buscarPerfil(authId) {
     try {
       const { data, error } = await supabase
         .from('usuarios')
@@ -155,8 +170,14 @@ export const useAuthStore = create((set, get) => ({
         throw new Error('Usuário inativo. Procure o Gestor.')
       }
 
-      const perfil = completarPerfil(registro)
-      await cachePerfil(perfil).catch(() => {})
+      let perfil = completarPerfil(registro)
+      // Mesmo conteúdo → mantém o mesmo objeto, para as telas não recarregarem tudo à toa
+      const atual = get().perfil
+      if (atual && JSON.stringify(atual) === JSON.stringify(perfil)) {
+        perfil = atual
+      } else {
+        await cachePerfil(perfil).catch(() => {})
+      }
       set({ perfil, carregando: false })
       return perfil
     } catch (e) {

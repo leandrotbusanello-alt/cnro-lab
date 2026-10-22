@@ -1,6 +1,6 @@
 import { supabase } from '../../lib/supabase'
 import {
-  cacheSubstituir, cacheGetAll, cacheGet, cachePut, cacheDelete, idMapTodos,
+  cacheSubstituirSeMudou, cacheGetAll, cacheGet, cachePut, cacheDelete, idMapTodos,
 } from '../../lib/offlineDB'
 import {
   enfileirar, enfileirarUnico, executarOperacao, processarFila, filaVazia, listarFila,
@@ -22,6 +22,17 @@ import { ehDev, ehHistorico } from '../../lib/historico'
 const COLUNAS_USUARIOS = '*'
 
 async function buscarServidor(perfil) {
+  // Catálogos não dependem da fila: começam a baixar junto com ela
+  const catalogos = Promise.all([
+    supabase.from('usuarios').select(COLUNAS_USUARIOS).order('nome').then(r => { if (r.error) throw r.error; return r.data || [] }),
+    supabase.from('ensaios').select('*').order('nome').then(r => { if (r.error) throw r.error; return r.data || [] }),
+    supabase.from('empresas').select('*').order('nome').then(r => { if (r.error) throw r.error; return r.data || [] }),
+    supabase.from('fichas_ensaio').select('id, codigo, nome, ensaio_id, versao, ativa').order('codigo')
+      .then(r => { if (r.error) throw r.error; return r.data || [] }),
+    listarModelos(),
+  ])
+  catalogos.catch(() => {})   // o erro é tratado no await abaixo
+
   // executor ou auxiliar (migração 19: o auxiliar só consulta)
   const { data: meus, error } = await supabase.from('ensaios_os').select('*')
     .or(`assistente_id.eq.${perfil.id},auxiliares_ids.cs.{${perfil.id}}`).in('status', STATUS_NA_FILA)
@@ -46,27 +57,28 @@ async function buscarServidor(perfil) {
   }
 
   const idsPedidos = [...new Set(ensaiosOs.map(e => e.pedido_id))].filter(id => !ehIdTemp(id))
-  const pedidos = []
-  for (let i = 0; i < idsPedidos.length; i += 150) {
-    const { data, error: e2 } = await supabase.from('pedidos_ensaio').select('*').in('id', idsPedidos.slice(i, i + 150))
-    if (e2) throw e2
-    pedidos.push(...(data || []))
-  }
+  const pedidos = await buscarPedidosPorId(idsPedidos)
   // Demais usuários não veem lançamentos históricos (são feitos só pelo DEV)
   if (!dev) {
     const historicos = new Set(pedidos.filter(ehHistorico).map(p => p.id))
     ensaiosOs = ensaiosOs.filter(e => !historicos.has(e.pedido_id))
   }
 
-  const [usuarios, ensaios, empresas, fichas, modelos] = await Promise.all([
-    supabase.from('usuarios').select(COLUNAS_USUARIOS).order('nome').then(r => { if (r.error) throw r.error; return r.data || [] }),
-    supabase.from('ensaios').select('*').order('nome').then(r => { if (r.error) throw r.error; return r.data || [] }),
-    supabase.from('empresas').select('*').order('nome').then(r => { if (r.error) throw r.error; return r.data || [] }),
-    supabase.from('fichas_ensaio').select('id, codigo, nome, ensaio_id, versao, ativa').order('codigo')
-      .then(r => { if (r.error) throw r.error; return r.data || [] }),
-    listarModelos(),
-  ])
+  const [usuarios, ensaios, empresas, fichas, modelos] = await catalogos
   return { ensaiosOs, pedidos, usuarios, ensaios, empresas, fichas, modelos }
+}
+
+/** Pedidos pelos IDs, em lotes de 150 (limite da URL) buscados em paralelo */
+async function buscarPedidosPorId(ids) {
+  const lotes = []
+  for (let i = 0; i < ids.length; i += 150) lotes.push(ids.slice(i, i + 150))
+  const respostas = await Promise.all(lotes.map(lote => supabase.from('pedidos_ensaio').select('*').in('id', lote)))
+  const pedidos = []
+  for (const { data, error } of respostas) {
+    if (error) throw error
+    pedidos.push(...(data || []))
+  }
+  return pedidos
 }
 
 /** Mantém a versão local de registros com alterações ainda não sincronizadas */
@@ -88,20 +100,21 @@ export async function carregarDados(perfil) {
 
   if (navigator.onLine) {
     try {
-      const s = await buscarServidor(perfil)
-      const pendentes = new Set((await listarFila()).map(o => o.pedidoId))
-      const mapaIds = await idMapTodos()
+      const [s, fila, mapaIds, locais] = await Promise.all([
+        buscarServidor(perfil), listarFila(), idMapTodos(), cacheGetAll('assist_ensaios_cache'),
+      ])
+      const pendentes = new Set(fila.map(o => o.pedidoId))
       const jaSincronizado = r => ehIdTemp(r.id) && mapaIds[r.id]
-      const locaisEo = (await cacheGetAll('assist_ensaios_cache'))
+      const locaisEo = locais
         .filter(e => e._alteradoOffline && pendentes.has(e.pedido_id) && !jaSincronizado(e))
       const ensaiosOs = mesclarLocais(s.ensaiosOs, locaisEo)
       await Promise.all([
-        cacheSubstituir('assist_ensaios_cache', ensaiosOs),
-        cacheSubstituir('assist_pedidos_cache', s.pedidos),
-        cacheSubstituir('usuarios_cache', s.usuarios),
-        cacheSubstituir('ensaios_cache', s.ensaios),
-        cacheSubstituir('empresas_cache', s.empresas),
-        cacheSubstituir('fichas_ensaio_cache', s.fichas),
+        cacheSubstituirSeMudou('assist_ensaios_cache', ensaiosOs),
+        cacheSubstituirSeMudou('assist_pedidos_cache', s.pedidos),
+        cacheSubstituirSeMudou('usuarios_cache', s.usuarios),
+        cacheSubstituirSeMudou('ensaios_cache', s.ensaios),
+        cacheSubstituirSeMudou('empresas_cache', s.empresas),
+        cacheSubstituirSeMudou('fichas_ensaio_cache', s.fichas),
       ])
       dados = { ...s, ensaiosOs }
       // baixa os modelos das fichas da fila para poder trabalhar offline depois
@@ -198,12 +211,7 @@ export async function buscarEnviados(perfil) {
   if (error) throw error
 
   const idsPedidos = [...new Set((ensaiosOs || []).map(e => e.pedido_id))]
-  const pedidos = []
-  for (let i = 0; i < idsPedidos.length; i += 150) {
-    const { data, error: e2 } = await supabase.from('pedidos_ensaio').select('*').in('id', idsPedidos.slice(i, i + 150))
-    if (e2) throw e2
-    pedidos.push(...(data || []))
-  }
+  const pedidos = await buscarPedidosPorId(idsPedidos)
   // Lançamentos históricos feitos em nome do assistente só aparecem para o DEV (migração 14)
   const historicos = new Set(pedidos.filter(ehHistorico).map(p => p.id))
   const visiveis = ehDev(perfil) ? (ensaiosOs || []) : (ensaiosOs || []).filter(e => !historicos.has(e.pedido_id))

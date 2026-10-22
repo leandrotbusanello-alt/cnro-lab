@@ -1,5 +1,6 @@
-import { lazy, Suspense } from 'react'
+import { Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
+import { lazyComRecarga as lazy } from '../../lib/lazyComRecarga'
 import { LabContext, useLaboratorio } from './useLaboratorio'
 import FilaView from './components/FilaView'
 import PedidoDetalhe from './components/PedidoDetalhe'

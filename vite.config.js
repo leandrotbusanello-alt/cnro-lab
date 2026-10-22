@@ -9,16 +9,23 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
+        // id/scope/start_url fixos: o APK (TWA) é ligado a eles — não mudar depois de gerar o APK
+        id: '/',
+        scope: '/',
+        start_url: '/',
         name: 'CNRO Lab Control',
         short_name: 'CNRO Lab',
         description: 'Sistema de Gestão de Ensaios Laboratoriais',
+        lang: 'pt-BR',
         theme_color: '#1e3a5f',
-        background_color: '#f3f4f6',
+        background_color: '#ffffff',
         display: 'standalone',
-        orientation: 'portrait-primary',
+        // 'any': fichas e tabelas largas podem ser usadas com o celular/tablet deitado
+        orientation: 'any',
         icons: [
-          { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+          { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {
@@ -47,4 +54,18 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        // Bibliotecas em arquivos próprios: mudam pouco, então o navegador/PWA
+        // reaproveita do cache quando só o código do sistema é atualizado.
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined
+          if (id.includes('@supabase') || id.includes('iceberg-js')) return 'supabase'
+          if (/node_modules\/(react|react-dom|scheduler|react-router|react-router-dom|@remix-run)\//.test(id)) return 'react'
+          return 'vendor'
+        },
+      },
+    },
+  },
 })

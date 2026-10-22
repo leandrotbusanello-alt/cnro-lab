@@ -17,8 +17,23 @@ import { openDB } from 'idb'
 const DB_NAME = 'cnro_lab'
 const DB_VERSION = 4
 
+// Uma única conexão por aba, reaproveitada por todas as leituras/escritas.
+// (Antes cada chamada abria uma conexão nova e nunca fechava.)
+let conexao = null
+
 function getDB() {
+  if (!conexao) {
+    conexao = abrirDB().catch(e => { conexao = null; throw e })
+  }
+  return conexao
+}
+
+function abrirDB() {
   return openDB(DB_NAME, DB_VERSION, {
+    // Outra aba abriu uma versão nova do banco: fecha esta conexão para não travar a atualização
+    blocking() { conexao?.then(db => db.close()).catch(() => {}); conexao = null },
+    // Navegador encerrou a conexão (ex.: limpeza de armazenamento): reabre na próxima chamada
+    terminated() { conexao = null },
     upgrade(db) {
       // ── v1 ──
       if (!db.objectStoreNames.contains('pedidos_pendentes')) {
@@ -81,6 +96,11 @@ function getDB() {
   })
 }
 
+// Último conteúdo gravado por cacheSubstituirSeMudou em cada store (nesta aba).
+// Qualquer outra escrita no store apaga a lembrança, para nunca pular uma regravação necessária.
+const ultimoSubstituido = new Map()
+const alterou = store => ultimoSubstituido.delete(store)
+
 // ── Pedidos pendentes (Módulo Campo) ─────────────────────────────────────────
 
 export async function salvarPedidoOffline(pedido) {
@@ -101,6 +121,7 @@ export async function marcarPedidoSincronizado(id) {
 // ── Caches do Campo ──────────────────────────────────────────────────────────
 
 export async function cacheEnsaios(ensaios) {
+  alterou('ensaios_cache')
   const db = await getDB()
   const tx = db.transaction('ensaios_cache', 'readwrite')
   await Promise.all(ensaios.map(e => tx.store.put(e)))
@@ -113,6 +134,7 @@ export async function getEnsaiosCache() {
 }
 
 export async function cacheEmpresas(empresas) {
+  alterou('empresas_cache')
   const db = await getDB()
   const tx = db.transaction('empresas_cache', 'readwrite')
   await Promise.all(empresas.map(e => tx.store.put(e)))
@@ -141,6 +163,7 @@ export async function getPerfilCache(userId) {
 
 /** Substitui todo o conteúdo de um store pelos registros informados. */
 export async function cacheSubstituir(store, registros) {
+  alterou(store)
   const db = await getDB()
   const tx = db.transaction(store, 'readwrite')
   await tx.store.clear()
@@ -148,8 +171,20 @@ export async function cacheSubstituir(store, registros) {
   await tx.done
 }
 
+/**
+ * Igual a cacheSubstituir, mas não regrava se o conteúdo é o mesmo da última vez
+ * (as atualizações automáticas das telas recarregam tudo, quase sempre sem mudança).
+ */
+export async function cacheSubstituirSeMudou(store, registros) {
+  const assinatura = JSON.stringify(registros || [])
+  if (ultimoSubstituido.get(store) === assinatura) return
+  await cacheSubstituir(store, registros)
+  ultimoSubstituido.set(store, assinatura)
+}
+
 /** Insere/atualiza registros sem apagar os demais. */
 export async function cachePutVarios(store, registros) {
+  alterou(store)
   const db = await getDB()
   const tx = db.transaction(store, 'readwrite')
   await Promise.all((registros || []).map(r => tx.store.put(r)))
@@ -157,6 +192,7 @@ export async function cachePutVarios(store, registros) {
 }
 
 export async function cachePut(store, registro) {
+  alterou(store)
   const db = await getDB()
   await db.put(store, registro)
 }
@@ -172,6 +208,7 @@ export async function cacheGetAll(store) {
 }
 
 export async function cacheDelete(store, id) {
+  alterou(store)
   const db = await getDB()
   await db.delete(store, id)
 }
