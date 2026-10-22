@@ -21,18 +21,20 @@ Só é preciso gerar um APK novo se mudar o **domínio**, o **nome do pacote** o
    o menu deve mostrar "Instalar app". Isso confirma que está tudo certo.
 2. **Gerar o APK** em https://www.pwabuilder.com:
    - colar o endereço `https://<seu-projeto>.vercel.app` → *Start* → *Package for stores* → **Android**;
+   - usar a aba **Google Play** (a aba "Other Android" gera o APK **sem assinatura**, que não instala);
    - em *Options*:
-     - **Package ID:** `com.novarota.cnrolab` (precisa ser igual ao do `assetlinks.json`);
+     - **Package ID:** `app.vercel.cnro_lab.twa` (precisa ser igual ao do `assetlinks.json`);
      - **App name:** `CNRO Lab Control`, **Short name:** `CNRO Lab`;
-     - **Signing key:** *Create new*. Preencha nome, organização e senhas e **anote as senhas**;
+     - **Signing key:** *New*. Preencha nome e organização; as senhas vêm no `signing-key-info.txt`;
    - *Download*. Vem um `.zip` com o `.apk`, o `.aab`, a chave (`signing.keystore`) e o
      arquivo `signing-key-info.txt`.
 3. **Guardar a chave e as senhas em lugar seguro** (Drive da empresa, cofre de senhas).
    Sem elas não é possível atualizar o app: os celulares recusam um APK assinado com outra chave.
-4. **Ligar o app ao site:** o `.zip` traz um `assetlinks.json` pronto, com a impressão digital
-   **SHA-256**. Copie o valor `sha256_cert_fingerprints` para `public/.well-known/assetlinks.json`
-   (no lugar de `SUBSTITUIR_PELA_IMPRESSAO_DIGITAL_SHA256_DO_PWABUILDER`) e publique de novo.
-   Confira em `https://<seu-projeto>.vercel.app/.well-known/assetlinks.json`.
+4. **Ligar o app ao site:** ✅ feito em 22/10/2026. O `public/.well-known/assetlinks.json` já tem o
+   pacote `app.vercel.cnro_lab.twa` e a impressão digital SHA-256 da chave gerada nesse dia.
+   Se um dia a chave for trocada, copie o `sha256_cert_fingerprints` do `assetlinks.json` que vem
+   no `.zip` do PWABuilder para esse arquivo e publique de novo.
+   Confira em `https://cnro-lab.vercel.app/.well-known/assetlinks.json`.
 5. **Instalar nos celulares:** envie o `.apk` (WhatsApp, Drive, e-mail). No celular, abra o arquivo
    e permita "Instalar apps desconhecidos" para o app usado (Arquivos, Chrome ou WhatsApp).
    O Google Play Protect pode avisar que o app é desconhecido: toque em "Instalar assim mesmo".
