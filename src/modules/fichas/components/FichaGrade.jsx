@@ -150,7 +150,7 @@ function Trechos({ rt }) {
  * ocupa o espaço livre ACIMA do texto da célula (a linha "____" e o "Responsável …"), nunca por cima dele,
  * com altura padrão e largura limitada à célula. O texto é medido pela fonte da própria célula.
  */
-function MarcaAssinatura({ assinatura, texto, altura, fontePt, alinhamentoV }) {
+function MarcaAssinatura({ assinatura, texto, altura, fontePt, alinhamentoV, espacoAcima = 0 }) {
   if (!assinatura) return null
   const h = altura || 80
   const linhas = String(texto || '').split('\n').filter(l => l.trim())
@@ -161,8 +161,9 @@ function MarcaAssinatura({ assinatura, texto, altura, fontePt, alinhamentoV }) {
   // se a 1ª linha é o traço "_____", a assinatura assenta sobre ele (como no papel), sem descer no "Responsável …"
   const sobreTraco = linhas.length > 1 && /^_{5,}$/.test(linhas[0].trim())
   const base = Math.max(0, topoTexto - (sobreTraco ? linhaPx * 0.55 : 0))
-  // altura padrão; se a célula for baixa, a assinatura sobe para o espaço acima dela
-  const alt = Math.round(Math.max(36, Math.min(60, h - base - 2)))
+  // usa o espaço livre da célula + as linhas vazias logo acima dela (sem cobrir nada), de 36 a 80 px
+  // (21/10/2026: antes ficava em 36–60 px só pela altura da célula — pequena na FR-IMOB-46)
+  const alt = Math.round(Math.max(36, Math.min(80, h - base - 2 + espacoAcima)))
   return (
     <div className={s.marcaAssinatura} style={{ bottom: `${Math.round(base)}px`, height: `${alt}px` }}>
       {assinatura.url
@@ -170,6 +171,55 @@ function MarcaAssinatura({ assinatura, texto, altura, fontePt, alinhamentoV }) {
         : <span className={s.assinaturaNome}>{assinatura.nome}</span>}
     </div>
   )
+}
+
+/**
+ * Altura (px) das linhas totalmente vazias logo acima de uma célula, nas colunas que ela ocupa —
+ * espaço onde a assinatura pode crescer sem cobrir texto, fórmula ou campo.
+ */
+const DONOS_MESCLA = new WeakMap()
+/** endereço coberto por mescla → célula dona (canto superior esquerdo) */
+function donosDaMescla(folha) {
+  let mapa = DONOS_MESCLA.get(folha)
+  if (mapa) return mapa
+  mapa = {}
+  for (const [a, d] of Object.entries(folha.modelo.cells)) {
+    if (!((d.rs || 1) > 1 || (d.cs || 1) > 1)) continue
+    const m = /^([A-Z]+)(\d+)$/.exec(a)
+    if (!m) continue
+    const c0 = colNumLocal(m[1]), r0 = +m[2]
+    for (let r = r0; r < r0 + (d.rs || 1); r++) {
+      for (let c = c0; c < c0 + (d.cs || 1); c++) mapa[colStr(c) + r] = d
+    }
+  }
+  DONOS_MESCLA.set(folha, mapa)
+  return mapa
+}
+
+const temConteudo = d => !!d && ((d.v !== undefined && d.v !== null && String(d.v).trim() !== '') || !!d.fx || !!d.role || !!d.rt)
+
+function espacoLivreAcima(folha, endereco, cs = 1) {
+  const m = /^([A-Z]+)(\d+)$/.exec(endereco)
+  if (!m) return 0
+  const c0 = colNumLocal(m[1])
+  const donos = donosDaMescla(folha)
+  let r = +m[2] - 1
+  let livre = 0
+  while (r >= folha.r1) {
+    for (let c = c0; c < c0 + cs; c++) {
+      const a = colStr(c) + r
+      if (temConteudo(folha.modelo.cells[a]) || temConteudo(donos[a])) return livre
+    }
+    livre += folha.modelo.rows[r - folha.r1] || 0
+    r--
+  }
+  return livre
+}
+
+function colNumLocal(letras) {
+  let n = 0
+  for (const ch of letras) n = n * 26 + (ch.charCodeAt(0) - 64)
+  return n
 }
 
 /**
@@ -479,6 +529,7 @@ export default function FichaGrade({
             altura={cel.h}
             fontePt={cel.d.f?.s}
             alinhamentoV={cel.d.vt}
+            espacoAcima={espacoLivreAcima(folha, cel.a, cel.cs || 1)}
           />
         )}
       </td>
