@@ -3,9 +3,9 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.novarota.cnrolab",
+      "package_name": "app.vercel.cnro_lab.twa",
       "sha256_cert_fingerprints": [
-        "SUBSTITUIR_PELA_IMPRESSAO_DIGITAL_SHA256_DO_PWABUILDER"
+        "C9:39:EF:F4:4E:3C:E1:FF:1C:13:AD:9B:A8:28:B0:AE:1C:95:53:A4:05:20:61:2B:E7:9A:BE:2C:6C:C4:DA:99"
       ]
     }
   }
