@@ -27,6 +27,6 @@ export function useFicha(modeloRegistro, estado, pedidoCampos) {
     /** dados_resultado para salvar/enviar (estadoAtual: p.ex. com fotos recém-enviadas; não muda os cálculos) */
     dados: (estadoAtual = estado) => montarDadosFolhas(indice, estadoAtual, motores, { modeloId: modeloRegistro?.id }),
     /** linhas para resultado_* (aprovação) — todas as folhas */
-    resultados: () => linhasResultadoFolhas(modeloRegistro?.mapa_resultados || [], motores),
+    resultados: () => linhasResultadoFolhas(modeloRegistro?.mapa_resultados || [], motores, { indice, estado }),
   }
 }

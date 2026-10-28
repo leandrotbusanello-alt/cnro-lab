@@ -1,0 +1,35 @@
+/* Tipo de ruptura dos CPs (FR-IMOB-50 Rev01) — caixa fora da ficha */
+.painel { margin-top: 12px; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.topo { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.topo h3 { margin: 0; font-size: 15px; color: var(--navy); }
+.topo h3 small { font-weight: 500; color: #64748b; font-size: 12px; }
+.topo p { margin: 3px 0 0; font-size: 12.5px; color: #64748b; max-width: 640px; }
+.situacao { font-size: 12.5px; font-weight: 600; border-radius: 999px; padding: 4px 10px; background: #f1f5f9; color: #475569; white-space: nowrap; }
+.situacaoPendente { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.situacaoOk { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+
+.legenda summary { cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--navy); }
+.legendaGrade { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; margin-top: 8px; }
+.legendaItem { display: flex; gap: 10px; align-items: center; border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; color: #334155; }
+.legendaItem div { display: flex; flex-direction: column; font-size: 12px; line-height: 1.35; }
+.legendaItem strong { font-size: 12.5px; color: var(--navy); }
+.legendaItem em { font-style: normal; font-weight: 600; font-size: 11.5px; }
+
+.vazio { margin: 0; font-size: 12.5px; color: #64748b; }
+.lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.cp { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; }
+.cpPendente { border-color: #fecaca; background: #fffafa; }
+.cpInfo { display: flex; flex-direction: column; font-size: 12.5px; min-width: 200px; }
+.cpInfo strong { color: #0f172a; font-size: 13px; }
+.cpInfo span { color: #475569; }
+.cpInfo em { font-style: normal; font-weight: 600; font-size: 12px; }
+.opcoes { display: flex; gap: 4px; flex-wrap: wrap; }
+.opcao { display: flex; flex-direction: column; align-items: center; gap: 1px; background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 3px 5px 2px; cursor: pointer; color: #334155; font-size: 11px; font-weight: 700; }
+.opcao:hover:not(:disabled) { border-color: var(--navy); }
+.opcao:disabled { cursor: default; opacity: .55; }
+.opcaoAtiva { border-color: var(--navy); background: #eef2ff; box-shadow: 0 0 0 2px var(--navy) inset; opacity: 1 !important; color: var(--navy); }
+.desenho { display: block; color: #334155; }
+
+.boa { color: #15803d; }
+.razoavel { color: #b45309; }
+.ruim { color: #b91c1c; }

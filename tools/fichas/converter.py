@@ -1326,6 +1326,17 @@ def converter(spec, arquivo_spec):
         modelo['lancamento'] = spec['lancamento']
         alertas += validar_lancamento(spec['lancamento'], modelo)
 
+    # tipo de ruptura por CP (NBR 5739) fora da ficha — FR-IMOB-50 Rev01 (28/10/2026):
+    # { tabela, campo, celulas: { célula da carga: codigo_cp } }; a caixa ao lado da ficha grava em estado.rupturas
+    if spec.get('rupturas'):
+        modelo['rupturas'] = spec['rupturas']
+        for a in spec['rupturas'].get('celulas', {}):
+            if a not in modelo['cells']:
+                alertas.append(f'rupturas: célula {a} não existe na ficha')
+    # pré-preenchimento do corpo da ficha a partir do pedido (ao iniciar; tudo editável) — FR-IMOB-50 Rev01
+    if spec.get('preenchimento'):
+        modelo['preenchimento'] = spec['preenchimento']
+
     # valores postos pela spec em células auxiliares (tabela de taras da FR-IMOB-55): o teste com LibreOffice grava na cópia
     extras_aux = {a: cfg['v'] for a, cfg in spec.get('celulas_extras', {}).items()
                   if 'v' in cfg and a in modelo.get('aux', {}) and 'fx' not in modelo['aux'][a]}

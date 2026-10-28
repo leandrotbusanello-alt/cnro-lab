@@ -27,6 +27,7 @@ const CAMPOS_MATERIAL = ['tipo_mistura', 'tipo_ligante', 'tipo_agregado', 'granu
 const IGNORAR = new Set(['id', 'fotos', 'foto', 'arquivos', 'responsavel_coleta', 'info_geral', 'certificado'])
 
 function descricaoMaterial(p, amostras) {
+  if (SUBTIPOS_CONCRETO.includes(p.sub_tipo)) return materialConcreto(amostras)
   const partes = []
   const base = rotuloSubtipo(p.material, p.sub_tipo) || rotuloMaterial(p.material)
   if (base) partes.push(base)
@@ -41,7 +42,27 @@ function descricaoMaterial(p, amostras) {
   return [...new Set(partes)].join(' · ')
 }
 
+// Concreto (FR-IMOB-50 Rev01 — 28/10/2026): "CPs 2479 A 2484 | FUNDAÇÃO DAS ESTACAS P02 - PONTE RIBEIRÃO ESPINHEIRO KM 469"
+const SUBTIPOS_CONCRETO = ['concreto', 'cp_concreto']
+const maiusc = v => String(v || '').trim().toUpperCase()
+
+function materialConcreto(amostras) {
+  const dim = String(amostras[0]?.dimensoes_cp || '').replace(/\s/g, '').toLowerCase()
+  if (dim === '5x10') return 'CORPOS DE PROVA DE ARGAMASSA (DIÂMETRO 5 x 10 cm)'
+  if (dim === '10x20') return 'CORPOS DE PROVA DE CONCRETO (DIÂMETRO 10 x 20 cm)'
+  return 'CORPOS DE PROVA DE CONCRETO'
+}
+
+function complementoConcreto(amostras) {
+  const ids = amostras.map(a => String(a.identificacao_cp || '').trim()).filter(Boolean)
+  const cps = ids.length > 1 ? `CPs ${ids[0]} A ${ids.at(-1)}` : ids.length ? `CP ${ids[0]}` : ''
+  const a0 = amostras[0] || {}
+  const local = [maiusc(a0.elemento || a0.estrutura), maiusc(a0.local_concretagem || a0.local)].filter(Boolean).join(' - ')
+  return [cps, local].filter(Boolean).join(' | ')
+}
+
 function textoComplementar(p, amostras) {
+  if (SUBTIPOS_CONCRETO.includes(p.sub_tipo)) return complementoConcreto(amostras)
   const ordem = ordemCampos(p.sub_tipo)
   const pos = k => (ordem.indexOf(k) < 0 ? 999 : ordem.indexOf(k))
   const blocos = amostras.map((a, i) => {

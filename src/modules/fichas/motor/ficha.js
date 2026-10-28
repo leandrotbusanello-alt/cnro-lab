@@ -159,6 +159,10 @@ export function indexarModelo(modelo) {
     alternadas, ocultar,
     lancamento: modelo.lancamento || null,
     taras: modelo.taras || null,
+    // tipo de ruptura por CP (FR-IMOB-50 Rev01): { tabela, campo, celulas: { célula da carga: codigo_cp } }
+    rupturas: modelo.rupturas || null,
+    // pré-preenchimento do corpo da ficha a partir do pedido (FR-IMOB-50 Rev01) — ver preenchimento.js
+    preenchimento: modelo.preenchimento || null,
     apelidos: modelo.apelidos || {},
     ordemDigitacao: folhas.flatMap(f => f.ordemDigitacao),
   }
@@ -242,6 +246,9 @@ export function estadoDosDados(dados) {
     cabecalho: { ...(dados?.cabecalho || {}) },
     // cópia das taras do cadastro de equipamentos (migração 24)
     ...(dados?.taras ? { taras: dados.taras } : {}),
+    // tipo de ruptura por CP (NBR 5739) e marca de pré-preenchimento — FR-IMOB-50 Rev01
+    ...(dados?.rupturas ? { rupturas: { ...dados.rupturas } } : {}),
+    ...(dados?.preenchido_em ? { preenchido_em: dados.preenchido_em } : {}),
     // folhas adicionais da mesma ficha (20/10/2026 — ver folhas.js)
     ...(Array.isArray(dados?.folhas_extras) && dados.folhas_extras.length
       ? { extras: dados.folhas_extras.map(f => ({
@@ -250,6 +257,7 @@ export function estadoDosDados(dados) {
           verificacoes: { ...(f?.verificacoes || {}) },
           fotos: { ...(f?.fotos || {}) },
           ajustes: { ...(f?.ajustes || {}) },
+          ...(f?.rupturas ? { rupturas: { ...f.rupturas } } : {}),
         })) }
       : {}),
   }
@@ -411,8 +419,38 @@ export function montarDados(indice, estado, motor, { modeloId } = {}) {
     ...(Object.keys(ajustes).length ? { ajustes } : {}),
     ...(Object.keys(cabecalho).length ? { cabecalho } : {}),
     ...(estado?.taras ? { taras: estado.taras } : {}),
+    ...(indice.rupturas ? { rupturas: rupturasValidas(indice, estado) } : {}),
+    ...(estado?.preenchido_em ? { preenchido_em: estado.preenchido_em } : {}),
     atualizado_em: new Date().toISOString(),
   }
+}
+
+// ── Tipo de ruptura por CP (NBR 5739, Anexo A) — FR-IMOB-50 Rev01 (28/10/2026) ────
+export const TIPOS_RUPTURA = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+
+/** Só os tipos válidos das células de carga da ficha. */
+function rupturasValidas(indice, estado) {
+  const out = {}
+  for (const [a, v] of Object.entries(estado?.rupturas || {})) {
+    if (indice.rupturas?.celulas?.[a] && TIPOS_RUPTURA.includes(v)) out[a] = v
+  }
+  return out
+}
+
+/** CPs rompidos (carga digitada) da folha: [{ celula, codigo, carga }] */
+export function cpsRompidos(indice, estado) {
+  if (!indice?.rupturas) return []
+  const out = []
+  for (const [a, codigo] of Object.entries(indice.rupturas.celulas || {})) {
+    const v = estado?.entradas?.[a]
+    if (typeof v === 'number' && Number.isFinite(v)) out.push({ celula: a, codigo, carga: v })
+  }
+  return out
+}
+
+/** CPs rompidos sem o tipo de ruptura informado (obrigatório para enviar). */
+export function rupturasPendentes(indice, estado) {
+  return cpsRompidos(indice, estado).filter(c => !TIPOS_RUPTURA.includes(estado?.rupturas?.[c.celula]))
 }
 
 /** Situação do preenchimento (para o status e para bloquear o envio). */
@@ -433,7 +471,10 @@ export function situacaoPreenchimento(indice, estado) {
     if (f?.caminho || f?.local) preenchidos++
     if (f?.local && !f.caminho) pendentes++
   }
-  return { preenchidos, total: ativas.length + indice.papeis.foto.length, invalidos, fotosPendentes: pendentes }
+  return {
+    preenchidos, total: ativas.length + indice.papeis.foto.length, invalidos, fotosPendentes: pendentes,
+    rupturasPendentes: rupturasPendentes(indice, estado).length,
+  }
 }
 
 // ── Resultados normalizados (resultado_*) ────────────────────────────────────

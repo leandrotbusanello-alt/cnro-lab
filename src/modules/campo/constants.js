@@ -25,7 +25,7 @@ export const SUBCATEGORIAS = {
     { value: 'ligante_asfaltico',   label: 'Ligante Asfáltico (CAP / Emulsão)' },
   ],
   concreto: [
-    { value: 'concreto', label: 'Concreto (Estrutural / Pavimento)' },
+    { value: 'concreto', label: 'Concreto (Estrutural / Não Estrutural)' },
   ],
   especial: [
     { value: 'deflectometria',    label: 'Deflectometria (Viga Benkelman / FWD)' },

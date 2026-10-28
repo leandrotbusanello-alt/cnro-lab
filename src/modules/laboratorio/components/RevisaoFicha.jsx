@@ -126,6 +126,10 @@ export default function RevisaoFicha({ pedido, ensaioOs: eo, podeRevisar, ocupad
       setAviso(`Corrija ${sit.invalidos.length} campo(s) marcados em vermelho (${sit.invalidos.slice(0, 5).join(', ')}).`)
       return
     }
+    if (sit?.rupturasPendentes && !historico) {
+      setAviso(`Informe o tipo de ruptura de ${sit.rupturasPendentes} CP(s) no quadro logo abaixo da ficha.`)
+      return
+    }
     if (!conformidade) { setAviso('Informe a conformidade do resultado.'); return }
     if (!eu?.assinatura_url) {
       setAviso(historico
@@ -186,6 +190,7 @@ export default function RevisaoFicha({ pedido, ensaioOs: eo, podeRevisar, ocupad
           {!modeloReg && !erroModelo && <div className={styles.carregando}><div className="spinner" /></div>}
           {modeloReg && ficha.indice && (
             <FichaComFolhas
+              rupturaObrigatoria={!historico}
               tracos={tracos}
               indice={ficha.indice}
               motores={ficha.motores}

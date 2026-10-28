@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import FichaEnsaio from './FichaEnsaio'
+import PainelRupturas from './PainelRupturas'
 import { qtdFolhas, estadoDaFolha, comFolha, adicionarFolha, removerFolha } from '../motor/folhas.js'
 import s from './Ficha.module.css'
 
@@ -14,7 +15,7 @@ import s from './Ficha.module.css'
  * podeGerenciarFolhas: mostra "+ Adicionar folha" e "Excluir esta folha" (preenchimento, antes do envio).
  * Fichas sem folha adicional ficam exatamente como antes (sem barra de folhas, a não ser o botão).
  */
-export default function FichaComFolhas({ motores, podeGerenciarFolhas = false, estado, onEstado, idBase = 'ficha', fotos, ...props }) {
+export default function FichaComFolhas({ motores, podeGerenciarFolhas = false, estado, onEstado, idBase = 'ficha', fotos, rupturaObrigatoria = true, ...props }) {
   const n = qtdFolhas(estado)
   const [ativa, setAtiva] = useState(0)
   const i = Math.min(ativa, n - 1)
@@ -73,6 +74,17 @@ export default function FichaComFolhas({ motores, podeGerenciarFolhas = false, e
         idBase={i ? `${idBase}-f${i + 1}` : idBase}
         fotos={i ? undefined : fotos}
       />
+      {props.indice?.rupturas && (props.modo !== 'leitura' || Object.keys(estadoDaFolha(estado, i)?.rupturas || {}).length > 0) && (
+        <PainelRupturas
+          key={`r${i}`}
+          indice={props.indice}
+          motor={motores?.[i] || motores?.[0]}
+          estado={estadoDaFolha(estado, i)}
+          onEstado={novo => onEstado?.(comFolha(estado, i, novo))}
+          editavel={(props.modo === 'preencher' && !props.assinaturas?.executor) || (props.modo === 'revisao' && !props.assinaturas?.calculista)}
+          obrigatorio={rupturaObrigatoria}
+        />
+      )}
     </div>
   )
 }

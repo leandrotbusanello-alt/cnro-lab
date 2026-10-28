@@ -27,7 +27,7 @@ export const LADOS           = ['LD', 'LE', 'EX']
 export const LADOS_ESPECIAL  = [...LADOS, 'Intercalado']
 export const IDADES_RUPTURA  = ['03', '07', '14', '28', '63']
 export const TIPOS_RUPTURA   = ['Axial', 'Diametral']
-export const DIMENSOES_CP    = ['10x20', '15x30', 'Outro']
+export const DIMENSOES_CP    = ['10x20', '5x10']   // 10x20 = concreto · 5x10 = argamassa (28/10/2026)
 export const RESP_MOLDAGEM   = ['Supervisão', 'CNRO', 'Construtora']
 export const LOCAIS_MASSA    = ['Usina', 'Pista']
 
@@ -164,12 +164,20 @@ export const FORMULARIOS = {
   // ── Concreto ───────────────────────────────────────────────────────────────
   concreto: {
     geral: [
-      { nome: 'local_concretagem', rotulo: 'Local da concretagem', tipo: 'texto' },
+      { nome: 'local_concretagem', rotulo: 'Local da concretagem', tipo: 'texto', placeholder: 'Ex.: Ponte sobre o Rio Cuiabá' },
+      // concreteira/central e traço do Cadastro (28/10/2026): o fck e o slump vêm do traço
+      { nome: 'concreteira', rotulo: 'Concreteira / Central', tipo: 'cadastro', fonte: 'concreteiras', idCampo: 'concreteira_id', obrigatorio: true },
       { nome: 'data_moldagem', rotulo: 'Data de moldagem', tipo: 'data', obrigatorio: true },
       { nome: 'hora_moldagem', rotulo: 'Hora de moldagem', tipo: 'hora' },
       { nome: 'elemento', rotulo: 'Peça / elemento concretado', tipo: 'texto', placeholder: 'Ex.: Viga longarina' },
-      { nome: 'fck_projeto', rotulo: 'fck de projeto (MPa)', tipo: 'numero' },
-      { nome: 'slump_projeto', rotulo: 'Slump de projeto (mm)', tipo: 'numero' },
+      { nome: 'traco_concreto', rotulo: 'Traço de concreto', tipo: 'cadastro', fonte: 'tracos_concreto', idCampo: 'traco_id', obrigatorio: true },
+      // traço escolhido: fck e slump copiados do cadastro (só leitura); traço digitado ("Outro"): informar à mão
+      { nome: 'fck_projeto', rotulo: 'fck de projeto (MPa)', tipo: 'derivado', visivel: g => !!g.traco_id,
+        calcular: g => (g.fck_projeto ?? '') },
+      { nome: 'slump_projeto', rotulo: 'Slump de projeto (mm)', tipo: 'derivado', visivel: g => !!g.traco_id,
+        calcular: g => (g.slump_projeto == null || g.slump_projeto === '' ? '' : `${g.slump_projeto}${g.slump_tolerancia != null && g.slump_tolerancia !== '' ? ` ± ${g.slump_tolerancia}` : ''}`) },
+      { nome: 'fck_projeto', rotulo: 'fck de projeto (MPa)', tipo: 'numero', visivel: g => !g.traco_id },
+      { nome: 'slump_projeto', rotulo: 'Slump de projeto (mm)', tipo: 'numero', visivel: g => !g.traco_id },
       { nome: 'responsavel_moldagem', rotulo: 'Executante / responsável pela moldagem', tipo: 'lista', opcoes: RESP_MOLDAGEM },
     ],
     amostra: [

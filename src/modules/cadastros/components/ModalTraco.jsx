@@ -1,17 +1,25 @@
 import { useState } from 'react'
 import Modal from '../../../components/ui/Modal'
-import { validadePadrao, nomePeneira } from '../../../lib/cadastros'
+import { validadePadrao, nomePeneira, TIPOS_TRACO, tipoTraco, nomeConcreteira, concreteirasDaEmpresa } from '../../../lib/cadastros'
 import { salvarCadastro, enviarDocumentoTraco } from '../cadastrosRepo'
 import TabelaPeneiras, { ler } from './TabelaPeneiras'
 import ui from '../../laboratorio/components/ui.module.css'
 
-/** Cadastro / edição de traço aprovado */
-export default function ModalTraco({ traco, empresas, onFechar, onSalvo }) {
+/** Cadastro / edição de traço aprovado — CBUQ, TSD (com validade) ou Concreto (sem validade) */
+export default function ModalTraco({ traco, tipoNovo = 'cbuq', empresas, concreteiras = [], onFechar, onSalvo }) {
   const novo = !traco
   const [f, setF] = useState(() => ({
+    tipo: traco ? tipoTraco(traco) : tipoNovo,
     nome_traco: traco?.nome_traco || '',
+    concreteira_id: traco?.concreteira_id || '',
+    fck_mpa: traco?.fck_mpa ?? '',
+    slump_mm: traco?.slump_mm ?? '',
+    slump_tolerancia_mm: traco?.slump_tolerancia_mm ?? '',
+    tipo_cimento: traco?.tipo_cimento || '',
+    relacao_ac: traco?.relacao_ac ?? '',
+    consumo_cimento_kg_m3: traco?.consumo_cimento_kg_m3 ?? '',
     empresa_id: traco?.empresa_id || '',
-    tipo_mistura: traco?.tipo_mistura || 'C.A.U.Q.',
+    tipo_mistura: traco?.tipo_mistura || (tipoNovo === 'tsd' ? 'T.S.D.' : tipoNovo === 'concreto' ? '' : 'C.A.U.Q.'),
     faixa_granulometrica: traco?.faixa_granulometrica || '',
     teor_betume_pct: traco?.teor_betume_pct ?? '',
     aprovado_em: traco?.aprovado_em || '',
@@ -32,9 +40,14 @@ export default function ModalTraco({ traco, empresas, onFechar, onSalvo }) {
     setF(x => ({ ...x, aprovado_em: v, valido_ate: !x.valido_ate || x.valido_ate === validadePadrao(x.aprovado_em) ? validadePadrao(v) : x.valido_ate }))
   }
 
+  const concreto = f.tipo === 'concreto'
+  const numOuNull = v => (v === '' || v === null || v === undefined ? null : Number(String(v).replace(',', '.')))
+
   async function salvar() {
     setErro(null)
     if (!f.nome_traco.trim()) { setErro('Informe o nome do traço.'); return }
+    if (concreto && numOuNull(f.fck_mpa) === null) { setErro('Informe o fck do traço.'); return }
+    if (concreto && !f.concreteira_id) { setErro('Escolha a concreteira/central do traço.'); return }
     if (f.valido_ate && f.aprovado_em && f.valido_ate < f.aprovado_em) { setErro('A validade não pode ser anterior à aprovação.'); return }
     setSalvando(true)
     try {
@@ -42,10 +55,17 @@ export default function ModalTraco({ traco, empresas, onFechar, onSalvo }) {
         ...f,
         id: traco?.id,
         empresa_id: f.empresa_id || null,
+        concreteira_id: concreto ? (f.concreteira_id || null) : null,
+        fck_mpa: concreto ? numOuNull(f.fck_mpa) : null,
+        slump_mm: concreto ? numOuNull(f.slump_mm) : null,
+        slump_tolerancia_mm: concreto ? numOuNull(f.slump_tolerancia_mm) : null,
+        tipo_cimento: concreto ? f.tipo_cimento : null,
+        relacao_ac: concreto ? numOuNull(f.relacao_ac) : null,
+        consumo_cimento_kg_m3: concreto ? numOuNull(f.consumo_cimento_kg_m3) : null,
         teor_betume_pct: f.teor_betume_pct === '' ? null : Number(String(f.teor_betume_pct).replace(',', '.')),
         aprovado_em: f.aprovado_em || null,
-        valido_ate: f.valido_ate || null,
-        faixa_trabalho: f.faixa_trabalho
+        valido_ate: concreto ? null : (f.valido_ate || null),
+        faixa_trabalho: concreto ? [] : f.faixa_trabalho
           .map(l => ({ peneira_mm: ler(l.peneira_mm), peneira: (l.peneira || '').trim() || null, min: ler(l.min), max: ler(l.max) }))
           .filter(l => l.peneira_mm != null || l.min != null || l.max != null),
       }
@@ -64,8 +84,8 @@ export default function ModalTraco({ traco, empresas, onFechar, onSalvo }) {
 
   return (
     <Modal
-      titulo={novo ? 'Novo traço aprovado' : 'Editar traço'}
-      subtitulo={novo ? 'Validado pelos coordenadores · validade padrão de 6 meses' : traco.nome_traco}
+      titulo={novo ? `Novo traço aprovado — ${TIPOS_TRACO.find(x => x.id === f.tipo)?.rotulo}` : 'Editar traço'}
+      subtitulo={novo ? (concreto ? 'Traço de concreto · sem validade' : 'Validado pelos coordenadores · validade padrão de 6 meses') : traco.nome_traco}
       largura="lg"
       onFechar={onFechar}
       rodape={(
@@ -81,7 +101,70 @@ export default function ModalTraco({ traco, empresas, onFechar, onSalvo }) {
           <input className={ui.input} value={f.nome_traco} onChange={e => set('nome_traco', e.target.value)}
             placeholder='Ex.: CONSÓRCIO BR163 - GUAXE · FAIXA "C" DNIT 031/2024 CAP 60-85' />
         </label>
-        <div className={ui.grade2}>
+        <div className={ui.campo}>
+          <span className={ui.rotulo}>Tipo de traço</span>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {TIPOS_TRACO.map(x => (
+              <button key={x.id} type="button" className={`${ui.btn} ${ui.btnPequeno} ${f.tipo === x.id ? ui.btnPrimario : ui.btnSecundario}`}
+                onClick={() => set('tipo', x.id)}>{x.rotulo}</button>
+            ))}
+          </div>
+        </div>
+        {concreto && (
+          <div className={ui.grade2}>
+            <label className={ui.campo}>
+              <span className={ui.rotulo}>Empresa (construtora)</span>
+              <select className={ui.input} value={f.empresa_id} onChange={e => set('empresa_id', e.target.value)}>
+                <option value="">Sem empresa (aparece para todas)</option>
+                {empresas.filter(e => e.ativo !== false || e.id === f.empresa_id).map(e => <option key={e.id} value={e.id}>{e.nome}</option>)}
+              </select>
+            </label>
+            <label className={ui.campo}>
+              <span className={ui.rotulo}>Concreteira / Central <span className={ui.obrigatorio}>*</span></span>
+              <select className={ui.input} value={f.concreteira_id} onChange={e => set('concreteira_id', e.target.value)}>
+                <option value="">Selecione…</option>
+                {concreteirasDaEmpresa(concreteiras, f.empresa_id || null)
+                  .concat(concreteiras.filter(c => c.id === f.concreteira_id && c.ativo === false))
+                  .map(c => <option key={c.id} value={c.id}>{nomeConcreteira(c)}{c.ativo === false ? ' (inativa)' : ''}</option>)}
+              </select>
+              <span className={ui.ajuda}>Só as centrais que atendem a empresa escolhida (Cadastros → Concreteiras/Centrais).</span>
+            </label>
+            <label className={ui.campo}>
+              <span className={ui.rotulo}>fck (MPa) <span className={ui.obrigatorio}>*</span></span>
+              <input className={ui.input} inputMode="decimal" value={f.fck_mpa} onChange={e => set('fck_mpa', e.target.value)} placeholder="Ex.: 30" />
+            </label>
+            <div className={ui.grade2}>
+              <label className={ui.campo}>
+                <span className={ui.rotulo}>Slump (mm)</span>
+                <input className={ui.input} inputMode="decimal" value={f.slump_mm} onChange={e => set('slump_mm', e.target.value)} placeholder="Ex.: 100" />
+              </label>
+              <label className={ui.campo}>
+                <span className={ui.rotulo}>Tolerância (± mm)</span>
+                <input className={ui.input} inputMode="decimal" value={f.slump_tolerancia_mm} onChange={e => set('slump_tolerancia_mm', e.target.value)} placeholder="Ex.: 20" />
+              </label>
+            </div>
+            <label className={ui.campo}>
+              <span className={ui.rotulo}>Tipo de cimento</span>
+              <input className={ui.input} value={f.tipo_cimento} onChange={e => set('tipo_cimento', e.target.value)} placeholder="Ex.: CP II-F-40" />
+            </label>
+            <div className={ui.grade2}>
+              <label className={ui.campo}>
+                <span className={ui.rotulo}>Relação a/c</span>
+                <input className={ui.input} inputMode="decimal" value={f.relacao_ac} onChange={e => set('relacao_ac', e.target.value)} placeholder="Ex.: 0,55" />
+              </label>
+              <label className={ui.campo}>
+                <span className={ui.rotulo}>Consumo de cimento (kg/m³)</span>
+                <input className={ui.input} inputMode="decimal" value={f.consumo_cimento_kg_m3} onChange={e => set('consumo_cimento_kg_m3', e.target.value)} />
+              </label>
+            </div>
+            <label className={ui.campo}>
+              <span className={ui.rotulo}>Documento do traço (PDF)</span>
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png" className={ui.input} onChange={e => setArquivo(e.target.files?.[0] || null)} />
+              <span className={ui.ajuda}>{traco?.documento ? 'Já há um documento — escolha outro para substituir.' : 'Opcional. Fica visível só para a equipe do laboratório.'}</span>
+            </label>
+          </div>
+        )}
+        {!concreto && <div className={ui.grade2}>
           <label className={ui.campo}>
             <span className={ui.rotulo}>Empresa</span>
             <select className={ui.input} value={f.empresa_id} onChange={e => set('empresa_id', e.target.value)}>
@@ -119,7 +202,7 @@ export default function ModalTraco({ traco, empresas, onFechar, onSalvo }) {
             <input type="file" accept=".pdf,.jpg,.jpeg,.png" className={ui.input} onChange={e => setArquivo(e.target.files?.[0] || null)} />
             <span className={ui.ajuda}>{traco?.documento ? 'Já há um documento — escolha outro para substituir.' : 'Opcional. Fica visível só para a equipe do laboratório.'}</span>
           </label>
-        </div>
+        </div>}
         <label className={ui.campo}>
           <span className={ui.rotulo}>Observações</span>
           <textarea className={`${ui.input} ${ui.textarea}`} value={f.observacoes} onChange={e => set('observacoes', e.target.value)} />
@@ -129,7 +212,7 @@ export default function ModalTraco({ traco, empresas, onFechar, onSalvo }) {
           <span>Ativo (aparece nas listas do Campo)</span>
         </label>
 
-        <TabelaPeneiras linhas={f.faixa_trabalho} onChange={v => set('faixa_trabalho', v)} />
+        {!concreto && <TabelaPeneiras linhas={f.faixa_trabalho} onChange={v => set('faixa_trabalho', v)} />}
 
         {erro && <div className={`${ui.aviso} ${ui.avisoErro}`}>{erro}</div>}
       </div>

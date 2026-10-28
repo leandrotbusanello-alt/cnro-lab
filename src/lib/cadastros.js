@@ -14,6 +14,7 @@ export const DIAS_ALERTA_TRACO = 30
 
 export const TIPOS_CADASTRO = {
   tracos:       { tabela: 'tracos_aprovados',     titulo: 'Traços aprovados',        singular: 'traço' },
+  concreteiras: { tabela: 'concreteiras_centrais', titulo: 'Concreteiras/Centrais',  singular: 'concreteira/central' },
   jazidas:      { tabela: 'jazidas',              titulo: 'Jazidas',                 singular: 'jazida' },
   pedreiras:    { tabela: 'pedreiras',            titulo: 'Pedreiras',               singular: 'pedreira' },
   fornecedores: { tabela: 'fornecedores_ligante', titulo: 'Fornecedores de ligante', singular: 'fornecedor' },
@@ -25,7 +26,7 @@ export const TIPOS_EQUIPAMENTO = {
   cilindro: { titulo: 'Cilindros', singular: 'cilindro' },
 }
 
-const VAZIO = { tracos: [], jazidas: [], pedreiras: [], fornecedores: [], equipamentos: [] }
+const VAZIO = { tracos: [], concreteiras: [], jazidas: [], pedreiras: [], fornecedores: [], equipamentos: [] }
 
 export async function carregarCadastros() {
   if (!navigator.onLine) {
@@ -34,12 +35,14 @@ export async function carregarCadastros() {
   }
   const ler = (tabela, ordem) => supabase.from(tabela).select('*').order(ordem)
     .then(r => { if (r.error) throw r.error; return r.data || [] })
-  const [tracos, jazidas, pedreiras, fornecedores, equipamentos] = await Promise.all([
+  const [tracos, jazidas, pedreiras, fornecedores, equipamentos, concreteiras] = await Promise.all([
     ler('tracos_aprovados', 'nome_traco'), ler('jazidas', 'nome'), ler('pedreiras', 'nome'), ler('fornecedores_ligante', 'nome'),
     // migração 24 ainda não rodada: segue sem o cadastro de equipamentos (as fichas usam a tabela delas)
     ler('equipamentos_tara', 'numero').catch(() => []),
+    // migração 35 ainda não rodada: segue sem o cadastro de concreteiras
+    ler('concreteiras_centrais', 'concreteira').catch(() => []),
   ])
-  const dados = { tracos, jazidas, pedreiras, fornecedores, equipamentos }
+  const dados = { tracos, jazidas, pedreiras, fornecedores, equipamentos, concreteiras }
   await cachePut('dashboard_cache', { chave: CHAVE_CACHE, dados, em: new Date().toISOString() }).catch(() => {})
   return dados
 }
@@ -96,11 +99,41 @@ export function validadePadrao(aprovadoEm) {
   return `${r.getFullYear()}-${String(r.getMonth() + 1).padStart(2, '0')}-${String(r.getDate()).padStart(2, '0')}`
 }
 
-/** Traços oferecidos no pedido: ativos, da empresa escolhida (ou sem empresa) */
-export function tracosDaEmpresa(tracos, empresaId) {
+// ── Tipos de traço (migração 35 — 28/10/2026) ───────────────────────────────
+export const TIPOS_TRACO = [
+  { id: 'cbuq', rotulo: 'CBUQ' },
+  { id: 'tsd', rotulo: 'TSD' },
+  { id: 'concreto', rotulo: 'Concreto' },
+]
+/** Traços antigos (antes da migração 35) não têm tipo: são CBUQ */
+export const tipoTraco = t => t?.tipo || 'cbuq'
+
+/**
+ * Traços oferecidos no pedido: ativos, da empresa escolhida (ou sem empresa).
+ *   tipos: quais tipos entram (padrão: os de asfalto — CBUQ e TSD)
+ */
+export function tracosDaEmpresa(tracos, empresaId, tipos = ['cbuq', 'tsd']) {
   return (tracos || [])
-    .filter(t => t.ativo !== false)
+    .filter(t => t.ativo !== false && tipos.includes(tipoTraco(t)))
     .filter(t => !empresaId || !t.empresa_id || t.empresa_id === empresaId)
+}
+
+/** Traços de concreto do pedido: da empresa (ou sem empresa) e da concreteira/central escolhida (ou sem central). */
+export function tracosConcretoDe(tracos, empresaId, concreteiraId) {
+  return tracosDaEmpresa(tracos, empresaId, ['concreto'])
+    .filter(t => !concreteiraId || !t.concreteira_id || t.concreteira_id === concreteiraId)
+}
+
+// ── Concreteiras/centrais (migração 35) ─────────────────────────────────────
+/** "ConcreNop – Sinop" */
+export const nomeConcreteira = c => (c ? [c.concreteira, c.central].filter(Boolean).join(' – ') : '')
+
+/** Centrais ativas que atendem a empresa (sem empresa marcada = atende todas). */
+export function concreteirasDaEmpresa(lista, empresaId) {
+  return (lista || [])
+    .filter(c => c.ativo !== false)
+    .filter(c => !empresaId || !(c.empresas_ids || []).length || c.empresas_ids.includes(empresaId))
+    .sort((a, b) => nomeConcreteira(a).localeCompare(nomeConcreteira(b), 'pt-BR'))
 }
 
 /** 'AAAA-MM-DD' → 'DD/MM/AAAA' */

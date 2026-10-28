@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { carregarCadastros } from '../../lib/cadastros'
+import { carregarCadastros, tipoTraco } from '../../lib/cadastros'
 
 /**
  * Traços do Cadastro para a lista "Traço de projeto" das fichas de granulometria
@@ -27,6 +27,6 @@ export function useTracosDaFicha(indice, pedido) {
 
 export function filtrarTracos(tracos, empresaId) {
   return (tracos || [])
-    .filter(t => t.ativo !== false && (!t.empresa_id || t.empresa_id === empresaId))
+    .filter(t => t.ativo !== false && tipoTraco(t) !== 'concreto' && (!t.empresa_id || t.empresa_id === empresaId))
     .sort((a, b) => (Number(!a.empresa_id) - Number(!b.empresa_id)) || String(a.nome_traco).localeCompare(String(b.nome_traco), 'pt-BR'))
 }

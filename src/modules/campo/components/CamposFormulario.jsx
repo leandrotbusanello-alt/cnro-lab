@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { normalizarKm } from '../../../lib/km'
-import { statusTraco, tracosDaEmpresa } from '../../../lib/cadastros'
+import { statusTraco, tracosDaEmpresa, tracosConcretoDe, concreteirasDaEmpresa, nomeConcreteira } from '../../../lib/cadastros'
 import { juntarLista, separarLista } from '../formularios'
 import styles from './subcategorias/Subcategoria.module.css'
 import extra from './CamposFormulario.module.css'
@@ -95,6 +95,17 @@ function Campo({ campo: c, valores, onChange, cadastros, empresaId, onArquivo })
     )
   }
 
+  if (c.tipo === 'derivado') {
+    // valor que vem de outro campo (ex.: fck e slump do traço de concreto) — só leitura
+    const v = c.calcular(valores || {})
+    return (
+      <label className={styles.field}>
+        <Rotulo campo={c} />
+        <input className={styles.input} value={v === '' || v == null ? '' : String(v).replace('.', ',')} placeholder="Vem do traço" disabled />
+      </label>
+    )
+  }
+
   if (c.tipo === 'fixo') {
     return (
       <label className={styles.field}>
@@ -152,11 +163,16 @@ function Campo({ campo: c, valores, onChange, cadastros, empresaId, onArquivo })
 function CampoCadastro({ campo: c, valores, onChange, cadastros, empresaId }) {
   const valor = valores?.[c.nome] || ''
   const id = valores?.[c.idCampo] || ''
-  const ehTraco = c.fonte === 'tracos'
-  const lista = ehTraco
+  const ehTraco = c.fonte === 'tracos' || c.fonte === 'tracos_concreto'
+  const fonte = c.fonte === 'tracos_concreto' ? 'tracos' : c.fonte
+  const lista = c.fonte === 'tracos'
     ? tracosDaEmpresa(cadastros?.tracos, empresaId)
-    : (cadastros?.[c.fonte] || []).filter(i => i.ativo !== false)
-  const nomeDe = i => (ehTraco ? i.nome_traco : i.nome)
+    : c.fonte === 'tracos_concreto'
+      ? tracosConcretoDe(cadastros?.tracos, empresaId, valores?.concreteira_id || null)
+      : c.fonte === 'concreteiras'
+        ? concreteirasDaEmpresa(cadastros?.concreteiras, empresaId)
+        : (cadastros?.[c.fonte] || []).filter(i => i.ativo !== false)
+  const nomeDe = i => (ehTraco ? i.nome_traco : c.fonte === 'concreteiras' ? nomeConcreteira(i) : i.nome)
   const [digitando, setDigitando] = useState(!!valor && !id)
 
   function escolher(v) {
@@ -166,10 +182,23 @@ function CampoCadastro({ campo: c, valores, onChange, cadastros, empresaId }) {
     const patch = { [c.nome]: item ? nomeDe(item) : '', [c.idCampo]: item?.id || '' }
     // jazida: município do cadastro, se ainda não informado
     if (c.fonte === 'jazidas' && item?.municipio && !valores?.municipio) patch.municipio = item.municipio
+    // traço de concreto: fck e slump (± tolerância) copiados do cadastro para o pedido (28/10/2026)
+    if (c.fonte === 'tracos_concreto') {
+      patch.fck_projeto = item?.fck_mpa ?? ''
+      patch.slump_projeto = item?.slump_mm ?? ''
+      patch.slump_tolerancia = item?.slump_tolerancia_mm ?? ''
+    }
+    // trocar a central limpa o traço, se ele for de outra central
+    if (c.fonte === 'concreteiras' && valores?.traco_id) {
+      const t = (cadastros?.tracos || []).find(x => x.id === valores.traco_id)
+      if (t && t.concreteira_id && t.concreteira_id !== item?.id) {
+        Object.assign(patch, { traco_concreto: '', traco_id: '', fck_projeto: '', slump_projeto: '', slump_tolerancia: '' })
+      }
+    }
     onChange(patch)
   }
 
-  const selecionado = lista.find(i => i.id === id) || (cadastros?.[c.fonte] || []).find(i => i.id === id)
+  const selecionado = lista.find(i => i.id === id) || (cadastros?.[fonte] || []).find(i => i.id === id)
   const st = ehTraco && selecionado ? statusTraco(selecionado) : null
 
   return (

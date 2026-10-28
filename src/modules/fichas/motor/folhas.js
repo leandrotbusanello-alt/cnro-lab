@@ -31,6 +31,7 @@ export function estadoDaFolha(estado, i) {
   return {
     entradas: f.entradas || {}, escolhas: f.escolhas || {}, verificacoes: f.verificacoes || {},
     fotos: f.fotos || {}, ajustes: f.ajustes || {},
+    ...(f.rupturas ? { rupturas: f.rupturas } : {}),
     cabecalho: estado?.cabecalho || {},
     ...(estado?.taras ? { taras: estado.taras } : {}),
   }
@@ -43,6 +44,7 @@ export function comFolha(estado, i, novo) {
   extras[i - 1] = {
     entradas: novo.entradas || {}, escolhas: novo.escolhas || {}, verificacoes: novo.verificacoes || {},
     fotos: novo.fotos || {}, ajustes: novo.ajustes || {},
+    ...(novo.rupturas ? { rupturas: novo.rupturas } : {}),
   }
   return { ...estado, extras }
 }
@@ -141,21 +143,31 @@ export function montarDadosFolhas(indice, estado, motores, opcoes) {
         ...(d.verificacoes ? { verificacoes: d.verificacoes } : {}),
         ...(d.fotos ? { fotos: d.fotos } : {}),
         ...(d.ajustes && Object.keys(d.ajustes).length ? { ajustes: d.ajustes } : {}),
+        ...(d.rupturas && Object.keys(d.rupturas).length ? { rupturas: d.rupturas } : {}),
       })
     }
   }
   return base
 }
 
-/** Linhas de resultado_* de todas as folhas — uma entrada por tabela (o servidor apaga e regrava por tabela). */
-export function linhasResultadoFolhas(mapa, motores) {
+/**
+ * Linhas de resultado_* de todas as folhas — uma entrada por tabela (o servidor apaga e regrava por tabela).
+ * Com `indice.rupturas` (FR-IMOB-50 Rev01), cada linha do CP leva o tipo de ruptura escolhido na folha.
+ */
+export function linhasResultadoFolhas(mapa, motores, { indice, estado } = {}) {
   const porTabela = new Map()
-  for (const motor of motores) {
+  const cfg = indice?.rupturas
+  const celulaDe = cfg ? Object.fromEntries(Object.entries(cfg.celulas || {}).map(([a, c]) => [c, a])) : null
+  motores.forEach((motor, i) => {
+    const rupt = cfg ? estadoDaFolha(estado, i)?.rupturas || {} : null
     for (const { tabela, linhas } of linhasResultado(mapa, motor)) {
       if (!porTabela.has(tabela)) porTabela.set(tabela, [])
-      porTabela.get(tabela).push(...linhas)
+      const comRuptura = cfg && tabela === cfg.tabela
+        ? linhas.map(l => ({ ...l, [cfg.campo]: rupt[celulaDe[l.codigo_cp]] || null }))
+        : linhas
+      porTabela.get(tabela).push(...comRuptura)
     }
-  }
+  })
   return [...porTabela].map(([tabela, linhas]) => ({ tabela, linhas }))
 }
 
@@ -168,6 +180,7 @@ export function situacaoFolhas(indice, estado) {
     total.preenchidos += s.preenchidos
     total.total += s.total
     total.fotosPendentes += s.fotosPendentes
+    total.rupturasPendentes = (total.rupturasPendentes || 0) + (s.rupturasPendentes || 0)
     total.invalidos.push(...(i ? s.invalidos.map(a => `Folha ${i + 1}: ${a}`) : s.invalidos))
   }
   return total

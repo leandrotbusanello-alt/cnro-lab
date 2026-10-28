@@ -53,3 +53,25 @@
 .peneirasBarra { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
 .peneiras .faixa td { padding: 3px; }
 .peneiras .faixa input, .peneiras .faixa select { padding: 5px 6px; font-size: 13px; min-width: 0; width: 100%; }
+
+/* Traços: CBUQ · TSD · Concreto, filtro por empresa e lista compacta (28/10/2026) */
+.tiposTraco { display: flex; gap: 6px; flex-wrap: wrap; }
+.tipoTraco { border: 1px solid var(--border); background: #fff; border-radius: 10px; padding: 8px 18px; font-size: 14px; font-weight: 700; color: var(--navy); cursor: pointer; font-family: inherit; }
+.tipoTraco span { color: var(--muted); font-weight: 600; margin-left: 4px; font-size: 12.5px; }
+.tipoTracoAtivo { background: var(--navy); color: #fff; border-color: var(--navy); }
+.tipoTracoAtivo span { color: #cbd5e1; }
+.barraTracos { display: grid; grid-template-columns: minmax(200px, 280px) 1fr auto; gap: 10px; align-items: center; }
+.tabelaCompacta { font-size: 13px; }
+.tabelaCompacta th, .tabelaCompacta td { padding: 7px 10px; }
+.linhaTraco { cursor: pointer; }
+.linhaTraco:hover td { background: #f8fafc; }
+.linhaAberta td { background: #f1f5f9; border-bottom-color: transparent; }
+.colNome { font-weight: 600; color: var(--navy); }
+.seta { display: inline-block; width: 14px; color: var(--muted); }
+.num { white-space: nowrap; }
+.mudo { color: var(--muted); font-style: normal; }
+.detalheLinha td { background: #f8fafc; padding: 8px 14px 12px 34px; }
+.detalheTraco { display: flex; flex-direction: column; gap: 8px; }
+.checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 4px 12px; max-height: 220px; overflow: auto; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
+.check { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
+@media (max-width: 700px) { .barraTracos { grid-template-columns: 1fr; } }

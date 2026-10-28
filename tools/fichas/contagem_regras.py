@@ -189,8 +189,12 @@ def regras():
     add('FR-IMOB-46', 'Densidade aparente e grau de compactação', 'unidades', unidades('FR-IMOB-46', titulo=r'^CP ', rotulo=r'^(Espessura|Massa)'))
     add('FR-IMOB-48', 'Resíduo seco', 'unidades', unidades('FR-IMOB-48'))
     add('FR-IMOB-49', 'Resistência à derrapagem', 'unidades', unidades('FR-IMOB-49', titulo=r'^Ponto', rotulo=r'^Leitura'))
-    add('FR-IMOB-50', 'Compressão axial e diametral', 'unidades',
-        por_celula(unidades('FR-IMOB-50', titulo=r'^Moldagem', rotulo=r'^Carga')))
+    # FR-IMOB-50: cada carga = 1 CP. As regras valem por código (não por revisão): soma as células
+    # de carga da Rev01 (X/Y/Z, linhas 20–45) com as da Rev00 (W/X, linhas 20–51), sem repetir.
+    cargas50 = por_celula(unidades('FR-IMOB-50', titulo=r'^Moldagem', rotulo=r'^Carga'))
+    rev00 = [[f'{c}{r}'] for r in range(20, 52, 2) for c in ('W', 'X') for r in (r, r + 1)]
+    vistos = {u[0] for u in cargas50}
+    add('FR-IMOB-50', 'Compressão axial e diametral', 'unidades', cargas50 + [u for u in rev00 if u[0] not in vistos])
     for f in ('FR-IMOB-51', 'FR-IMOB-52', 'FR-LAB-51'):
         add(f, 'Módulo de resiliência', 'unidades', unidades(f, titulo=r'^Amostra'))
     add('FR-IMOB-55', 'Densidade máxima e umidade ótima', 'unidades', unidades('FR-IMOB-55', titulo=r'^Ponto', rotulo=r'peso bruto'))

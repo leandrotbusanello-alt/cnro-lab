@@ -237,7 +237,12 @@ function padraoLaboratorio(n, V1) {
 const fmt1 = x => (Math.round(x * 10) / 10).toLocaleString('pt-BR', { maximumFractionDigits: 1 })
 const fmtN = x => x.toLocaleString('pt-BR', { maximumFractionDigits: 2 })
 
-const LINHAS_FR50 = Array.from({ length: 16 }, (_, i) => 20 + 2 * i)     // moldagens da FR-50 (linhas 20, 22, …, 50)
+const LINHAS_FR50 = Array.from({ length: 16 }, (_, i) => 20 + 2 * i)     // moldagens da FR-50 Rev00 (linhas 20, 22, …, 50)
+// FR-50 Rev01 (28/10/2026): 13 moldagens (20…44); 7 dias em N, 14 dias em P, 28 dias em R; peça em U
+const FR50 = {
+  Rev00: { linhas: LINHAS_FR50, c7: 'N', c14: null, c28: 'P', peca: 'S' },
+  Rev01: { linhas: Array.from({ length: 13 }, (_, i) => 20 + 2 * i), c7: 'N', c14: 'P', c28: 'R', peca: 'U' },
+}
 
 /** Séries (moldagens) das FR-50 aprovadas das amostras. */
 export function seriesDoConcreto(l) {
@@ -247,17 +252,19 @@ export function seriesDoConcreto(l) {
     if (d?.codigo !== 'FR-IMOB-50') continue
     const val = a => d.calculados?.[a] ?? d.entradas?.[a]
     const fckFicha = numero(val('B17'))
-    LINHAS_FR50.forEach((r, k) => {
+    const L = String(d.versao || '').startsWith('Rev01') ? FR50.Rev01 : FR50.Rev00
+    L.linhas.forEach((r, k) => {
       const data = numero(val(`B${r}`))
-      const cps = [`N${r}`, `N${r + 1}`, `P${r}`, `P${r + 1}`].map(a => numero(val(a)))
-      if (data === null && cps.every(x => x === null)) return
+      const par = c => (c ? [numero(val(`${c}${r}`)), numero(val(`${c}${r + 1}`))] : [null, null])
+      const r7 = par(L.c7), r14 = par(L.c14), r28 = par(L.c28)
+      if (data === null && [...r7, ...r14, ...r28].every(x => x === null)) return
       out.push({
         dataSerial: data, k: k + 1,
         hora: numero(val(`I${r}`)),
         slumpCm: numero(val(`E${r}`)) !== null ? numero(val(`E${r}`)) / 10 : null,
-        peca: texto(val(`S${r}`)),
+        peca: texto(val(`${L.peca}${r}`)),
         lancamento: texto(d.escolhas?.[`lancamento_${k + 1}`]),
-        r7: [cps[0], cps[1]], r28: [cps[2], cps[3]],
+        r7, r14, r28,
         fck: fckFicha,
       })
     })

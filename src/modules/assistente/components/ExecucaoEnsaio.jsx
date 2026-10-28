@@ -15,6 +15,7 @@ import { useFotosFicha } from '../../fichas/fotosFicha'
 import { INTERVALO_RASCUNHO_SERVIDOR } from '../../fichas/constants'
 import FichaComFolhas from '../../fichas/components/FichaComFolhas'
 import { useTracosDaFicha } from '../../fichas/useTracosDaFicha'
+import { aplicarPreenchimento } from '../../fichas/preenchimento'
 import FotoApoio from '../../fichas/components/FotoApoio'
 import { urlAssinatura } from '../../laboratorio/labRepo'
 import { numeroOS, numeroPE, dataHora, hojeISO } from '../../laboratorio/utils'
@@ -129,6 +130,15 @@ export default function ExecucaoEnsaio() {
     return () => { ativo = false }
   }, [temTaras, semCopiaTaras, emExecucao])
 
+  // Pré-preenchimento com os dados do pedido (FR-IMOB-50 Rev01): uma vez, ao iniciar; só células vazias
+  const temPreenchimento = !!ficha.indice?.preenchimento
+  const semPreenchimento = !!estado && !estado.preenchido_em
+  useEffect(() => {
+    if (!temPreenchimento || !semPreenchimento || !emExecucao || !pedido) return
+    setEstado(e => (e && !e.preenchido_em ? aplicarPreenchimento(ficha.indice, e, pedido) : e))
+    sujoServidor.current = true
+  }, [temPreenchimento, semPreenchimento, emExecucao, pedido, ficha.indice])
+
   useEffect(() => {
     if (!eo || !estado || !emExecucao) return undefined
     const t = setTimeout(() => {
@@ -199,6 +209,10 @@ export default function ExecucaoEnsaio() {
       return
     }
     if (sit.preenchidos === 0) { setAviso({ tipo: 'erro', texto: 'A ficha está vazia.' }); return }
+    if (sit.rupturasPendentes && !historico) {
+      setAviso({ tipo: 'erro', texto: `Informe o tipo de ruptura de ${sit.rupturasPendentes} CP(s) no quadro logo abaixo da ficha.` })
+      return
+    }
     if (!executor?.assinatura_url) {
       setAviso({ tipo: 'erro', texto: `${historico ? `${nomeExec} não tem` : 'Você ainda não tem'} assinatura cadastrada. Peça ao Gestor para cadastrar antes de enviar.` })
       return
@@ -333,6 +347,7 @@ export default function ExecucaoEnsaio() {
               onRemoverAssinatura={() => { setAssinatura(null); sujoServidor.current = true }}
               idBase={`eo-${eo.id.slice(0, 8)}`}
               fotos={fotos}
+              rupturaObrigatoria={!historico}
             />
           </div>
           {fotoAberta && <FotoApoio ensaioOsId={eo.id} onFechar={() => setFotoAberta(false)} />}
