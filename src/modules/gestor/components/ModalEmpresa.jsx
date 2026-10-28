@@ -15,6 +15,7 @@ export default function ModalEmpresa({ empresa, empresas, qtdUsuarios, online, o
     lote: empresa?.lote || '',
     rodovia: empresa?.rodovia || '',
     ativo: empresa ? empresa.ativo !== false : true,
+    aparece_campo: empresa ? empresa.aparece_campo !== false : true,
   })
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState('')
@@ -26,6 +27,7 @@ export default function ModalEmpresa({ empresa, empresas, qtdUsuarios, online, o
   const alterado = nova
     || form.nome !== (empresa.nome || '') || form.lote !== (empresa.lote || '')
     || form.rodovia !== (empresa.rodovia || '') || form.ativo !== (empresa.ativo !== false)
+    || form.aparece_campo !== (empresa.aparece_campo !== false)
   const renomeou = !nova && qtdUsuarios > 0 && (form.nome !== (empresa.nome || '') || form.lote !== (empresa.lote || ''))
 
   async function salvar(e) {
@@ -106,6 +108,15 @@ export default function ModalEmpresa({ empresa, empresas, qtdUsuarios, online, o
               placeholder="Ex.: BR-163" />
           </label>
         </div>
+
+        <label className={styles.check}>
+          <input type="checkbox" checked={form.aparece_campo} onChange={e => set('aparece_campo', e.target.checked)} />
+          Aparece no Campo
+        </label>
+        <span className={styles.ajuda} style={{ marginTop: -6 }}>
+          Desmarque para empresas cadastradas só para vincular usuários (ex.: lotes da CNRO, fiscalização).
+          Elas continuam ativas, mas não aparecem na lista de empresas do pedido no Campo.
+        </span>
 
         {!nova && (
           <label className={styles.check}>

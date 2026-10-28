@@ -107,6 +107,7 @@ export async function salvarEmpresa(empresa) {
     lote: empresa.lote?.trim() || null,
     rodovia: empresa.rodovia?.trim() || null,
     ativo: empresa.ativo !== false,
+    aparece_campo: empresa.aparece_campo !== false,   // migração 37
   }
   const q = empresa.id
     ? supabase.from('empresas').update(dados).eq('id', empresa.id)

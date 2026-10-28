@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCampo } from '../useCampo'
 import { useAuthStore } from '../../../store/authStore'
@@ -27,7 +27,7 @@ function parseDadosAmostra(dados) {
 }
 
 export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCorrecao = false }) {
-  const { empresas, ensaios, usuarios, enviarPedido, corrigirPedido, uploadCertificado } = useCampo()
+  const { empresas: empresasCampo, todasEmpresas, ensaios, usuarios, enviarPedido, corrigirPedido, uploadCertificado } = useCampo()
   const { perfil } = useAuthStore()
   const cadastros = useCadastros()
   const navigate = useNavigate()
@@ -47,6 +47,14 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
 
   // ── Seção 1: Empresa + Tipo de Solicitação ────────────────────────────────
   const [empresaId, setEmpresaId]             = useState(pedidoInicial?.empresa_id || '')
+  // Empresas do Campo (ativas e marcadas). Pedido em correção: mantém a empresa dele,
+  // mesmo que tenha sido desmarcada ou inativada depois (migração 37)
+  const empresas = useMemo(() => {
+    const id = pedidoInicial?.empresa_id
+    if (!id || empresasCampo.some(e => e.id === id)) return empresasCampo
+    const propria = todasEmpresas.find(e => e.id === id)
+    return propria ? [propria, ...empresasCampo] : empresasCampo
+  }, [empresasCampo, todasEmpresas, pedidoInicial?.empresa_id])
   const [tipoSolicitacao, setTipoSolicitacao] = useState(pedidoInicial?.tipo_solicitacao || 'rotina')
 
   // ── Seção 2: Especificação (FR-IMOB-04) → pedidos_ensaio.especificacoes ─

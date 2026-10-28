@@ -8,9 +8,13 @@ import {
 import { novoIdTemp, processarFila } from '../../lib/syncQueue'
 import { podeLancarHistorico } from '../../lib/historico'
 
+/** Empresa que aparece na lista do pedido no Campo: ativa e marcada "Aparece no Campo" (migração 37) */
+export const visivelNoCampo = e => e.ativo !== false && e.aparece_campo !== false
+
 export function useCampo() {
   const { perfil } = useAuthStore()
-  const [empresas, setEmpresas]   = useState([])
+  const [empresas, setEmpresas]   = useState([])   // as que aparecem no Campo (ativas e marcadas)
+  const [todasEmpresas, setTodasEmpresas] = useState([])   // todas (pedido antigo em correção)
   const [ensaios, setEnsaios]     = useState([])
   const [pedidos, setPedidos]     = useState([])
   const [usuarios, setUsuarios]   = useState([])   // lançamento histórico (DEV ou quem tem a permissão)
@@ -46,8 +50,8 @@ export function useCampo() {
               .then(ok),
             getPedidosPendentes(),
           ])
-          const ativas = emp.filter(e => e.ativo !== false)
-          setEmpresas(ativas)
+          setTodasEmpresas(emp)
+          setEmpresas(emp.filter(visivelNoCampo))
           setEnsaios(ens)
           setUsuarios(us)
           // pedidos ainda guardados no aparelho continuam visíveis até sincronizar
@@ -55,7 +59,7 @@ export function useCampo() {
           const pendentes = pendentesTodos.filter(p => !idsServidor.has(p.id))
           setPedidos([...pendentes.map(p => ({ ...p, status: 'pendente_sync' })), ...peds])
           setError(null)
-          await Promise.all([cacheEmpresas(ativas), cacheEnsaios(ens)]).catch(() => {})
+          await Promise.all([cacheEmpresas(emp), cacheEnsaios(ens)]).catch(() => {})
         } catch (e) {
           // Conexão caiu no meio (ou o servidor falhou): usa o que está no aparelho
           setError(e?.message || 'Erro ao carregar dados.')
@@ -69,7 +73,8 @@ export function useCampo() {
           getEnsaiosCache(),
           getPedidosPendentes(),
         ])
-        setEmpresas(empCache)
+        setTodasEmpresas(empCache)
+        setEmpresas(empCache.filter(visivelNoCampo))
         setEnsaios(ensCache)
         setPedidos(pendentes.map(p => ({ ...p, status: 'pendente_sync' })))
       }
@@ -180,7 +185,7 @@ export function useCampo() {
   }, [carregar])
 
   return {
-    empresas, ensaios, pedidos, usuarios, loading, error,
+    empresas, todasEmpresas, ensaios, pedidos, usuarios, loading, error,
     enviarPedido, corrigirPedido, reenviarPedido, uploadCertificado,
     recarregar: carregar,
   }

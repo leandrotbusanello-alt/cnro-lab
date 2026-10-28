@@ -2,8 +2,12 @@ import { useMemo, useState } from 'react'
 import ModalEmpresa from './ModalEmpresa'
 import styles from '../gestor.module.css'
 
+// "Só cadastro" = ativa, mas não aparece no Campo (migração 37)
+const soCadastro = e => e.ativo !== false && e.aparece_campo === false
+
 const FILTROS = [
   { id: 'ativas', rotulo: 'Ativas' },
+  { id: 'so_cadastro', rotulo: 'Só cadastro' },
   { id: 'inativas', rotulo: 'Inativas' },
   { id: '', rotulo: 'Todas' },
 ]
@@ -25,6 +29,7 @@ export default function EmpresasView({ empresas, usuarios, online, onSalvo, onEx
 
   const contagem = useMemo(() => ({
     ativas: empresas.filter(e => e.ativo !== false).length,
+    so_cadastro: empresas.filter(soCadastro).length,
     inativas: empresas.filter(e => e.ativo === false).length,
     '': empresas.length,
   }), [empresas])
@@ -34,6 +39,7 @@ export default function EmpresasView({ empresas, usuarios, online, onSalvo, onEx
     return empresas.filter(e => {
       if (filtro === 'ativas' && e.ativo === false) return false
       if (filtro === 'inativas' && e.ativo !== false) return false
+      if (filtro === 'so_cadastro' && !soCadastro(e)) return false
       if (termo && !normalizar([e.nome, e.lote, e.rodovia].join(' ')).includes(termo)) return false
       return true
     })
@@ -98,6 +104,9 @@ export default function EmpresasView({ empresas, usuarios, online, onSalvo, onEx
               {e.ativo === false
                 ? <span className={`${styles.badge} ${styles.erro}`}>Inativa</span>
                 : <span className={`${styles.badge} ${styles.ok}`}>Ativa</span>}
+              {soCadastro(e) && (
+                <span className={`${styles.badge} ${styles.neutro || styles.info}`} title="Não aparece no Campo">Só cadastro</span>
+              )}
             </span>
           </button>
         ))}
