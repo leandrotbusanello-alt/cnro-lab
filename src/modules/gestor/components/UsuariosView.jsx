@@ -139,6 +139,9 @@ export default function UsuariosView({ usuarios, empresas, eu, online, onSalvo, 
                   ? <span className={`${styles.badge} ${styles.ok}`}>Ativo</span>
                   : <span className={`${styles.badge} ${styles.erro}`}>Inativo</span>}
                 {!u.auth_id && <span className={`${styles.badge} ${styles.alerta}`}>Sem login</span>}
+                {u.pode_lancar_historico && String(u.perfil).toUpperCase() !== 'DEV' && (
+                  <span className={`${styles.badge} ${styles.info}`} title="Pode lançar histórico">📜 Histórico</span>
+                )}
                 {u.auth_id && u.trocar_senha && st === 'Ativo' && (
                   <span className={`${styles.badge} ${styles.info}`}>Senha provisória</span>
                 )}

@@ -5,7 +5,8 @@ import {
   exigeAssinatura, modulosDoUsuario, perfilTemTodos, perfisGerenciaveis, rotuloPerfil,
 } from '../constants'
 import {
-  alterarStatus, criarUsuario, editarUsuario, enviarArquivoUsuario, removerArquivoUsuario, resetarSenha,
+  alterarStatus, criarUsuario, definirLancadorHistorico, editarUsuario, enviarArquivoUsuario, removerArquivoUsuario,
+  resetarSenha,
 } from '../gestorRepo'
 import CampoArquivo from './CampoArquivo'
 import Avatar from './Avatar'
@@ -26,6 +27,7 @@ function formDe(u) {
     perfil: String(u?.perfil || '').toUpperCase(),
     empresa_id: u?.empresa_id || '',
     modulos: modulosIniciais(u),
+    lancaHistorico: !!u?.pode_lancar_historico,
   }
 }
 
@@ -58,6 +60,8 @@ export default function ModalUsuario({ usuario, empresas, eu, online, fotoUrl, o
   const podeMudarPerfil = podeEditar && !proprio
   const podeAcesso = !novo && !proprio && gerenciaveis.includes(perfilAlvo)
   const ativo = (usuario?.status || 'Ativo') === 'Ativo'
+  // "Pode lançar histórico" (migração 36): só o DEV liga/desliga; o perfil DEV já tem
+  const mostraHistorico = perfilEu === 'DEV' && form.perfil && form.perfil !== 'DEV'
 
   const todosModulos = perfilTemTodos(form.perfil)
   const assinaturaObrigatoria = exigeAssinatura(form.perfil, form.modulos)
@@ -79,7 +83,8 @@ export default function ModalUsuario({ usuario, empresas, eu, online, fotoUrl, o
     || ['nome', 'email', 'cargo', 'perfil', 'empresa_id'].some(k => String(form[k] || '') !== String(original[k] || ''))
     || (!todosModulos && !mesmaLista(form.modulos, original.modulos))
   const arquivosAlterados = Object.values(arquivos).some(a => a.arquivo || a.remover)
-  const alterado = dadosAlterados || arquivosAlterados
+  const historicoAlterado = mostraHistorico && form.lancaHistorico !== original.lancaHistorico
+  const alterado = dadosAlterados || arquivosAlterados || historicoAlterado
   const empresaSoTexto = !novo && !usuario.empresa_id && usuario.empresa
 
   // Pendências que impedem salvar (mostradas depois da 1ª tentativa)
@@ -138,12 +143,15 @@ export default function ModalUsuario({ usuario, empresas, eu, online, fotoUrl, o
     try {
       if (novo) {
         const r = await criarUsuario(dados)
-        const { usuario: u, falhas } = await salvarArquivos(r.usuario)
+        let criado = r.usuario
+        if (mostraHistorico && form.lancaHistorico) criado = await definirLancadorHistorico(criado.id, true)
+        const { usuario: u, falhas } = await salvarArquivos(criado)
         onSalvo(u)
         setResultado({ tipo: 'criado', usuario: u, avisoArquivo: falhas.join(' · ') })
       } else {
         let u = usuario
         if (dadosAlterados) u = (await editarUsuario({ id: usuario.id, ...dados })).usuario
+        if (historicoAlterado) u = await definirLancadorHistorico(usuario.id, form.lancaHistorico)
         const r = await salvarArquivos(u)
         onSalvo(r.usuario)
         if (r.falhas.length) {
@@ -349,6 +357,23 @@ export default function ModalUsuario({ usuario, empresas, eu, online, fotoUrl, o
                 </span>
               </>
             )}
+          </div>
+        )}
+
+        {/* ── Lançamento histórico (migração 36) — só o DEV vê e altera ── */}
+        {mostraHistorico && (
+          <div className={styles.secao}>
+            <div className={styles.secaoTitulo}>Lançamento histórico</div>
+            <label className={`${styles.modulo} ${form.lancaHistorico ? styles.moduloMarcado : ''}`}>
+              <input type="checkbox" checked={form.lancaHistorico}
+                onChange={e => set('lancaHistorico', e.target.checked)} />
+              📜 Pode lançar histórico
+            </label>
+            <span className={styles.ajuda}>
+              Libera o lançamento de ensaios antigos (em papel) com o fluxo completo — Campo, Laboratório e Assistente —
+              em nome das pessoas reais, e mostra todos os pedidos históricos. Excluir, Alterar nº e Reabrir continuam só do DEV.
+              O trabalho normal da pessoa não muda.
+            </span>
           </div>
         )}
 

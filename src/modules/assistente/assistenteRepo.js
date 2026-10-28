@@ -10,7 +10,7 @@ import { listarModelos, modeloVigente, prepararModelos } from '../fichas/fichasR
 import { apagarFotosApoio } from '../fichas/components/FotoApoio'
 import { apagarFotosLocais } from '../fichas/fotosFicha'
 import { STATUS_NA_FILA } from './constants'
-import { ehDev, ehHistorico } from '../../lib/historico'
+import { podeLancarHistorico, soHistoricoNoModulo, ehHistorico } from '../../lib/historico'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Repositório do Módulo Assistente
@@ -39,9 +39,9 @@ async function buscarServidor(perfil) {
   if (error) throw error
   let ensaiosOs = meus || []
 
-  // DEV: também os ensaios dos lançamentos históricos em aberto (qualquer executor),
-  // que ele executa em nome do assistente atribuído (migração 14)
-  const dev = ehDev(perfil)
+  // DEV e quem tem a permissão de histórico: também os ensaios dos lançamentos históricos
+  // em aberto (qualquer executor), executados em nome do assistente atribuído (migrações 14 e 36)
+  const dev = podeLancarHistorico(perfil)
   if (dev) {
     const { data: hist, error: eh } = await supabase.from('pedidos_ensaio').select('id')
       .eq('lancamento_historico', true).in('status', ['em_andamento', 'aguardando_revisao'])
@@ -58,10 +58,13 @@ async function buscarServidor(perfil) {
 
   const idsPedidos = [...new Set(ensaiosOs.map(e => e.pedido_id))].filter(id => !ehIdTemp(id))
   const pedidos = await buscarPedidosPorId(idsPedidos)
-  // Demais usuários não veem lançamentos históricos (são feitos só pelo DEV)
+  // Demais usuários não veem lançamentos históricos (DEV e quem tem a permissão)
+  const historicos = new Set(pedidos.filter(ehHistorico).map(p => p.id))
   if (!dev) {
-    const historicos = new Set(pedidos.filter(ehHistorico).map(p => p.id))
     ensaiosOs = ensaiosOs.filter(e => !historicos.has(e.pedido_id))
+  } else if (soHistoricoNoModulo(perfil, 'assistente')) {
+    // sem o módulo Assistente no perfil: só os históricos
+    ensaiosOs = ensaiosOs.filter(e => historicos.has(e.pedido_id))
   }
 
   const [usuarios, ensaios, empresas, fichas, modelos] = await catalogos
@@ -212,9 +215,9 @@ export async function buscarEnviados(perfil) {
 
   const idsPedidos = [...new Set((ensaiosOs || []).map(e => e.pedido_id))]
   const pedidos = await buscarPedidosPorId(idsPedidos)
-  // Lançamentos históricos feitos em nome do assistente só aparecem para o DEV (migração 14)
+  // Lançamentos históricos feitos em nome do assistente só aparecem para quem lança histórico (migrações 14 e 36)
   const historicos = new Set(pedidos.filter(ehHistorico).map(p => p.id))
-  const visiveis = ehDev(perfil) ? (ensaiosOs || []) : (ensaiosOs || []).filter(e => !historicos.has(e.pedido_id))
+  const visiveis = podeLancarHistorico(perfil) ? (ensaiosOs || []) : (ensaiosOs || []).filter(e => !historicos.has(e.pedido_id))
   const [empresas, fichas] = await Promise.all([
     supabase.from('empresas').select('*').then(r => r.data || []),
     supabase.from('fichas_ensaio').select('id, codigo, nome').then(r => r.data || []),

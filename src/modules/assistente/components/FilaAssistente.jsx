@@ -5,6 +5,7 @@ import { numeroOS, numeroPE, nomeEmpresa, rotuloMaterial, rotuloSubtipo, idade, 
 import { Selo } from '../../laboratorio/components/StatusBadge'
 import ui from '../../laboratorio/components/ui.module.css'
 import styles from './FilaAssistente.module.css'
+import { soHistoricoNoModulo } from '../../../lib/historico'
 
 /** Fila do assistente: ensaios atribuídos a ele, devolvidos primeiro. */
 export default function FilaAssistente() {
@@ -33,7 +34,8 @@ export default function FilaAssistente() {
         </div>
       </header>
 
-      {!a.eu?.assinatura_url && !a.loading && (
+      {/* quem só lança histórico aqui assina com a assinatura do executor real */}
+      {!a.eu?.assinatura_url && !a.loading && !soHistoricoNoModulo(a.perfil, 'assistente') && (
         <div className={`${ui.aviso} ${ui.avisoAlerta}`}>
           ✍️ Você ainda não tem assinatura cadastrada. Pode preencher as fichas normalmente, mas só conseguirá
           enviar para revisão depois que o Gestor cadastrar sua assinatura.

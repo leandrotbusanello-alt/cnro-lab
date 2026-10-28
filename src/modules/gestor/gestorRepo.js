@@ -20,6 +20,14 @@ export const editarUsuario  = dados => chamarGestorUsuarios('editar', dados)
 export const alterarStatus  = (id, status) => chamarGestorUsuarios('status', { id, status })
 export const resetarSenha   = id => chamarGestorUsuarios('resetar_senha', { id })
 
+/** Liga/desliga "Pode lançar histórico" (migração 36). Só o DEV — o banco recusa os demais. */
+export async function definirLancadorHistorico(id, valor) {
+  const { data, error } = await supabase.from('usuarios')
+    .update({ pode_lancar_historico: !!valor }).eq('id', id).select('*').single()
+  if (error) throw error
+  return data
+}
+
 // ─── Assinatura e foto (Storage privado) ───────────────────────────────────
 const ARQUIVOS = {
   assinatura: { bucket: 'assinaturas', coluna: 'assinatura_url', prefixo: 'assinatura' },

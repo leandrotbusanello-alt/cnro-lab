@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCampo } from '../useCampo'
 import { useAuthStore } from '../../../store/authStore'
-import { ehDev, dataParaISO, laboratoristasHistorico, rotuloUsuario } from '../../../lib/historico'
+import { podeLancarHistorico, soHistoricoNoModulo, dataParaISO, laboratoristasHistorico, rotuloUsuario } from '../../../lib/historico'
 import { hojeISO } from '../../laboratorio/utils'
 import { TIPOS_SOLICITACAO, TIPOS_AMOSTRA, SUBCATEGORIAS } from '../constants'
 import EnsaiosSelector from './EnsaiosSelector'
@@ -34,10 +34,12 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
   const [toast, setToast]       = useState(null)
   const [enviando, setEnviando] = useState(false)
 
-  // ── Lançamento histórico (somente DEV — migração 14) ──────────────────────
+  // ── Lançamento histórico (DEV ou quem tem a permissão — migrações 14 e 36) ─
   // Pedido antigo (papel): em nome de quem solicitou, com a data e o número reais.
-  const podeHistorico = ehDev(perfil) && !modoCorrecao
-  const [hist, setHist] = useState({ ativo: false, numero: '', data: '', solicitante_id: '', laboratorista_id: '' })
+  const podeHistorico = podeLancarHistorico(perfil) && !modoCorrecao
+  // Sem o módulo Campo no perfil: a pessoa está aqui só para o lançamento histórico
+  const soHistorico = podeHistorico && soHistoricoNoModulo(perfil, 'campo')
+  const [hist, setHist] = useState({ ativo: soHistorico, numero: '', data: '', solicitante_id: '', laboratorista_id: '' })
   const histNumeroOk = !hist.numero || (/^\d{1,5}$/.test(hist.numero) && Number(hist.numero) >= 1 && Number(hist.numero) <= MAX_SEQUENCIAL)
 
   // Safe parse of dados_amostra from pedidoInicial (may be JSON string from DB)
@@ -218,9 +220,10 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
           {podeHistorico && (
             <div className={styles.historicoBox}>
               <label className={styles.historicoToggle}>
-                <input type="checkbox" checked={hist.ativo} onChange={e => setHist({ ...hist, ativo: e.target.checked })} />
+                <input type="checkbox" checked={hist.ativo} disabled={soHistorico}
+                  onChange={e => setHist({ ...hist, ativo: e.target.checked })} />
                 <span>
-                  <strong>📜 Lançamento histórico (somente DEV)</strong>
+                  <strong>📜 Lançamento histórico</strong>
                   <small>Pedido antigo, já feito em papel. Fica em nome de quem solicitou, com a data e o número reais.
                     As próximas etapas (O.S., execução, aprovação) serão feitas por você em nome das pessoas escolhidas.</small>
                 </span>

@@ -121,7 +121,7 @@ export default function PedidoDetalhe() {
           </h2>
           <div className={styles.selos}>
             <StatusPedido status={pedido.status} />
-            {perm.historico && <Selo tom="neutro" title="Lançamento histórico (somente DEV)">📜 Lançamento histórico</Selo>}
+            {perm.historico && <Selo tom="neutro" title="Lançamento histórico (DEV e quem tem a permissão)">📜 Lançamento histórico</Selo>}
             {sit.correcaoRecebida && <Selo tom="alerta">↩ Correção recebida do campo</Selo>}
             {ehOSProvisoria(pedido) && <Selo tom="offline">Número provisório</Selo>}
             {sit.alteradoOffline && <Selo tom="offline">📶 Não sincronizado</Selo>}
@@ -518,7 +518,7 @@ function Avisos({ pedido, perm, responsavel, lab }) {
       <div className={`${ui.aviso} ${ui.avisoInfo}`}>
         📜 <span><strong>Lançamento histórico.</strong> Você age em nome de <strong>{responsavel?.nome || 'laboratorista'}</strong> (laboratorista)
         e dos executores atribuídos, com as assinaturas deles e as datas que informar em cada etapa.
-        O histórico registra que o lançamento foi feito por você. Somente o DEV vê e altera este pedido.</span>
+        O histórico registra que o lançamento foi feito por você. Somente o DEV e quem tem a permissão de lançar histórico veem e alteram este pedido.</span>
       </div>
     )
   }

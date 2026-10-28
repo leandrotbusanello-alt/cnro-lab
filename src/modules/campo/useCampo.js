@@ -6,14 +6,14 @@ import {
   cacheEnsaios, getEnsaiosCache, cacheEmpresas, getEmpresasCache,
 } from '../../lib/offlineDB'
 import { novoIdTemp, processarFila } from '../../lib/syncQueue'
-import { ehDev } from '../../lib/historico'
+import { podeLancarHistorico } from '../../lib/historico'
 
 export function useCampo() {
   const { perfil } = useAuthStore()
   const [empresas, setEmpresas]   = useState([])
   const [ensaios, setEnsaios]     = useState([])
   const [pedidos, setPedidos]     = useState([])
-  const [usuarios, setUsuarios]   = useState([])   // só o DEV (lançamento histórico)
+  const [usuarios, setUsuarios]   = useState([])   // lançamento histórico (DEV ou quem tem a permissão)
   const [loading, setLoading]     = useState(true)
   const [error, setError]         = useState(null)
 
@@ -32,8 +32,8 @@ export function useCampo() {
             supabase.from('empresas').select('*').order('nome').then(ok),
             // Ensaios disponíveis
             supabase.from('ensaios').select('*').order('nome').then(ok),
-            // Usuários (DEV: escolher solicitante e laboratorista do lançamento histórico)
-            ehDev(perfil)
+            // Usuários (lançamento histórico: escolher solicitante e laboratorista — DEV ou quem tem a permissão)
+            podeLancarHistorico(perfil)
               ? supabase.from('usuarios').select('id, nome, cargo, perfil, status, modulos_acesso').order('nome').then(ok)
               : Promise.resolve([]),
             // Pedidos do usuário atual (lançamentos históricos não aparecem aqui)

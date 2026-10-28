@@ -24,9 +24,11 @@ export default function AppLayout() {
   const nav = useNavigate()
 
   const modulos = perfil?.modulos_acesso || []
+  // modulos_menu: inclui os módulos abertos pela permissão de lançamento histórico (migração 36)
+  const modulosMenu = perfil?.modulos_menu || modulos
   const navItems = [
     ITEM_INICIO,
-    ...NAV_ITEMS.filter(item => modulos.includes(item.id)),
+    ...NAV_ITEMS.filter(item => modulosMenu.includes(item.id)),
     ...(modulos.includes('laboratorio') || modulos.includes('gestor') ? [ITEM_CADASTROS] : []),
   ]
 

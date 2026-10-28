@@ -28,13 +28,14 @@ const SELECT_PEDIDO_COMPLETO =
 
 // ── Leitura ──────────────────────────────────────────────────────────────────
 
-async function buscarPedidos({ ehDev = false } = {}) {
+async function buscarPedidos({ ehDev = false, lancaHistorico = false } = {}) {
   const desde = new Date(Date.now() - DIAS_CONCLUIDAS * 86400000).toISOString()
-  // DEV: também todos os lançamentos históricos (finalizados com datas antigas)
-  // e os pedidos cancelados (para poder excluí-los)
+  // DEV e quem tem a permissão de histórico: também todos os lançamentos históricos
+  // (finalizados com datas antigas). DEV: também os cancelados (para poder excluí-los)
   const filtro =
     `status.in.(aguardando_lab,em_analise,em_andamento,aguardando_revisao,devolvido_campo),` +
-    `finalizado_em.gte.${desde},reabertura_solicitada_em.not.is.null` + (ehDev ? ',lancamento_historico.is.true,status.eq.cancelado' : '')
+    `finalizado_em.gte.${desde},reabertura_solicitada_em.not.is.null` +
+    (lancaHistorico || ehDev ? ',lancamento_historico.is.true' : '') + (ehDev ? ',status.eq.cancelado' : '')
 
   let r = await supabase.from('pedidos_ensaio').select(SELECT_PEDIDO_COMPLETO)
     .or(filtro).order('created_at', { ascending: true }).limit(1000)
@@ -112,17 +113,22 @@ async function pedidosCampoOffline() {
 
 /**
  * Carrega tudo o que o módulo precisa.
- * Lançamentos históricos só aparecem para o DEV (os demais não os veem nas filas).
+ * Lançamentos históricos só aparecem para o DEV e para quem tem a permissão de histórico (migração 36).
  * @returns {{pedidos, ensaiosOs, usuarios, ensaios, empresas, fichas, fonte}}
  */
-export async function carregarDados({ ehDev = false, incremental = false } = {}) {
+export async function carregarDados({ ehDev = false, lancaHistorico = false, soHistorico = false, incremental = false } = {}) {
+  // Quais pedidos esta pessoa vê no Laboratório (lançamento histórico — migrações 14 e 36)
+  const veHistorico = ehDev || lancaHistorico
+  const filtrarPedidos = lista => soHistorico
+    ? lista.filter(ehHistorico)
+    : (veHistorico ? lista : lista.filter(p => !ehHistorico(p)))
   let dados
   let fonte = 'servidor'
 
   if (navigator.onLine) {
     try {
       const [pedidosTodos, usuarios, ensaios, empresas, fichas] = await Promise.all([
-        buscarPedidos({ ehDev }),
+        buscarPedidos({ ehDev, lancaHistorico: veHistorico }),
         supabase.from('usuarios').select('id, nome, cargo, perfil, status, assinatura_url, lote, empresa, modulos_acesso')
           .order('nome').then(r => { if (r.error) throw r.error; return r.data || [] }),
         supabase.from('ensaios').select('*').order('nome')
@@ -132,7 +138,7 @@ export async function carregarDados({ ehDev = false, incremental = false } = {})
         supabase.from('fichas_ensaio').select('id, codigo, nome, ensaio_id, versao, ativa').order('codigo')
           .then(r => { if (r.error) throw r.error; return r.data || [] }),
       ])
-      const pedidos = ehDev ? pedidosTodos : pedidosTodos.filter(p => !ehHistorico(p))
+      const pedidos = filtrarPedidos(pedidosTodos)
       const [ensaiosOs, fila, mapaIds, pedidosLocais, ensaiosOsLocais] = await Promise.all([
         buscarEnsaiosOs(pedidos.map(p => p.id), { incremental }),
         listarFila(), idMapTodos(), cacheGetAll('pedidos_cache'), cacheGetAll('ensaios_os_cache'),
@@ -172,7 +178,7 @@ export async function carregarDados({ ehDev = false, incremental = false } = {})
       cacheGetAll('pedidos_cache'), cacheGetAll('ensaios_os_cache'), cacheGetAll('usuarios_cache'),
       cacheGetAll('ensaios_cache'), cacheGetAll('empresas_cache'), cacheGetAll('fichas_ensaio_cache'),
     ])
-    dados = { pedidos: ehDev ? pedidos : pedidos.filter(p => !ehHistorico(p)), ensaiosOs, usuarios, ensaios, empresas, fichas }
+    dados = { pedidos: filtrarPedidos(pedidos), ensaiosOs, usuarios, ensaios, empresas, fichas }
   }
 
   // Pedidos do Campo criados offline neste aparelho +
@@ -182,7 +188,7 @@ export async function carregarDados({ ehDev = false, incremental = false } = {})
     listarModelos().catch(() => []),
   ])
   const ids = new Set(dados.pedidos.map(p => p.id))
-  dados.pedidos = [...dados.pedidos, ...offline.filter(p => !ids.has(p.id))]
+  if (!soHistorico) dados.pedidos = [...dados.pedidos, ...offline.filter(p => !ids.has(p.id))]
 
   return { ...dados, modelos, fonte }
 }

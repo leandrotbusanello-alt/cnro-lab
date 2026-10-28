@@ -5,7 +5,7 @@ import { useAuthStore } from '../../store/authStore'
 import * as repo from './labRepo'
 import { PERFIS_GESTAO, STATUS_ABERTOS } from './constants'
 import { porId } from './utils'
-import { ehDev as ehPerfilDev, ehHistorico, exigirOnlineHistorico } from '../../lib/historico'
+import { ehDev as ehPerfilDev, podeLancarHistorico, soHistoricoNoModulo, ehHistorico, exigirOnlineHistorico } from '../../lib/historico'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Estado do Módulo Laboratório (compartilhado entre a lista e o detalhe)
@@ -33,6 +33,10 @@ export function useLaboratorio() {
   const carregandoRef = useRef(false)
   const pendenteRef = useRef(false)
   const ehDev = ehPerfilDev(perfil)
+  // DEV ou quem tem a permissão "Pode lançar histórico" (migração 36)
+  const lancaHistorico = podeLancarHistorico(perfil)
+  // Sem o módulo Laboratório no perfil: só os pedidos históricos aparecem aqui
+  const soHistorico = soHistoricoNoModulo(perfil, 'laboratorio')
 
   // ── Carregar ──────────────────────────────────────────────────────────────
   const carregar = useCallback(async ({ silencioso = false } = {}) => {
@@ -41,7 +45,7 @@ export function useLaboratorio() {
     if (!silencioso) setLoading(true)
     try {
       // Atualização automática (silenciosa): baixa de novo só os ensaios que mudaram
-      const r = await repo.carregarDados({ ehDev, incremental: silencioso })
+      const r = await repo.carregarDados({ ehDev, lancaHistorico, soHistorico, incremental: silencioso })
       setDados({
         pedidos: r.pedidos, ensaiosOs: r.ensaiosOs, usuarios: r.usuarios,
         ensaios: r.ensaios, empresas: r.empresas, fichas: r.fichas, modelos: r.modelos || [],
@@ -59,7 +63,7 @@ export function useLaboratorio() {
         carregar({ silencioso: true })
       }
     }
-  }, [ehDev])
+  }, [ehDev, lancaHistorico, soHistorico])
 
   useEffect(() => { if (perfil) carregar() }, [perfil, carregar])
 
@@ -128,8 +132,8 @@ export function useLaboratorio() {
    * do laboratorista do pedido (o banco faz o mesmo), então ele é o "responsável".
    */
   const meuIdPara = useCallback((pedido) => (
-    ehDev && ehHistorico(pedido) ? pedido.laboratorista_id : perfil?.id
-  ), [ehDev, perfil?.id])
+    lancaHistorico && ehHistorico(pedido) ? pedido.laboratorista_id : perfil?.id
+  ), [lancaHistorico, perfil?.id])
 
   /** Quem assina como laboratorista neste pedido (histórico: o laboratorista do pedido) */
   const laboratoristaDe = useCallback((pedido) => (
@@ -142,7 +146,7 @@ export function useLaboratorio() {
   const permissoes = useCallback((pedido) => {
     if (!pedido || !perfil) return {}
     const historico = ehHistorico(pedido)
-    if (historico && !ehDev) return { somenteLeitura: true }
+    if (historico && !lancaHistorico) return { somenteLeitura: true }
     const souResp = pedido.laboratorista_id === meuIdPara(pedido)
     const livre = !pedido.laboratorista_id
     const aberto = STATUS_ABERTOS.includes(pedido.status)
@@ -165,7 +169,7 @@ export function useLaboratorio() {
       podeReabrir: pedido.status === 'concluido' && (historico ? ehDev : ehGestor),
       reaberturaSolicitada: pedido.status === 'concluido' && !!pedido.reabertura_solicitada_em,
     }
-  }, [perfil, ehGestor, ehDev, meuIdPara])
+  }, [perfil, ehGestor, ehDev, lancaHistorico, meuIdPara])
 
   // ── Ações (recarregam ao terminar) ───────────────────────────────────────
   const ctxAcao = useMemo(() => ({
@@ -213,7 +217,7 @@ export function useLaboratorio() {
   }, [ctxAcao, carregar])
 
   return {
-    perfil, ehGestor, ehDev, meuIdPara, laboratoristaDe,
+    perfil, ehGestor, ehDev, lancaHistorico, soHistorico, meuIdPara, laboratoristaDe,
     ...dados, ...indices,
     fonte, loading, erro, atualizadoEm,
     recarregar: carregar,

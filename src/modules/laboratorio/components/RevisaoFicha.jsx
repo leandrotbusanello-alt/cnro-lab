@@ -39,7 +39,9 @@ export default function RevisaoFicha({ pedido, ensaioOs: eo, podeRevisar, ocupad
   const [dataAprov, setDataAprov] = useState(dataEnvio || hojeISO())
   const dataAprovOk = !historico || (!!dataAprov && dataAprov <= hojeISO() && (!dataEnvio || dataAprov >= dataEnvio))
   const aprovador = lab.usuariosPorId[eo.aprovado_por_id]
+  // histórico: quem lança (DEV ou com a permissão) também imprime (migração 36)
   const podeImprimir = modulosDoUsuario(lab.perfil).some(m => MODULOS_QUE_IMPRIMEM.includes(m))
+    || (historico && lab.lancaHistorico)
 
   // ── Modelo da ficha (congelado quando o assistente iniciou) ──────────────
   const modeloId = eo.ficha_modelo_id || eo.dados_resultado?.modelo_id || null

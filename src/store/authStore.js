@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { cachePerfil, cacheGetAll } from '../lib/offlineDB'
 import { chamarGestorUsuarios } from '../lib/gestorUsuarios'
 import { MODULOS_PADRAO, modulosDoUsuario } from '../lib/modulos'
+import { MODULOS_HISTORICO } from '../lib/historico'
 
 const INTERVALO_VERIFICACAO_MS = 60_000
 
@@ -16,10 +17,15 @@ export const MODULOS_POR_PERFIL = MODULOS_PADRAO
 function completarPerfil(u) {
   if (!u) return null
   const sigla = String(u.perfil || '').toUpperCase()
-  return { ...u, perfil: sigla, modulos_acesso: modulosDoUsuario({ ...u, perfil: sigla }) }
+  const modulos = modulosDoUsuario({ ...u, perfil: sigla })
+  // Permissão de lançamento histórico (migração 36): o menu mostra também Campo, Lab e
+  // Assistente, onde a pessoa vê só os históricos. modulos_acesso continua o do perfil.
+  const historico = sigla === 'DEV' || !!u.pode_lancar_historico
+  const modulos_menu = historico ? [...new Set([...modulos, ...MODULOS_HISTORICO])] : modulos
+  return { ...u, perfil: sigla, modulos_acesso: modulos, modulos_menu }
 }
 
-const chaveModulos = u => [...modulosDoUsuario(u)].sort().join(',')
+const chaveModulos = u => [...modulosDoUsuario(u)].sort().join(',') + (u?.pode_lancar_historico ? '+hist' : '')
 
 /** Mensagens do Supabase Auth traduzidas */
 function traduzirErroLogin(e) {
@@ -91,10 +97,10 @@ export const useAuthStore = create((set, get) => ({
     if (!atual?.id || !navigator.onLine) return
     try {
       const { data, error } = await supabase
-        .from('usuarios').select('id, status, trocar_senha, perfil, modulos_acesso').eq('id', atual.id).maybeSingle()
+        .from('usuarios').select('id, status, trocar_senha, perfil, modulos_acesso, pode_lancar_historico').eq('id', atual.id).maybeSingle()
       if (error) return
       if (!data || (data.status || 'Ativo') !== 'Ativo') {
-        await supabase.auth.signOut().catch(() => {})
+        await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
         set({ perfil: null, avisoLogin: 'Seu acesso foi desativado. Procure o Gestor.' })
         return
       }
@@ -203,13 +209,13 @@ export const useAuthStore = create((set, get) => ({
       return await get().carregarPerfil(data.user.id)
     } catch (e) {
       // Login válido mas sem perfil utilizável: encerra a sessão para não ficar "meio logado"
-      if (!ehErroDeRede(e)) await supabase.auth.signOut().catch(() => {})
+      if (!ehErroDeRede(e)) await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
       throw e
     }
   },
 
   async logout() {
-    await supabase.auth.signOut()
+    await supabase.auth.signOut({ scope: 'local' })
     set({ perfil: null })
   },
 }))
