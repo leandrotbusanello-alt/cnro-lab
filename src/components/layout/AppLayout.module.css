@@ -51,7 +51,9 @@
 .btnLogout:hover { background: rgba(255,255,255,.2); }
 
 /* ── Content ── */
-.content { flex: 1; overflow-y: auto; padding-bottom: 72px; }
+/* scrollbar-gutter: o espaço da barra de rolagem fica sempre reservado — a largura do conteúdo não muda
+   quando a barra aparece/some (evitava a ficha "tremer" ao ajustar o zoom à largura) */
+.content { flex: 1; overflow-y: auto; scrollbar-gutter: stable; padding-bottom: 72px; }
 
 /* ── Mobile bottom nav ── */
 .mobileNav {

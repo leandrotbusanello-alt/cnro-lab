@@ -94,7 +94,8 @@ export default function NovoPedidoForm({ onVoltar, pedidoInicial = null, modoCor
   function handleEmpresaChange(id) {
     const emp = empresas.find(e => e.id === id)
     setEmpresaId(id)
-    if (emp?.lote && !lote) setLote(emp.lote)
+    // o lote acompanha a empresa escolhida (antes só preenchia se estivesse vazio); continua editável
+    setLote(emp?.lote || '')
   }
 
   // ── Amostras (com herança de dados da anterior) ─────────────────────────────

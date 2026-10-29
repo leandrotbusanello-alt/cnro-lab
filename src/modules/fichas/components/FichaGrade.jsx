@@ -283,9 +283,16 @@ export default function FichaGrade({
   useLayoutEffect(() => {
     if (escalaFixa || !caixa.current) return undefined
     const el = caixa.current
+    // Histerese: só reajusta o zoom se a largura mudar de verdade (≥ 24 px). Variações pequenas — p.ex. a
+    // barra de rolagem que aparece quando a ficha cresce e some quando ela encolhe — faziam a ficha
+    // "tremer" sem parar em algumas telas (Windows, certo tamanho de janela/zoom do navegador).
+    let ultima = null
     const medir = () => {
       const w = el.clientWidth
-      if (w > 0) setEscalaAuto(Math.min(1.15, Math.max(0.5, w / largura)))
+      if (w <= 0) return
+      if (ultima !== null && Math.abs(w - ultima) < 24) return
+      ultima = w
+      setEscalaAuto(Math.min(1.15, Math.max(0.5, w / largura)))
     }
     medir()
     const ro = new ResizeObserver(medir)

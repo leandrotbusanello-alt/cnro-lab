@@ -10,6 +10,9 @@ const INTERVALO_VERIFICACAO_MS = 60_000
 /** Busca de perfil em andamento ({ authId, promessa }) */
 let cargaEmAndamento = null
 
+/** true enquanto a própria pessoa está saindo (botão Sair) — para não mostrar aviso de sessão encerrada */
+let saidaVoluntaria = false
+
 // Módulos liberados: mesma regra do banco (public.modulos_do_usuario) — ver lib/modulos.js.
 // Mantido por compatibilidade com quem importava daqui.
 export const MODULOS_POR_PERFIL = MODULOS_PADRAO
@@ -81,7 +84,14 @@ export const useAuthStore = create((set, get) => ({
   _aoMudarSessao(evento, session) {
     const authId = session?.user?.id
     if (!authId) {
-      set({ perfil: null, carregando: false })
+      // Sessão encerrada sem a pessoa clicar em "Sair" (login recusado pelo servidor: expirou,
+      // foi encerrado em outro aparelho, relógio do computador errado…): avisa na tela de login.
+      const estavaLogado = !!get().perfil
+      const aviso = estavaLogado && !saidaVoluntaria && !get().avisoLogin
+        ? 'Sua sessão foi encerrada (login expirado ou encerrado em outro aparelho). Entre novamente.'
+        : get().avisoLogin
+      if (estavaLogado && !saidaVoluntaria) console.warn('[auth] sessão encerrada pelo servidor:', evento)
+      set({ perfil: null, carregando: false, avisoLogin: aviso })
       return
     }
     // Renovação do token e o SIGNED_IN que o Supabase repete ao voltar para a aba:
@@ -99,15 +109,34 @@ export const useAuthStore = create((set, get) => ({
       const { data, error } = await supabase
         .from('usuarios').select('id, status, trocar_senha, perfil, modulos_acesso, pode_lancar_historico').eq('id', atual.id).maybeSingle()
       if (error) return
-      if (!data || (data.status || 'Ativo') !== 'Ativo') {
+      let registro = data
+      if (!registro) {
+        // Sem retorno não quer dizer "inativado": pode ser o login em renovação ou uma falha
+        // momentânea. Renova o login e confere de novo antes de tirar a pessoa do sistema.
+        const { error: eRenovar } = await supabase.auth.refreshSession()
+        if (eRenovar) {
+          // usuário bloqueado no login (inativado pelo Gestor) → sai com o aviso de acesso desativado;
+          // outros erros (rede, login expirado): não decide aqui — a sessão encerrada já avisa na tela de login
+          if (!/banned/i.test(eRenovar.message || '')) return
+          registro = null
+        } else {
+          const r = await supabase.from('usuarios').select('id, status, trocar_senha, perfil, modulos_acesso, pode_lancar_historico')
+            .eq('id', atual.id).maybeSingle()
+          if (r.error) return
+          registro = r.data
+        }
+      }
+      if (!registro || (registro.status || 'Ativo') !== 'Ativo') {
+        console.warn('[auth] acesso desativado:', registro ? registro.status : 'cadastro não encontrado')
         await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
         set({ perfil: null, avisoLogin: 'Seu acesso foi desativado. Procure o Gestor.' })
         return
       }
+      const data2 = registro
       // Gestor mudou perfil, módulos ou senha provisória → atualiza o menu sem precisar sair
-      if (data.trocar_senha !== atual.trocar_senha
-          || String(data.perfil).toUpperCase() !== atual.perfil
-          || chaveModulos(data) !== chaveModulos(atual)) {
+      if (data2.trocar_senha !== atual.trocar_senha
+          || String(data2.perfil).toUpperCase() !== atual.perfil
+          || chaveModulos(data2) !== chaveModulos(atual)) {
         await get().recarregarPerfil()
       }
     } catch { /* sem conexão: tenta de novo depois */ }
@@ -215,7 +244,12 @@ export const useAuthStore = create((set, get) => ({
   },
 
   async logout() {
-    await supabase.auth.signOut({ scope: 'local' })
-    set({ perfil: null })
+    saidaVoluntaria = true
+    try {
+      await supabase.auth.signOut({ scope: 'local' })
+    } finally {
+      set({ perfil: null, avisoLogin: '' })
+      saidaVoluntaria = false
+    }
   },
 }))
