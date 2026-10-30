@@ -156,3 +156,7 @@
 .fichaTitulos span { font-size: 12px; color: #6b7280; }
 .btnVoltar { background: #fff; border: 1px solid #d1d5db; border-radius: 8px; padding: 6px 10px; font-size: 13px; font-weight: 600; cursor: pointer; }
 .fichaCorpo { flex: 1; overflow: auto; padding: 12px; }
+
+/* Resumo da O.S. anexado pelo laboratório (migração 38) */
+.resumoOS { margin: 4px 0 8px; }
+.resumoOS a { display: inline-block; text-decoration: none; }

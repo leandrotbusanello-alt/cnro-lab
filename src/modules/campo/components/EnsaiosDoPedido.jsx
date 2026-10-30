@@ -10,6 +10,7 @@ import ResultadoView from '../../laboratorio/components/ResultadoView'
 import { urlAssinatura } from '../../laboratorio/labRepo'
 import { dataHora } from '../../laboratorio/utils'
 import { situacaoEnsaioCampo } from '../resultadosCampo'
+import { obterResumo, ehImagem } from '../../../lib/resumoOS'
 import styles from './MeusPedidos.module.css'
 
 /**
@@ -25,6 +26,7 @@ export default function EnsaiosDoPedido({ pedido, status, liberados, resultados,
   return (
     <div className={styles.ensaios} onClick={parar} onKeyDown={parar} role="presentation">
       <div className={styles.ensaiosTitulo}>Ensaios</div>
+      {status.some(x => x.liberado) && <ResumoDaOS pedidoId={pedido.id} />}
       {status.map(s => {
         const sit = situacaoEnsaioCampo(s)
         const eo = liberados[s.id]
@@ -169,5 +171,23 @@ function FichaCampo({ eo, pedido, usuarios, empresasPorId, onFechar }) {
       )}
     </div>,
     document.body,
+  )
+}
+
+/** Resumo da O.S. anexado pelo laboratório (migração 38): aparece com os resultados liberados */
+function ResumoDaOS({ pedidoId }) {
+  const [resumo, setResumo] = useState(null)
+  useEffect(() => {
+    let ativo = true
+    obterResumo(pedidoId).then(r => ativo && setResumo(r)).catch(() => {})
+    return () => { ativo = false }
+  }, [pedidoId])
+  if (!resumo?.url) return null
+  return (
+    <div className={styles.resumoOS}>
+      <a href={resumo.url} target="_blank" rel="noreferrer" className={styles.btnFicha}>
+        📊 Resumo dos resultados da O.S.{ehImagem(resumo) ? '' : ' (PDF)'}
+      </a>
+    </div>
   )
 }

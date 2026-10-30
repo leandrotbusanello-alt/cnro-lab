@@ -3,9 +3,9 @@
 //   os · registro · material · procedencia · complemento · pe · lote · rodovia · empresa
 // ─────────────────────────────────────────────────────────────────────────────
 import {
-  normalizarAmostras, rotuloCampo, rotuloMaterial, rotuloSubtipo, valorExibicao, nomeEmpresa, campoOculto,
+  normalizarAmostras, rotuloMaterial, rotuloSubtipo, nomeEmpresa,
 } from '../laboratorio/utils'
-import { ordemCampos } from '../campo/formularios'
+import { normalizarKm } from '../../lib/km'
 
 /** "2026.03.06.02.0094" (sem o prefixo "O.S.") */
 function numeroOSTexto(p) {
@@ -23,8 +23,6 @@ function registroAmostra(p) {
 
 // Campos da amostra que descrevem o material (entram em "Material")
 const CAMPOS_MATERIAL = ['tipo_mistura', 'tipo_ligante', 'tipo_agregado', 'granulometria', 'traco', 'cap', 'teor_cimento', 'fck']
-// Campos que não entram no texto complementar
-const IGNORAR = new Set(['id', 'fotos', 'foto', 'arquivos', 'responsavel_coleta', 'info_geral', 'certificado'])
 
 function descricaoMaterial(p, amostras) {
   if (SUBTIPOS_CONCRETO.includes(p.sub_tipo)) return materialConcreto(amostras)
@@ -61,20 +59,75 @@ function complementoConcreto(amostras) {
   return [cps, local].filter(Boolean).join(' | ')
 }
 
+// ── Cabeçalho resumido (29/10/2026) ──────────────────────────────────────────
+// Informações complementares: só a data (coleta, extração, moldagem…) e o trecho/local.
+// O restante do pedido fica na FR-IMOB-04/05 e no Detalhar demanda.
+
+/** Datas das amostras, na ordem de prioridade: a primeira que existir dá o rótulo */
+const DATAS_REFERENCIA = [
+  ['data_coleta', 'DATA DA COLETA'],
+  ['data_extracao', 'DATA DE EXTRAÇÃO'],
+  ['data_moldagem', 'DATA DA MOLDAGEM'],
+  ['data_aplicacao', 'DATA DE APLICAÇÃO'],
+  ['data_usinagem', 'DATA DE USINAGEM'],
+  ['data_chegada', 'DATA DE CHEGADA'],
+]
+
+const fmtData = d => `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(0, 4)}`
+
+function dataReferencia(amostras) {
+  for (const [k, rotulo] of DATAS_REFERENCIA) {
+    const dias = [...new Set(amostras.map(a => String(a[k] || '').slice(0, 10)).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d)))].sort()
+    if (!dias.length) continue
+    if (dias.length === 1) return `${rotulo}: ${fmtData(dias[0])}`
+    return `${rotulo}: ${fmtData(dias[0])} A ${fmtData(dias.at(-1))}`
+  }
+  return ''
+}
+
+const valorKm = t => { const m = /^(\d+),(\d+)$/.exec(t); return m ? Number(`${m[1]}.${m[2]}`) : null }
+
+/** Trecho: "KM 120,000" · "KM 120,000 E KM 125,000" · "KM 120,000 AO KM 135,500" */
+function trechoAmostras(amostras) {
+  const pontos = [...new Set(amostras
+    .map(a => a.km_extracao || a.km_coleta || a.estaca_extracao || a.estaca || a.km)
+    .filter(Boolean).map(v => normalizarKm(String(v))).filter(Boolean))]
+  const ini = amostras.map(a => a.km_inicial || a.estaca_inicial).find(Boolean)
+  const fim = [...amostras].reverse().map(a => a.km_final || a.estaca_final).find(Boolean)
+  if (!pontos.length && (ini || fim)) {
+    return [ini && `KM ${normalizarKm(String(ini))}`, fim && `KM ${normalizarKm(String(fim))}`].filter(Boolean).join(' AO ')
+  }
+  if (!pontos.length) return ''
+  if (pontos.length === 1) return `KM ${pontos[0]}`
+  const num = pontos.map(valorKm)
+  if (pontos.length === 2 || num.some(v => v === null)) return pontos.map(k => `KM ${k}`).join(' E ')
+  const ord = pontos.map((k, i) => [num[i], k]).sort((a, b) => a[0] - b[0])
+  return `KM ${ord[0][1]} AO KM ${ord.at(-1)[1]}`
+}
+
 function textoComplementar(p, amostras) {
   if (SUBTIPOS_CONCRETO.includes(p.sub_tipo)) return complementoConcreto(amostras)
-  const ordem = ordemCampos(p.sub_tipo)
-  const pos = k => (ordem.indexOf(k) < 0 ? 999 : ordem.indexOf(k))
-  const blocos = amostras.map((a, i) => {
-    const itens = Object.entries(a)
-      .sort((x, y) => pos(x[0]) - pos(y[0]))
-      .filter(([k, v]) => !IGNORAR.has(k) && !campoOculto(k) && !CAMPOS_MATERIAL.includes(k) && v !== '' && v !== null && v !== undefined && typeof v !== 'object')
-      .map(([k, v]) => `${rotuloCampo(k)}: ${valorExibicao(v, k)}`)
-    if (!itens.length) return ''
-    return (amostras.length > 1 ? `Amostra ${i + 1} — ` : '') + itens.join('; ')
-  }).filter(Boolean)
-  if (p.observacoes) blocos.push(`Obs.: ${p.observacoes}`)
-  return blocos.join(' | ')
+  return [dataReferencia(amostras), trechoAmostras(amostras)].filter(Boolean).join(' · ')
+}
+
+// Procedência: jazida (solos), pedreira (agregados), concreteira/central (concreto); demais: empresa
+const semPrefixo = (v, re) => String(v || '').trim().replace(re, '').trim()
+
+function procedenciaMaterial(p, amostras, empresa) {
+  const unicos = k => [...new Set(amostras.map(a => String(a[k] || '').trim()).filter(Boolean))]
+  if (['jazida', 'caixa_emprestimo', 'segmento'].includes(p.sub_tipo)) {
+    const j = unicos('jazida').map(v => semPrefixo(v, /^jazida\s*/i))
+    if (j.length) return `JAZIDA ${j.join(' / ')}`.toUpperCase()
+  }
+  if (p.sub_tipo === 'agregados') {
+    const q = unicos('pedreira').map(v => semPrefixo(v, /^pedreira\s*/i))
+    if (q.length) return `PEDREIRA ${q.join(' / ')}`.toUpperCase()
+  }
+  if (SUBTIPOS_CONCRETO.includes(p.sub_tipo)) {
+    const c = unicos('concreteira')
+    if (c.length) return c.join(' / ').toUpperCase()
+  }
+  return empresa
 }
 
 /**
@@ -90,7 +143,7 @@ export function camposDoPedido(pedido, ctx = {}) {
     registro: registroAmostra(pedido),
     pe: pedido.numero_pe ? `${pedido.numero_pe}/${pedido.ano}` : '',
     material: descricaoMaterial(pedido, amostras),
-    procedencia: nomeEmpresa(pedido, ctx.empresasPorId),
+    procedencia: procedenciaMaterial(pedido, amostras, nomeEmpresa(pedido, ctx.empresasPorId)),
     empresa: nomeEmpresa(pedido, ctx.empresasPorId),
     lote: pedido.lote || empresa?.lote || '',
     rodovia: empresa?.rodovia || '',

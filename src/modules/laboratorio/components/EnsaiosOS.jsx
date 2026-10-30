@@ -38,10 +38,12 @@ export default function EnsaiosOS({ pedido, ensaiosOs, podeGerenciar, ocupado, r
   const aprovados = ensaiosOs.filter(e => e.status === 'aprovado').length
   const semAtribuicao = ensaiosOs.filter(e => !e.assistente_id).length
 
-  function fichasDoEnsaio(ensaioId) {
+  function fichasDoEnsaio(ensaioId, atualId) {
     const ativas = fichas.filter(f => f.ativa !== false)
     const doEnsaio = ativas.filter(f => f.ensaio_id === ensaioId)
-    return doEnsaio.length ? { lista: doEnsaio, todas: false } : { lista: ativas, todas: true }
+    // a ficha já escolhida (ou a padrão que veio na O.S. — migração 38) sempre aparece na lista
+    const atual = atualId && !doEnsaio.some(f => f.id === atualId) ? fichas.filter(f => f.id === atualId) : []
+    return doEnsaio.length ? { lista: [...atual, ...doEnsaio], todas: false } : { lista: ativas, todas: true }
   }
 
   return (
@@ -71,7 +73,8 @@ export default function EnsaiosOS({ pedido, ensaiosOs, podeGerenciar, ocupado, r
 
           {ensaiosOs.map(eo => {
             const cat = ensaiosPorId[eo.ensaio_id]
-            const { lista: fichasOpc, todas } = fichasDoEnsaio(eo.ensaio_id)
+            const { lista: fichasOpc, todas } = fichasDoEnsaio(eo.ensaio_id, eo.ficha_ensaio_id)
+            const rotulo = rotuloFicha
             const travadoExecutor = ['aguardando_revisao', 'aprovado'].includes(eo.status)
             const temResultado = ['aguardando_revisao', 'aprovado', 'devolvido'].includes(eo.status)
               || eo.arquivo_url || (eo.dados_resultado && Object.keys(eo.dados_resultado).length > 0)
@@ -114,14 +117,14 @@ export default function EnsaiosOS({ pedido, ensaiosOs, podeGerenciar, ocupado, r
                     <option value="">{fichasOpc.length ? '— Selecionar —' : 'Nenhuma ficha cadastrada'}</option>
                     {todas ? (
                       fichasOpc.length > 0 && (
-                        <optgroup label="Fichas sem vínculo com este ensaio">
+                        <optgroup label="Fichas">
                           {fichasOpc.map(f => (
-                            <option key={f.id} value={f.id}>{rotuloFicha(f)}</option>
+                            <option key={f.id} value={f.id}>{rotulo(f)}</option>
                           ))}
                         </optgroup>
                       )
                     ) : fichasOpc.map(f => (
-                      <option key={f.id} value={f.id}>{rotuloFicha(f)}</option>
+                      <option key={f.id} value={f.id}>{rotulo(f)}</option>
                     ))}
                   </select>
                 </label>

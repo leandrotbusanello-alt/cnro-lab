@@ -109,12 +109,36 @@ function paginasDoConjunto(indice, { k, motor, estado }) {
  * cada uma como a ficha é, com as mesmas assinaturas.
  * Só para quem tem permissão de imprimir.
  */
-export default function ImpressaoFicha({ indice, motor, motores, estado, assinaturas, titulo, onFechar }) {
+/** Páginas A4 de uma ficha (todas as folhas adicionais incluídas) */
+export function paginasDaFicha({ indice, motor, motores, estado }) {
   const n = motores?.length ? qtdFolhas(estado) : 1
   const conjuntos = Array.from({ length: n }, (_, k) => ({
     k, motor: k ? motores[k] : (motores?.[0] || motor), estado: n > 1 ? estadoDaFolha(estado, k) : estado,
   }))
-  const paginas = conjuntos.flatMap(c => paginasDoConjunto(indice, c))
+  return conjuntos.flatMap(c => paginasDoConjunto(indice, c))
+}
+
+/**
+ * Uma página A4 da ficha. `nomeada`: usa as páginas nomeadas "retrato"/"paisagem" (impressão de
+ * vários documentos juntos, cada um na sua orientação — Gerar arquivos da O.S.).
+ */
+export function PaginaA4({ p, indice, assinaturas, nomeada = false }) {
+  return (
+    <div className={s.folhaA4} style={{ width: p.PW, height: p.PH, ...(nomeada ? { page: p.paisagem ? 'paisagem' : 'retrato' } : {}) }}>
+      <div style={p.trechos.length > 1
+        ? { position: 'absolute', left: p.esquerda, top: p.topo, height: (p.y1 - p.y0) * p.escala, overflow: 'hidden' }
+        : { position: 'absolute', left: p.esquerda, top: p.topo }}
+      >
+        <div style={p.y0 ? { marginTop: -p.y0 * p.escala } : undefined}>
+          <FichaGrade indice={indice} folha={p.folha} motor={p.motor} estado={p.estado} assinaturas={assinaturas} modo="leitura" escala={p.escala} soImpressao manterLinhas />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function ImpressaoFicha({ indice, motor, motores, estado, assinaturas, titulo, onFechar }) {
+  const paginas = paginasDaFicha({ indice, motor, motores, estado })
   const paisagem = paginas[0].paisagem
 
   useEffect(() => {
@@ -134,18 +158,7 @@ export default function ImpressaoFicha({ indice, motor, motores, estado, assinat
         </div>
       </div>
       <div className={s.impressaoArea}>
-        {paginas.map(p => (
-          <div key={p.chave} className={s.folhaA4} style={{ width: p.PW, height: p.PH }}>
-            <div style={p.trechos.length > 1
-              ? { position: 'absolute', left: p.esquerda, top: p.topo, height: (p.y1 - p.y0) * p.escala, overflow: 'hidden' }
-              : { position: 'absolute', left: p.esquerda, top: p.topo }}
-            >
-              <div style={p.y0 ? { marginTop: -p.y0 * p.escala } : undefined}>
-                <FichaGrade indice={indice} folha={p.folha} motor={p.motor} estado={p.estado} assinaturas={assinaturas} modo="leitura" escala={p.escala} soImpressao manterLinhas />
-              </div>
-            </div>
-          </div>
-        ))}
+        {paginas.map(p => <PaginaA4 key={p.chave} p={p} indice={indice} assinaturas={assinaturas} />)}
       </div>
     </div>,
     document.body,

@@ -145,7 +145,7 @@ export default function FichaDocumento({ doc, pedido, editavel, ocupado, onSalva
   )
 }
 
-function responsaveis(pedido, doc) {
+export function responsaveis(pedido, doc) {
   const f = (doc === 'os' ? pedido.ficha_os : pedido.ficha_sol) || {}
   return {
     elaborado: f.elaborado_por || RESPONSAVEIS_DOC.elaborado,
@@ -163,7 +163,7 @@ function dataISO(d) {
 // Se a ficha já foi salva (observacao_editada), vale o que está salvo.
 // Senão, preenche com os dados do pedido (e sugere os ensaios marcados).
 
-function valoresOS(pedido, lab) {
+export function valoresOS(pedido, lab) {
   const f = pedido.ficha_os || {}
   const salva = !!f.observacao_editada
   const amostras = normalizarAmostras(pedido.dados_amostra)
@@ -213,7 +213,7 @@ function valoresPrevia(p) {
   }
 }
 
-function valoresSolicitacao(pedido, lab) {
+export function valoresSolicitacao(pedido, lab) {
   const f = pedido.ficha_sol || {}
   const amostras = normalizarAmostras(pedido.dados_amostra)
   const empresa = nomeEmpresa(pedido, lab.empresasPorId)
@@ -228,6 +228,7 @@ function valoresSolicitacao(pedido, lab) {
     contato: f.contato || '',
     ...tipos,
     localizacoes: salvas.length ? salvas : localizacoesDasAmostras(amostras),
-    observacao: f.observacao || observacaoPadrao(pedido, amostras, empresa),
+    // FR-05 sem observação salva: usa a da FR-IMOB-04 (mesmo texto padrão)
+    observacao: f.observacao || pedido.ficha_os?.observacao || observacaoPadrao(pedido, amostras, empresa),
   }
 }

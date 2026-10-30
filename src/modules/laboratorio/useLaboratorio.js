@@ -168,6 +168,9 @@ export function useLaboratorio() {
       podeSolicitarReabertura: pedido.status === 'concluido' && !historico && souResp && !ehGestor && !pedido.reabertura_solicitada_em,
       podeReabrir: pedido.status === 'concluido' && (historico ? ehDev : ehGestor),
       reaberturaSolicitada: pedido.status === 'concluido' && !!pedido.reabertura_solicitada_em,
+      // Entrega 40: arquivos da O.S. (finalizada) e resumo para o Campo — responsável e Gestor
+      podeGerarArquivos: pedido.status === 'concluido' && (souResp || ehGestor),
+      podeGerirResumo: !!pedido.numero_os && (souResp || ehGestor),
     }
   }, [perfil, ehGestor, ehDev, lancaHistorico, meuIdPara])
 

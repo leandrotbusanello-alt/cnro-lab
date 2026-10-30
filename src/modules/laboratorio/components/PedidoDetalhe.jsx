@@ -24,6 +24,8 @@ import ModalAlterarNumero from './ModalAlterarNumero'
 import ModalDatas from './ModalDatas'
 import ModalReabrir from './ModalReabrir'
 import FichaDocumento from './fichas/FichaDocumento'
+import ArquivosOS from './ArquivosOS'
+import ResumoOS from './ResumoOS'
 import Toast from '../../../components/ui/Toast'
 import styles from './PedidoDetalhe.module.css'
 import ui from './ui.module.css'
@@ -300,14 +302,25 @@ export default function PedidoDetalhe() {
                 >
                   📄 FR-IMOB-04 · Ordem de Serviço
                 </button>
+                {perm.podeGerarArquivos && (
+                  <button className={`${ui.btn} ${ui.btnPrimario}`} onClick={() => setModal({ tipo: 'arquivos' })}
+                    title="FR-IMOB-05, FR-IMOB-04, fichas dos ensaios aprovados e resumo, numa só impressão/PDF">
+                    🗂 Gerar arquivos da O.S.
+                  </button>
+                )}
               </div>
             </section>
+            <ResumoOS
+              pedido={pedido} podeGerir={perm.podeGerirResumo} usuarioId={lab.perfil?.id}
+              usuariosPorId={lab.usuariosPorId} notificar={setToast}
+            />
             <HistoricoTimeline historico={pedido.historico} />
           </aside>
         </div>
       )}
 
       {/* ── Modais ────────────────────────────────────────────────────────── */}
+      {modal?.tipo === 'arquivos' && <ArquivosOS pedido={pedido} ensaiosOs={ensaiosOs} onFechar={fechar} />}
       {modal?.tipo === 'devolverCampo' && (
         <ModalMotivo
           titulo="Devolver ao campo"
