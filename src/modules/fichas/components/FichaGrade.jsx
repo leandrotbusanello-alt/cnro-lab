@@ -203,9 +203,19 @@ function espacoLivreAcima(folha, endereco, cs = 1) {
   if (!m) return 0
   const c0 = colNumLocal(m[1])
   const donos = donosDaMescla(folha)
+  // gráficos e imagens por cima das linhas também ocupam o espaço (FR-IMOB-55: a assinatura do calculista
+  // crescia por baixo do gráfico de expansão — 30/10/2026)
+  const cols = folha.modelo.cols || [], rows = folha.modelo.rows || []
+  const xDe = c => cols.slice(0, Math.max(0, c - (folha.c1 || 1))).reduce((t, w) => t + w, 0)
+  const x0 = xDe(c0), x1 = xDe(c0 + cs)
+  const desenhos = [...(folha.modelo.graficos || []), ...(folha.modelo.imgs || [])]
+    .filter(d => d.x < x1 - 1 && d.x + d.w > x0 + 1)
+  const yDe = r => rows.slice(0, Math.max(0, r - folha.r1)).reduce((t, h) => t + h, 0)
   let r = +m[2] - 1
   let livre = 0
   while (r >= folha.r1) {
+    const y0 = yDe(r), y1 = y0 + (rows[r - folha.r1] || 0)
+    if (desenhos.some(d => d.y < y1 - 1 && d.y + d.h > y0 + 1)) return livre
     for (let c = c0; c < c0 + cs; c++) {
       const a = colStr(c) + r
       if (temConteudo(folha.modelo.cells[a]) || temConteudo(donos[a])) return livre
@@ -301,6 +311,39 @@ export default function FichaGrade({
   }, [escalaFixa, largura])
 
   const escala = escalaFixa || escalaAuto
+
+  // Gráficos e imagens ficam por cima da tabela, na posição do Excel. Se alguma linha cresce na tela
+  // (texto que quebra em outra fonte/largura), o que está abaixo dela desce junto — sem isso o gráfico
+  // ficava por cima dos dados (FR-IMOB-55, 30/10/2026). Só na tela; a impressão usa as alturas do Excel.
+  const tabela = useRef(null)
+  const [crescimento, setCrescimento] = useState(null)   // [{ y, delta }] em px da folha (já sem linhas ocultas)
+  useLayoutEffect(() => {
+    if (escalaFixa || !tabela.current) return undefined
+    const el = tabela.current
+    const medir = () => {
+      const linhas = el.tBodies[0]?.rows || []
+      const pontos = []
+      let esperado = 0, ultimo = 0
+      const base = linhas[0]?.offsetTop || 0
+      for (let i = 0; i < linhas.length; i++) {
+        const delta = linhas[i].offsetTop - base - esperado
+        if (Math.abs(delta - ultimo) > 0.5) { pontos.push({ y: esperado, delta }); ultimo = delta }
+        esperado += estrutura[i]?.altura || 0
+      }
+      setCrescimento(atual => (JSON.stringify(atual || []) === JSON.stringify(pontos) ? atual : (pontos.length ? pontos : null)))
+    }
+    medir()
+    const ro = new ResizeObserver(medir)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [escalaFixa, estrutura])
+  const topoAjustado = y => {
+    const yr = y - (px?.desloca(y) || 0)
+    if (!crescimento) return yr
+    let d = 0
+    for (const p of crescimento) { if (p.y <= yr + 0.5) d = p.delta; else break }
+    return yr + d
+  }
   // entradasTravadas: ficha com aba Lançamento — o assistente digita lá; aqui ele confere e assina
   const podeEntrada = !bloqueado && !entradasTravadas && (modo === 'preencher' || modo === 'revisao')
   const podeRevisao = !bloqueado && modo === 'revisao'
@@ -554,7 +597,7 @@ export default function FichaGrade({
             ? { width: largura, height: alturaFolha, zoom: escala }
             : { width: largura, height: alturaFolha, transform: `scale(${escala})` }}
         >
-          <table className={s.grade} style={{ width: largura }}>
+          <table ref={tabela} className={s.grade} style={{ width: largura }}>
             <colgroup>
               {folha.modelo.cols.slice(0, soImpressao ? folha.colsImpressao : undefined).map((w, i) => [
                 temTela && i === folha.colsImpressao ? <col key="espaco" style={{ width: ESPACO_TELA }} /> : null,
@@ -575,10 +618,10 @@ export default function FichaGrade({
             </tbody>
           </table>
           {folha.modelo.imgs.map((im, i) => (px?.some(im.y) ? null : (
-            <img key={i} className={s.imagem} alt="" src={im.src} style={{ left: im.x, top: im.y - (px?.desloca(im.y) || 0), width: im.w, height: im.h }} />
+            <img key={i} className={s.imagem} alt="" src={im.src} style={{ left: im.x, top: topoAjustado(im.y), width: im.w, height: im.h }} />
           )))}
           {folha.modelo.graficos?.map((g, i) => (px?.some(g.y) ? null : (
-            <div key={`g${i}`} className={s.grafico} style={{ left: g.x, top: g.y - (px?.desloca(g.y) || 0), width: g.w, height: g.h }}>
+            <div key={`g${i}`} className={s.grafico} style={{ left: g.x, top: topoAjustado(g.y), width: g.w, height: g.h }}>
               <Grafico g={g} motor={motor} prefixo={pre} cells={indice.cells} />
             </div>
           )))}

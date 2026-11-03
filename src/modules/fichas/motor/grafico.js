@@ -115,6 +115,26 @@ export function escalaDoEixo(ex = {}, dados = [], divisoes = 8) {
     return { min, max, log: base, marcas, menores, para: ex.inverso ? v => 1 - para(v) : para }
   }
 
+  // "janela" (FR-IMOB-55 Rev00.2): faixa de largura fixa que acompanha os dados, como o laboratório ajusta
+  // à mão no Excel — p.ex. densidade 1.500–1.800 (de 50 em 50) e umidade 17,5%–20,5% (de 1 em 1%).
+  //   janela: { largura, alinhar, folgaMin, folgaMax, ancora: 'min'|'max' } · unidade = passo das marcas
+  if (ex.janela && validos.length) {
+    const j = ex.janela
+    const u = ex.unidade || j.alinhar
+    const dMinJ = Math.min(...validos), dMaxJ = Math.max(...validos)
+    let a, b
+    if (j.ancora === 'max') {
+      b = limpo(Math.ceil((dMaxJ + (j.folgaMax || 0)) / j.alinhar - 1e-9) * j.alinhar)
+      a = limpo(b - j.largura)
+      for (let n = 0; a > dMinJ - (j.folgaMin || 0) + 1e-9 && n < 100; n++) a = limpo(a - u)
+    } else {
+      a = limpo(Math.floor((dMinJ - (j.folgaMin || 0)) / j.alinhar + 1e-9) * j.alinhar)
+      b = limpo(a + j.largura)
+      for (let n = 0; b < dMaxJ + (j.folgaMax || 0) - 1e-9 && n < 100; n++) b = limpo(b + u)
+    }
+    return escalaDoEixo({ ...ex, janela: undefined, min: a, max: b, unidade: u }, dados, divisoes)
+  }
+
   let dMin = validos.length ? Math.min(...validos) : 0
   let dMax = validos.length ? Math.max(...validos) : 1
   if (min !== null) dMin = Math.min(dMin, min)

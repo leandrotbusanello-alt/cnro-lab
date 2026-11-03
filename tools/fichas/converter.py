@@ -228,7 +228,9 @@ def papeis_da_spec(spec):
         # quadro de foto: o assistente tira/escolhe a foto, que é guardada no Storage (bucket "fotos")
         p[a] = {'tipo': 'foto'}
     for quem, a in spec.get('assinaturas', {}).items():
-        p[a] = {'tipo': 'assinatura', 'quem': quem}
+        # uma célula ou várias (FR-IMOB-55 Rev00.2: a mesma assinatura nas 3 folhas)
+        for ac in (a if isinstance(a, list) else [a]):
+            p[ac] = {'tipo': 'assinatura', 'quem': quem}
     for a in spec.get('_verificacoes', []):
         # caixa de seleção independente (pontos de verificação): ☐/☒, cada uma por si
         p[a] = {'tipo': 'verificacao'}
@@ -385,6 +387,13 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
         for rr in range(ra, rb + 1):
             for cc in range(ca, cb + 1):
                 formatos_spec[endereco(cc, rr)] = nf
+    # "fonte_cor": {"C167:D173": "#000000"} — cor da fonte (FR-IMOB-55: a planilha tinha fonte branca na umidade higroscópica)
+    cores_spec = {}
+    for chave, cor in spec.get('fonte_cor', {}).items():
+        ca, ra, cb, rb = range_boundaries(chave if ':' in chave else f'{chave}:{chave}')
+        for rr in range(ra, rb + 1):
+            for cc in range(ca, cb + 1):
+                cores_spec[endereco(cc, rr)] = cor
     cells, exemplo, excel, alertas = {}, {}, {}, []
 
     for r in range(r1, r2 + 1):
@@ -399,6 +408,9 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
                 if mr[0] > r: d['rs'] = mr[0] - r + 1
                 if mr[1] > c: d['cs'] = mr[1] - c + 1
             f = fonte(cores, cel.font)
+            if a in cores_spec:
+                f = {**(f or {}), 'c': cores_spec[a]}
+                if f['c'] in (None, '', '#000000'): f.pop('c')
             if f: d['f'] = f
             if cel.fill is not None and cel.fill.fill_type == 'solid':
                 bg = cores(cel.fill.fgColor)
@@ -611,8 +623,20 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
     # células fora da área usadas pelas fórmulas (tabelas de faixas, listas…): vão como auxiliares,
     # que o motor calcula mas a ficha não mostra
     # gráficos do Excel dentro da área da ficha (fora dela são ignorados)
+    global ROTULOS_GRAFICO
+    ROTULOS_GRAFICO = bool(spec.get('graficos_rotulos'))   # rótulos de dados e título de eixo excluído (FR-IMOB-55 Rev00.2)
     graficos = graficos_da_aba(caminho, ws, cores, x_off, y_off, (c1, r1, c2_impressao, r2), alertas) \
         if spec.get('graficos', True) else []
+    # spec 'graficos_rotulos': [1, 3, 4] — gráficos com rótulos de dados e título de eixo excluído (os demais ficam como antes)
+    _rot = spec.get('graficos_rotulos') or []
+    for gi, g in enumerate(graficos):
+        if gi in _rot:
+            continue
+        for s_ in g['series']:
+            s_.pop('rotulos', None)
+        for e_ in g['eixos'].values():
+            if isinstance(e_.get('titulo'), dict):
+                e_['titulo'].pop('mostrar', None); e_['titulo'].pop('y', None) if e_.get('oculto') else None
     # spec 'graficos_series': {'0.0': {'x': 'E29:E39', 'y': 'P47:P57'}} troca a origem de uma série
     # (gráfico.série), p.ex. quando a tabela auxiliar que o gráfico lia foi limpa da ficha
     for chave, troca in (spec.get('graficos_series') or {}).items():
@@ -640,6 +664,10 @@ def converter_folha(caminho, wb, wbv, ws, spec, cores):
             if cfg == 'justo':
                 ex['justo'] = 1        # escala automática sem forçar o zero (curva de compactação, FR-IMOB-55)
         elif isinstance(cfg, dict):
+            if cfg.get('janela'):
+                # faixa de largura fixa que acompanha os dados (FR-IMOB-55 Rev00.2) — sem o mínimo/máximo fixos da planilha
+                for k in ('min', 'max', 'unidade', 'unidadeMenor'):
+                    ex.pop(k, None)
             ex.update(cfg)
     # spec 'graficos_escala': {'0': [0]} — séries que definem a escala automática do gráfico
     for gi, idx in (spec.get('graficos_escala') or {}).items():
@@ -1136,7 +1164,14 @@ def ler_grafico(cx, tema, ws_titulo, alertas, nome_arq):
         at = ax.find('c:title', NS_C)
         if at is not None:
             txt = _texto_rich(at.find('c:tx', NS_C))
-            if txt: e['titulo'] = {'texto': txt, **_fonte(at.find('c:tx', NS_C))}
+            if txt:
+                e['titulo'] = {'texto': txt, **_fonte(at.find('c:tx', NS_C))}
+                if e.get('oculto') and ROTULOS_GRAFICO:
+                    # o Excel mostra o título mesmo com o eixo excluído ("Penetração (mm)" da FR-IMOB-55)
+                    e['titulo']['mostrar'] = 1
+                    tml = at.find('.//c:manualLayout', NS_C)
+                    if tml is not None and tml.find('c:y', NS_C) is not None:
+                        e['titulo']['y'] = round(float(tml.find('c:y', NS_C).get('val')), 4)
         fx = _fonte(ax.find('c:txPr', NS_C))
         if fx: e['fonte'] = fx
         eixos['x' if axpos in ('b', 't') else 'y'] = e
@@ -1212,6 +1247,22 @@ def ler_grafico(cx, tema, ws_titulo, alertas, nome_arq):
             tls.append(t)
         if tls:
             s['tendencias'] = tls
+        # rótulos de dados (FR-IMOB-55: o valor de cada linha vertical embaixo do gráfico de penetração)
+        dl = ser.find('c:dLbls', NS_C) if ROTULOS_GRAFICO else None
+        if dl is not None:
+            mostra = lambda k: dl.find(k, NS_C) is not None and dl.find(k, NS_C).get('val') == '1'
+            conteudo = 'nome' if mostra('c:showSerName') else 'y' if mostra('c:showVal') else 'x' if mostra('c:showCatName') else None
+            if conteudo:
+                excl = [int(d.find('c:idx', NS_C).get('val')) for d in dl.iterfind('c:dLbl', NS_C)
+                        if d.find('c:delete', NS_C) is not None and d.find('c:delete', NS_C).get('val') == '1']
+                pos = dl.find('c:dLblPos', NS_C)
+                r = {'conteudo': conteudo, 'pos': pos.get('val') if pos is not None else 'r'}
+                if excl: r['excluir'] = excl
+                nf = dl.find('c:numFmt', NS_C)
+                if nf is not None and nf.get('formatCode') not in (None, 'General'): r['nf'] = nf.get('formatCode')
+                fl = _fonte(dl.find('c:txPr', NS_C))
+                if fl: r['fonte'] = fl
+                s['rotulos'] = r
         sm = ser.find('c:smooth', NS_C)
         if (sm is not None and sm.get('val') == '1') or (sm is None and estilo_suave is not None and 'smooth' in estilo_suave.get('val', '')):
             s['suave'] = 1
@@ -1232,7 +1283,9 @@ def ler_grafico(cx, tema, ws_titulo, alertas, nome_arq):
     return g
 
 
-CHAVES_DA_FOLHA = ('imagens_na_celula', 'graficos_series', 'graficos_eixos', 'graficos_escala', 'fotos', 'formatos', 'remover_mesclas', 'alturas', 'celulas_extras', 'pedido', 'entradas', 'revisao', 'escolhas', 'assinaturas', 'linhas_assinatura', 'formulas',
+ROTULOS_GRAFICO = False
+
+CHAVES_DA_FOLHA = ('fonte_cor', 'graficos_rotulos', 'imagens_na_celula', 'graficos_series', 'graficos_eixos', 'graficos_escala', 'fotos', 'formatos', 'remover_mesclas', 'alturas', 'celulas_extras', 'pedido', 'entradas', 'revisao', 'escolhas', 'assinaturas', 'linhas_assinatura', 'formulas',
                    'colunas_tela', 'limpar', 'mesclas_extras', 'lista', 'rotulos', 'verificacoes', 'area_impressao', 'graficos',
                    'larguras', 'ocultar_linhas')
 RE_ABA_FORMULA = re.compile(r"(?:'((?:[^']|'')+)'|([A-Za-z_][A-Za-z0-9_.]*))!\$?[A-Z]{1,3}\$?\d")

@@ -1,6 +1,6 @@
 {
  "codigo": "FR-IMOB-55",
- "versao": "Rev00.1",
+ "versao": "Rev00.2",
  "nome": "Solos — Ensaio de compactação completo (Proctor, ISC e expansão, granulometria e limites)",
  "arquivo": "FR-IMOB-55_Rev00.xlsx",
  "aba": "FR-IMOB-55_Rev00",
@@ -376,7 +376,8 @@
   "I28": "=IF(AND(ISNUMBER($D$28),ISNUMBER($O$12),ISNUMBER($K$28),ISNUMBER(I31)),$D$28+5*$O$12*$K$28,\"\")",
   "AL28": "=IF(ISNUMBER($O$12),$O$12,\"\")",
   "C40": "=IF($O$9=\"Simples\",\"\",IF(ISERROR(BB94),\"\",BB94))",
-  "D40": "=IF($O$9=\"Simples\",\"\",IF(ISERROR(BB103),\"\",BB103))"
+  "D40": "=IF($O$9=\"Simples\",\"\",IF(ISERROR(BB103),\"\",BB103))",
+  "D91": "=IF(ISNUMBER(D90),AVERAGE(D90:E90),IF(ISNUMBER($A$40),$A$40,\"\"))"
  },
  "celulas_extras": {
   "FB5": {
@@ -5571,6 +5572,10 @@
   },
   "H18": {
    "v": 5
+  },
+  "B152": {
+   "v": "Responsável executor:",
+   "estilo_de": "B73"
   }
  },
  "limpar": [
@@ -5636,10 +5641,47 @@
   }
  },
  "graficos_eixos": {
-  "0.x": "justo",
-  "0.y": "justo",
-  "2.x": "justo",
-  "5.x": "justo",
+  "0.x": {
+   "janela": {
+    "largura": 0.03,
+    "alinhar": 0.005,
+    "folgaMin": 0.002,
+    "folgaMax": 0.002
+   },
+   "unidade": 0.01,
+   "unidadeMenor": 0.001
+  },
+  "0.y": {
+   "janela": {
+    "largura": 300,
+    "alinhar": 50,
+    "folgaMin": 0,
+    "folgaMax": 100,
+    "ancora": "max"
+   },
+   "unidade": 50,
+   "unidadeMenor": 10
+  },
+  "2.x": {
+   "janela": {
+    "largura": 0.03,
+    "alinhar": 0.005,
+    "folgaMin": 0.002,
+    "folgaMax": 0.002
+   },
+   "unidade": 0.01,
+   "unidadeMenor": 0.001
+  },
+  "5.x": {
+   "janela": {
+    "largura": 0.03,
+    "alinhar": 0.005,
+    "folgaMin": 0.002,
+    "folgaMax": 0.002
+   },
+   "unidade": 0.01,
+   "unidadeMenor": 0.001
+  },
   "6.x": "justo"
  },
  "graficos_escala": {
@@ -5661,7 +5703,8 @@
  },
  "colunas_tela": "N:O",
  "mesclas_extras": [
-  "N18:O18"
+  "N18:O18",
+  "B152:E152"
  ],
  "remover_mesclas": [
   "M18:N18",
@@ -5683,8 +5726,16 @@
  "verificacoes": false,
  "valores_excel": false,
  "assinaturas": {
-  "executor": "B73",
-  "calculista": "G73"
+  "executor": [
+   "B73",
+   "B152",
+   "B224"
+  ],
+  "calculista": [
+   "G73",
+   "G152",
+   "G224"
+  ]
  },
  "lista": {
   "grupos": [
@@ -7328,5 +7379,14 @@
    },
    "linhas": "6-159"
   }
- }
+ },
+ "fonte_cor": {
+  "C167:D173": "#000000"
+ },
+ "graficos_rotulos": [
+  1,
+  3,
+  4
+ ],
+ "_nota_rev002": "Rev00.2 (03/11/2026): gráficos de compactação/ISC/expansão com faixa fixa que acompanha os dados (como o laboratório ajusta no Excel: densidade 300 kg/m³ de 50 em 50, umidade 3% de 1 em 1%); valores da penetração (rótulos de dados) e título \"Penetração (mm)\"; assinaturas nas 3 folhas; umidade média da moldagem = umidade ótima quando a moldagem não é preenchida; fonte da umidade higroscópica preta (era branca)."
 }

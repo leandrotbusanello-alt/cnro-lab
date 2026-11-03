@@ -232,6 +232,10 @@ export default function Grafico({ g, motor, prefixo = '', cells, responsivo = fa
         </g>
       )}
 
+      {ex.oculto && ex.titulo?.mostrar && (
+        <text x={P.x + P.w / 2} y={(ex.titulo.y ?? 0.9) * H + fTx.fontSize} textAnchor="middle" {...fTx}>{ex.titulo.texto}</text>
+      )}
+
       {/* eixo Y (à esquerda) */}
       {!ey.oculto && (
         <g>
@@ -268,6 +272,23 @@ export default function Grafico({ g, motor, prefixo = '', cells, responsivo = fa
           )
         })}
       </g>
+
+      {/* rótulos de dados (FR-IMOB-55 Rev00.2: valores da penetração embaixo das linhas verticais) */}
+      {series.map((s, i) => s.rotulos && s.trechos.flat().map((p, k) => {
+        if ((s.rotulos.excluir || []).includes(k) || !dentro(p.x, sx) || !dentro(p.y, sy)) return null
+        const fR = fonteSvg(s.rotulos.fonte, fBase)
+        const vNome = s.nome?.ref && !s.nome.ref.includes(':') ? motor?.valores?.get(prefixo + s.nome.ref) : null
+        const texto = s.rotulos.conteudo === 'nome'
+          ? (typeof vNome === 'number' ? formatar(vNome, s.rotulos.nf || '0.00') : s.nomeTexto)
+          : formatar(s.rotulos.conteudo === 'x' ? p.x : p.y, s.rotulos.nf || (s.rotulos.conteudo === 'x' ? ex.nf : ey.nf) || 'General')
+        const pos = s.rotulos.pos || 'r'
+        const dx = pos === 'r' ? 6 : pos === 'l' ? -6 : 0
+        const dy = pos === 'b' ? fR.fontSize * 1.15 : pos === 't' ? -fR.fontSize * 0.5 : fR.fontSize * 0.35
+        return (
+          <text key={`dl${i}-${k}`} x={X(p.x) + dx} y={Y(p.y) + dy} {...fR}
+            textAnchor={pos === 'r' ? 'start' : pos === 'l' ? 'end' : 'middle'}>{texto}</text>
+        )
+      }))}
 
       {titulo?.texto && (
         <text x={W / 2} y={(titulo.y ?? 0.02) * H + fT.fontSize} textAnchor="middle" {...fT}>{titulo.texto}</text>
